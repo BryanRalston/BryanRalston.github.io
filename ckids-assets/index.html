@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CKids Communications · Community Church</title>
+<meta name="description" content="Weekly briefings, huddle links, and team resources for the Discover CKids ministry at Community Church.">
+<link rel="icon" href="ckids-logo-wordmark.png" type="image/png">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #eaf4f9;
+    color: #2c3e50;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #3D5BA3; }
+  a:hover { color: #2A4279; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #A8DCEB 0%, #7FCBE0 100%);
+    padding: 48px 24px 56px;
+    text-align: center;
+  }
+  .hero img {
+    display: block;
+    margin: 0 auto 18px;
+    width: 320px;
+    max-width: 80%;
+    height: auto;
+  }
+  .hero .eyebrow {
+    margin: 0 0 6px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #3D5BA3;
+    font-weight: 700;
+  }
+  .hero h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    font-weight: 600;
+    color: #3D5BA3;
+    letter-spacing: 0.3px;
+  }
+  .hero p.tag {
+    margin: 0 auto;
+    max-width: 540px;
+    font-size: 15px;
+    color: #3D5BA3;
+    opacity: 0.88;
+    line-height: 1.55;
+  }
+
+  /* Layout container */
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .stack { margin-top: -28px; }
+
+  /* Featured card */
+  .featured {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(61,91,163,0.10);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .featured-band {
+    background: #3D5BA3;
+    color: #fff;
+    padding: 14px 28px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .featured-body { padding: 28px 28px 30px; }
+  .featured h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    color: #2c3e50;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .featured .date {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: #8a9aa8;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .featured ul {
+    margin: 0 0 22px;
+    padding-left: 20px;
+    color: #5a6a78;
+    font-size: 15px;
+  }
+  .featured ul li { margin: 6px 0; }
+  .featured ul li strong { color: #2c3e50; }
+  .btn {
+    display: inline-block;
+    background: #3D5BA3;
+    color: #fff !important;
+    padding: 13px 26px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: #2A4279; }
+  .btn-secondary {
+    background: #fff;
+    color: #3D5BA3 !important;
+    border: 1.5px solid #3D5BA3;
+  }
+  .btn-secondary:hover { background: #f0f6fa; }
+
+  /* Section heading */
+  .section-h {
+    margin: 36px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-h h3 {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #3D5BA3;
+    font-weight: 700;
+  }
+  .section-h .rule {
+    flex: 1;
+    height: 1px;
+    background: #c9d8e6;
+  }
+
+  /* Quick links grid */
+  .links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .link-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 2px 10px rgba(61,91,163,0.06);
+    border: 1px solid #dde7f0;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(61,91,163,0.12);
+  }
+  .link-card .icon-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .link-card.huddle .icon-dot { background: #F0A040; }
+  .link-card.signup .icon-dot { background: #5BA8C7; }
+  .link-card h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 700;
+  }
+  .link-card p {
+    margin: 0 0 10px;
+    font-size: 13.5px;
+    color: #5a6a78;
+    line-height: 1.55;
+  }
+  .link-card .go {
+    font-size: 13px;
+    color: #3D5BA3;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  @media (max-width: 540px) {
+    .links { grid-template-columns: 1fr; }
+    .hero { padding: 36px 20px 44px; }
+    .hero h1 { font-size: 24px; }
+    .featured-body { padding: 22px 22px 24px; }
+    .featured h2 { font-size: 21px; }
+  }
+
+  /* Archive */
+  .archive {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #dde7f0;
+    overflow: hidden;
+  }
+  .archive a {
+    display: block;
+    padding: 18px 22px;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid #eef3f7;
+    transition: background 0.12s;
+  }
+  .archive a:last-child { border-bottom: none; }
+  .archive a:hover { background: #f7fbfd; }
+  .archive .date-tag {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #3D5BA3;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .archive .title {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .archive .summary {
+    font-size: 13.5px;
+    color: #8a9aa8;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 56px;
+    background: #3D5BA3;
+    color: #fff;
+    padding: 36px 20px 32px;
+    text-align: center;
+  }
+  footer img {
+    width: 120px;
+    margin-bottom: 14px;
+  }
+  footer p { margin: 4px 0; font-size: 13.5px; }
+  footer p.line1 { font-weight: 600; letter-spacing: 0.5px; font-size: 14px; }
+  footer p.addr { color: #b8c5e0; }
+  footer p.tag {
+    color: #9eb1c2;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <img src="ckids-logo-discover.png" alt="Discover CKids">
+  <p class="eyebrow">Community Church</p>
+  <h1>CKids Communications</h1>
+  <p class="tag">Weekly briefings, schedules, and team resources for the Discover CKids ministry.</p>
+</header>
+
+<div class="wrap stack">
+
+  <!-- Featured / Latest Briefing -->
+  <div class="featured">
+    <div class="featured-band">This Week's Briefing</div>
+    <div class="featured-body">
+      <p class="date">Week of August 3, 2026 &middot; Sunday August 9</p>
+      <h2>Wonderfully Me</h2>
+      <ul>
+        <li><strong>Lesson:</strong> Genesis 1:27; Psalm 139:13&ndash;14 &middot; God made me wonderful</li>
+        <li><strong>Birthdays:</strong> Miss Angela (Aug 14) and Chad Lambie (Aug 15)</li>
+        <li><strong>Save the date:</strong> GEN Parent Orientation (Aug 16) and Promotion Sunday (Aug 23)</li>
+        <li><strong>Sunday support:</strong> Lexi &amp; Jackie continue to cover while Sue is on maternity leave</li>
+      </ul>
+      <a class="btn" href="newsletter/august2.html">Read the Full Briefing &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="section-h">
+    <h3>Quick Links</h3>
+    <span class="rule"></span>
+  </div>
+  <div class="links">
+    <a class="link-card huddle" href="https://sites.google.com/communitychurch.cc/ckidsteamo/home">
+      <div class="icon-dot">H</div>
+      <h4>Virtual Huddle</h4>
+      <p>Join the Sunday huddle online before service &mdash; Team O resources, prayer, and prep.</p>
+      <span class="go">Open Team O site &rarr;</span>
+    </a>
+    <a class="link-card signup" href="https://docs.google.com/forms/d/e/1FAIpQLSezd5gyTN0J10EgrW3CiMDXqhDHBTTBo5drGPrC96a3_ga3Rw/viewform?usp=sharing&amp;ouid=111181955769761459530">
+      <div class="icon-dot">+</div>
+      <h4>Summer Help Sign-Up</h4>
+      <p>Know someone who'd love to help with CKids this summer? Share this form with them.</p>
+      <span class="go">Open the form &rarr;</span>
+    </a>
+  </div>
+
+  <!-- Archive -->
+  <div class="section-h">
+    <h3>Past Briefings</h3>
+    <span class="rule"></span>
+  </div>
+  <div class="archive">
+    <a href="newsletter/august1.html">
+      <div class="date-tag">July 27, 2026 &middot; August W1</div>
+      <div class="title">God Made Everything, God Made Me</div>
+      <div class="summary">Phase Guides &amp; Calendar &middot; GEN Orientation &amp; Promotion Sunday</div>
+    </a>
+    <a href="newsletter/july3.html">
+      <div class="date-tag">July 13, 2026 &middot; Week 3</div>
+      <div class="title">The Servant Who Had No Mercy</div>
+      <div class="summary">August save-the-dates &middot; CKids GO huddle &middot; Register to help</div>
+    </a>
+    <a href="newsletter/july2.html">
+      <div class="date-tag">July 6, 2026 &middot; Summer Edition</div>
+      <div class="title">The Parable of the Bags of Gold</div>
+      <div class="summary">Meet Lexi &amp; Jackie &middot; Restroom remodel extended &middot; Register to help</div>
+    </a>
+    <a href="newsletter/july1.html">
+      <div class="date-tag">June 29, 2026 &middot; America 250 Edition</div>
+      <div class="title">The Story of the Farmer</div>
+      <div class="summary">Independence Sunday &middot; Red, white &amp; blue &middot; Promotion Sunday save-the-date</div>
+    </a>
+    <a href="newsletter/june4.html">
+      <div class="date-tag">June 22, 2026 &middot; Week 4</div>
+      <div class="title">The Hidden Treasure &amp; the Pearl</div>
+      <div class="summary">Finishing June strong &middot; Final week of bathroom remodel &middot; Summer help</div>
+    </a>
+    <a href="newsletter/june3.html">
+      <div class="date-tag">June 15, 2026 &middot; Week 3</div>
+      <div class="title">The Story of the Lost Son</div>
+      <div class="summary">Father's Day weekend &middot; CKids GO huddle &middot; Birthday for Steven &middot; Pop tabs</div>
+    </a>
+    <a href="newsletter/june2.html">
+      <div class="date-tag">June 8, 2026 &middot; Week 2</div>
+      <div class="title">The Story of the Lost Sheep</div>
+      <div class="summary">Bathroom notice &middot; Father's Day &middot; Summer help &middot; Pop tabs spotlight</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <img src="ckids-logo-wordmark.png" alt="CKIDS">
+  <p class="line1">Discover CKids &middot; Community Church</p>
+  <p class="addr">19790 Ashburn Rd &middot; Ashburn, VA 20147</p>
+  <p class="tag">Serving with love</p>
+</footer>
+
+</body>
+</html>
