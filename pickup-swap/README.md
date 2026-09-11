@@ -1,0 +1,1 @@
+Pickup Swap is a local-first after-school pickup board for a trusted circle: add kids, add the adults who share pickup, pick a date, and assign who is getting whom. All names and assignments stay on this device in your browser — nothing is sent to a server.

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pickup Swap">
+  <rect width="64" height="64" rx="14" fill="#3d5a40"/>
+  <path d="M14 40c4-10 10-16 18-16s14 6 18 16" fill="none" stroke="#f4efe6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="24" cy="26" r="4" fill="#e8c36a"/>
+  <circle cx="40" cy="26" r="4" fill="#e8c36a"/>
+  <path d="M20 46h24" stroke="#f4efe6" stroke-width="4" stroke-linecap="round"/>
+</svg>

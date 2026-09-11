@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pickup Swap</title>
+  <meta name="description" content="Local-first after-school pickup board for a trusted circle.">
+  <meta name="theme-color" content="#3d5a40">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --paper: #f4efe6;
+      --card: #fffdf8;
+      --ink: #1c1914;
+      --muted: #5c564c;
+      --line: #d8d0c2;
+      --pine: #3d5a40;
+      --pine-ink: #f4efe6;
+      --clay: #b4532a;
+      --danger: #8f1d1d;
+      --danger-bg: #f8e4e0;
+      --ok: #2f6f4e;
+      --shadow: 0 1px 0 rgba(28, 25, 20, 0.06);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 42rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+    header h1 {
+      font-size: 1.85rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.25rem;
+    }
+    header p { margin: 0; color: var(--muted); font-size: 1rem; }
+    .badge {
+      display: inline-block;
+      margin-top: 0.7rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ok);
+      background: #e4efe8;
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+    }
+
+    #storage-fail {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--danger);
+      color: #fff;
+      padding: 0.9rem 1rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700;
+    }
+    #storage-fail.show { display: block; }
+    #storage-fail p { margin: 0; max-width: 42rem; margin-inline: auto; }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem 1rem 1.1rem;
+      margin-top: 1rem;
+    }
+    .panel h2 {
+      font-size: 1.15rem;
+      margin: 0 0 0.75rem;
+    }
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    input[type="text"], input[type="date"], select {
+      font: inherit;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 1rem;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      width: 100%;
+    }
+    input:focus, select:focus {
+      outline: 2px solid var(--pine);
+      outline-offset: 1px;
+    }
+    button {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 650;
+      border: 0;
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      background: var(--pine);
+      color: var(--pine-ink);
+    }
+    button:hover { filter: brightness(1.05); }
+    button.ghost {
+      background: transparent;
+      color: var(--clay);
+      padding: 0.35rem 0.45rem;
+    }
+    button.secondary {
+      background: #ebe4d6;
+      color: var(--ink);
+    }
+    .list { list-style: none; margin: 0.75rem 0 0; padding: 0; }
+    .list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.55rem 0;
+      border-top: 1px solid var(--line);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    .empty {
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      margin: 0.4rem 0 0;
+    }
+    .assign-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: 0.6rem;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .assign-row .kid-name {
+      font-weight: 650;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toolbar label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 650;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex: 1;
+    }
+    footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .print-only { display: none; }
+
+    @media print {
+      #storage-fail, .no-print, footer { display: none !important; }
+      body { background: #fff; }
+      .wrap { padding: 0; max-width: none; }
+      .print-only { display: block; }
+      .panel { border: 0; box-shadow: none; padding: 0; margin: 0; }
+      .assign-row { border-top: 1px solid #bbb; }
+      header p, .badge { display: none; }
+      h1 { margin-bottom: 0.15rem; }
+      .print-date {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 1.1rem;
+        margin: 0 0 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="storage-fail" role="alert">
+    <p>Pickup Swap cannot save on this device. Browser storage is blocked (private mode or a storage setting). Names and assignments will not persist.</p>
+  </div>
+  <div class="wrap">
+    <header>
+      <h1>Pickup Swap</h1>
+      <p>After-school pickup board for a trusted circle.</p>
+      <span class="badge no-print">Stays on this device</span>
+      <p class="print-only print-date" id="print-date"></p>
+    </header>
+
+    <section class="panel no-print" aria-labelledby="people-heading">
+      <h2 id="people-heading">Kids</h2>
+      <form id="kid-form" class="row">
+        <input type="text" id="kid-name" name="kid" placeholder="Add a kid" autocomplete="off" maxlength="80" required>
+        <button type="submit">Add</button>
+      </form>
+      <p class="empty" id="kids-empty">No kids yet. The board starts empty.</p>
+      <ul class="list" id="kids-list"></ul>
+    </section>
+
+    <section class="panel no-print" aria-labelledby="adults-heading">
+      <h2 id="adults-heading">Circle adults</h2>
+      <form id="adult-form" class="row">
+        <input type="text" id="adult-name" name="adult" placeholder="Add a pickup adult" autocomplete="name" maxlength="80" required>
+        <button type="submit">Add</button>
+      </form>
+      <p class="empty" id="adults-empty">No adults in the circle yet.</p>
+      <ul class="list" id="adults-list"></ul>
+    </section>
+
+    <section class="panel" aria-labelledby="board-heading">
+      <div class="toolbar no-print">
+        <h2 id="board-heading">Today’s board</h2>
+        <label>
+          Date
+          <input type="date" id="board-date" required>
+        </label>
+      </div>
+      <h2 class="print-only" id="print-board-heading">Pickup board</h2>
+      <p class="empty" id="board-empty">Add kids to assign a pickup person.</p>
+      <div id="board"></div>
+      <div class="row no-print" style="margin-top: 0.9rem;">
+        <button type="button" class="secondary" id="print-btn">Print board</button>
+        <button type="button" class="ghost" id="clear-day">Clear this day’s assignments</button>
+      </div>
+    </section>
+
+    <footer class="no-print">Data never leaves this browser. Use Print for a paper copy.</footer>
+  </div>
+  <script>
+    const STORAGE_KEY = "pickup-swap-v1";
+    const state = {
+      ok: false,
+      kids: [],
+      adults: [],
+      assignments: {},
+      date: todayISO()
+    };
+
+    function todayISO() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    }
+
+    function newId() {
+      if (crypto.randomUUID) return crypto.randomUUID();
+      return "id-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function probeStorage() {
+      try {
+        const probe = "__pickup_swap_probe__";
+        localStorage.setItem(probe, "ok");
+        const readback = localStorage.getItem(probe);
+        localStorage.removeItem(probe);
+        if (readback !== "ok") throw new Error("storage readback failed");
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function failLoud(reason) {
+      state.ok = false;
+      const banner = document.getElementById("storage-fail");
+      banner.classList.add("show");
+      const extra = reason ? " (" + reason + ")" : "";
+      banner.querySelector("p").textContent =
+        "Pickup Swap cannot save on this device. Browser storage is blocked" + extra +
+        ". Names and assignments will not persist.";
+    }
+
+    function load() {
+      if (!probeStorage()) {
+        failLoud();
+        return;
+      }
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          state.ok = true;
+          return;
+        }
+        const data = JSON.parse(raw);
+        state.kids = Array.isArray(data.kids) ? data.kids : [];
+        state.adults = Array.isArray(data.adults) ? data.adults : [];
+        state.assignments = data.assignments && typeof data.assignments === "object" ? data.assignments : {};
+        state.ok = true;
+      } catch (err) {
+        failLoud(err && err.message ? err.message : "unreadable store");
+      }
+    }
+
+    function save() {
+      if (!state.ok) {
+        failLoud("save refused");
+        return false;
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          kids: state.kids,
+          adults: state.adults,
+          assignments: state.assignments
+        }));
+        return true;
+      } catch (err) {
+        failLoud(err && err.name ? err.name : "write failed");
+        return false;
+      }
+    }
+
+    function dayMap() {
+      if (!state.assignments[state.date]) state.assignments[state.date] = {};
+      return state.assignments[state.date];
+    }
+
+    function renderPeople(kind) {
+      const items = state[kind];
+      const list = document.getElementById(kind + "-list");
+      const empty = document.getElementById(kind + "-empty");
+      list.innerHTML = "";
+      empty.hidden = items.length > 0;
+      items.forEach((person) => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = person.name;
+        const remove = document.createElement("button");
+        remove.className = "ghost";
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () => {
+          state[kind] = state[kind].filter((p) => p.id !== person.id);
+          if (kind === "kids") {
+            Object.keys(state.assignments).forEach((date) => {
+              delete state.assignments[date][person.id];
+            });
+          }
+          if (kind === "adults") {
+            Object.keys(state.assignments).forEach((date) => {
+              Object.keys(state.assignments[date]).forEach((kidId) => {
+                if (state.assignments[date][kidId] === person.id) {
+                  delete state.assignments[date][kidId];
+                }
+              });
+            });
+          }
+          save();
+          render();
+        });
+        li.append(name, remove);
+        list.append(li);
+      });
+    }
+
+    function renderBoard() {
+      const board = document.getElementById("board");
+      const empty = document.getElementById("board-empty");
+      const printDate = document.getElementById("print-date");
+      board.innerHTML = "";
+      empty.hidden = state.kids.length > 0;
+      const pretty = formatDate(state.date);
+      printDate.textContent = pretty;
+
+      const assigns = dayMap();
+      state.kids.forEach((kid) => {
+        const row = document.createElement("div");
+        row.className = "assign-row";
+        const label = document.createElement("div");
+        label.className = "kid-name";
+        label.textContent = kid.name;
+        const select = document.createElement("select");
+        select.setAttribute("aria-label", "Pickup person for " + kid.name);
+        const none = document.createElement("option");
+        none.value = "";
+        none.textContent = "Unassigned";
+        select.append(none);
+        state.adults.forEach((adult) => {
+          const opt = document.createElement("option");
+          opt.value = adult.id;
+          opt.textContent = adult.name;
+          select.append(opt);
+        });
+        select.value = assigns[kid.id] || "";
+        select.addEventListener("change", () => {
+          if (select.value) assigns[kid.id] = select.value;
+          else delete assigns[kid.id];
+          save();
+        });
+        row.append(label, select);
+        board.append(row);
+      });
+    }
+
+    function formatDate(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      const dt = new Date(y, m - 1, d);
+      return dt.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    function render() {
+      renderPeople("kids");
+      renderPeople("adults");
+      renderBoard();
+    }
+
+    function addPerson(kind, name) {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      state[kind].push({ id: newId(), name: trimmed });
+      save();
+      render();
+    }
+
+    document.getElementById("kid-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      addPerson("kids", document.getElementById("kid-name").value);
+      event.target.reset();
+      document.getElementById("kid-name").focus();
+    });
+    document.getElementById("adult-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      addPerson("adults", document.getElementById("adult-name").value);
+      event.target.reset();
+      document.getElementById("adult-name").focus();
+    });
+
+    const dateInput = document.getElementById("board-date");
+    dateInput.value = state.date;
+    dateInput.addEventListener("change", () => {
+      state.date = dateInput.value || todayISO();
+      dateInput.value = state.date;
+      renderBoard();
+    });
+
+    document.getElementById("print-btn").addEventListener("click", () => window.print());
+    document.getElementById("clear-day").addEventListener("click", () => {
+      state.assignments[state.date] = {};
+      save();
+      renderBoard();
+    });
+
+    load();
+    render();
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch((err) => {
+        console.warn("Service worker not registered", err);
+      });
+    }
+  </script>
+</body>
+</html>
