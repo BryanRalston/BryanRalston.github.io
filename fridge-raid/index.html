@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Fridge Raid</title>
-  <meta name="description" content="Pack lunchboxes before the bus. Fresh food scores. Spoiled food and junk cost you.">
+  <meta name="description" content="Campaign lunchbox arcade: pack fruit, veg, and protein before the bus. Kids unlock as you go.">
   <meta name="theme-color" content="#ff3d6e">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -103,7 +103,7 @@
       color: var(--teal-deep);
     }
     .best-chip.show { display: inline-block; }
-    .play-btn, .again-btn {
+    .play-btn, .again-btn, .next-btn {
       background: var(--pink);
       color: #fff;
       font-size: 1.35rem;
@@ -111,7 +111,17 @@
       border-radius: 999px;
       box-shadow: 0 5px 0 #c41548, 0 12px 20px rgba(196, 21, 72, 0.28);
     }
-    .play-btn:active, .again-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c41548; }
+    .play-btn:active, .again-btn:active, .next-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c41548; }
+    .ghost-btn {
+      background: #fff;
+      color: var(--teal-deep);
+      font-size: 1.05rem;
+      padding: 0.65rem 1.3rem;
+      border-radius: 999px;
+      box-shadow: 0 4px 0 rgba(10, 80, 90, 0.16);
+    }
+    .ghost-btn[hidden], .next-btn[hidden], .again-btn[hidden] { display: none; }
+    .title-actions { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; }
 
     .hero-fridge { width: min(58vw, 220px); height: auto; filter: drop-shadow(0 14px 16px rgba(8, 50, 60, 0.22)); }
 
@@ -145,12 +155,50 @@
       text-align: center;
     }
     .combo {
+      position: absolute;
+      top: calc(0.7rem + env(safe-area-inset-top) + 3.15rem);
+      right: 0.75rem;
+      z-index: 5;
       opacity: 0;
       visibility: hidden;
       text-align: right;
       color: var(--grape);
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.18rem 0.45rem;
+      box-shadow: 0 3px 0 rgba(10, 80, 90, 0.12);
     }
     .combo.on { opacity: 1; visibility: visible; }
+    .goal-stat b { color: var(--teal-deep); }
+
+    .mission {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      margin: 0 0 0.4rem;
+      background: rgba(255,255,255,0.8);
+      border-radius: 12px;
+      padding: 0.28rem 0.5rem 0.3rem;
+      min-height: 2rem;
+    }
+    .mission-need {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.28rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .mission-need strong { font-weight: 800; }
+    .rush-mult {
+      display: none;
+      font-family: Nunito, sans-serif;
+      font-weight: 900;
+      color: var(--grape);
+      font-size: 0.95rem;
+    }
+    .rush-mult.on { display: block; }
 
     .bus-track {
       height: 10px;
@@ -225,10 +273,11 @@
       border-radius: 12px;
       position: relative;
     }
-    .item svg {
+    .item svg, .item img {
       width: 100%;
       height: 100%;
       display: block;
+      object-fit: contain;
       filter: drop-shadow(0 1px 0 #fff) drop-shadow(0 4px 5px rgba(20, 40, 50, 0.22));
     }
     .item.selected {
@@ -269,6 +318,9 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 0.35rem;
     }
+    .boxes[data-count="1"] { grid-template-columns: minmax(9.5rem, 12.5rem); }
+    .boxes[data-count="2"] { grid-template-columns: 1fr 1fr; }
+    .boxes[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
     .box {
       background: #fff;
       border-radius: 14px;
@@ -278,6 +330,64 @@
     }
     .box.hot { outline: 3px solid var(--sun); transform: translateY(-2px); }
     .box.slam { animation: slam 0.45s ease; }
+    .box.ready { outline: 3px solid var(--good); }
+    .pips {
+      display: flex;
+      justify-content: center;
+      gap: 0.16rem;
+      margin-bottom: 0.18rem;
+    }
+    .pip {
+      width: 1.28rem;
+      height: 1.28rem;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      line-height: 1;
+      background: rgba(255,255,255,0.5);
+      outline: 2px dashed rgba(20, 40, 50, 0.16);
+      opacity: 0.4;
+    }
+    .pip.filled {
+      opacity: 1;
+      outline: 2px solid rgba(20, 40, 50, 0.1);
+      background: #fff;
+      box-shadow: 0 1px 0 rgba(20, 40, 50, 0.08);
+    }
+    .pip.bonus { outline-style: dotted; }
+    .need-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .need-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.28rem;
+      background: #f4fbff;
+      border-radius: 999px;
+      padding: 0.28rem 0.55rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    .need-pill.bonus { background: #fff6d8; }
+    .kid-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .kid-chip {
+      background: #d9f4ff;
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+    .kid-chip[data-kid="Pip"] { background: #ffe1ec; }
+    .kid-chip[data-kid="Nori"] { background: #e4ffe3; }
     .kid {
       font-size: 0.72rem;
       font-weight: 700;
@@ -297,7 +407,7 @@
       place-items: center;
       overflow: hidden;
     }
-    .pocket svg { width: 92%; height: 92%; }
+    .pocket svg, .pocket img { width: 92%; height: 92%; object-fit: contain; display: block; }
     .box[data-kid="Scout"] { background: #d9f4ff; }
     .box[data-kid="Pip"] { background: #ffe1ec; }
     .box[data-kid="Nori"] { background: #e4ffe3; }
@@ -327,21 +437,9 @@
       transform: translate(-50%, -60%);
     }
     #ghost.show { display: block; }
-    #ghost svg { width: 100%; height: 100%; }
+    #ghost svg, #ghost img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
-    .report {
-      background: #fff;
-      border-radius: 22px;
-      padding: 1.1rem 1.2rem 1.2rem;
-      width: min(22rem, 100%);
-      box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
-    }
-    .report h2 {
-      font-family: Nunito, sans-serif;
-      font-size: 1.8rem;
-      letter-spacing: -0.03em;
-    }
     .big-score {
       font-family: Nunito, sans-serif;
       font-size: 3rem;
@@ -364,6 +462,33 @@
     }
     .new-best { display: none; color: #0d8a3e; font-weight: 800; }
     .new-best.show { display: block; }
+    .end-actions { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .end-note { color: #4a6670; font-weight: 700; font-size: 0.95rem; }
+
+    #intro, #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
+    .intro-card, .report {
+      background: #fff;
+      border-radius: 22px;
+      padding: 1.1rem 1.2rem 1.2rem;
+      width: min(22rem, 100%);
+      box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
+    }
+    .intro-kicker {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+      font-weight: 800;
+    }
+    .intro-card h2, .report h2 {
+      font-family: Nunito, sans-serif;
+      font-size: 1.7rem;
+      letter-spacing: -0.03em;
+      margin: 0.15rem 0 0.45rem;
+    }
+    .intro-card p { color: #244048; font-weight: 600; line-height: 1.35; }
+    .intro-card .need-row { margin: 0.7rem 0 0.55rem; }
+    .intro-card .kid-row { margin: 0.35rem 0 0.15rem; }
 
     @keyframes pop { 50% { transform: scale(1.16); } }
     @keyframes slam { 30% { transform: scale(1.08) rotate(-2deg); } 70% { transform: scale(0.96) rotate(2deg); } }
@@ -405,16 +530,24 @@
         <ellipse cx="88" cy="168" rx="10" ry="7" fill="#8b5a2b"/>
       </svg>
       <h1 class="wordmark">FRIDGE<br><span>RAID</span></h1>
-      <p class="howto">Pack fresh food into lunchboxes before the bus. Toss spoiled leftovers and junk — packing those wrecks your score.</p>
+      <p class="howto">Pack a balanced lunch before the bus. Start with Scout — more kids unlock later. Fruit, veg, and protein seal a box. Treats are extra. Toss spoiled leftovers and junk.</p>
       <p id="title-best" class="best-chip"></p>
-      <button type="button" class="play-btn" id="play-btn">Play</button>
+      <div class="title-actions">
+        <button type="button" class="play-btn" id="play-btn">Play campaign</button>
+        <button type="button" class="ghost-btn" id="rush-title-btn" hidden>Bus rush</button>
+      </div>
     </section>
 
     <section id="play" class="screen" data-screen="play">
       <div id="hud">
-        <div class="stat"><span>Score</span><b id="score">0</b></div>
-        <div class="timer" id="timer">1:30</div>
-        <div class="stat combo" id="combo"><span>Combo</span><b>x1</b></div>
+        <div class="stat"><span id="level-chip">L1</span><b id="score">0</b></div>
+        <div class="timer" id="timer">1:10</div>
+        <div class="stat goal-stat"><span id="goal-label">Packed</span><b id="goal">0/1</b></div>
+      </div>
+      <div class="combo" id="combo"><span>Combo</span><b>x1</b></div>
+      <div class="mission" id="mission">
+        <div class="mission-need" id="mission-need">Need fruit + protein</div>
+        <div class="rush-mult" id="rush-mult">x1</div>
       </div>
       <div class="bus-track" aria-hidden="true">
         <div class="bus-fill" id="bus-fill"></div>
@@ -438,49 +571,129 @@
       </div>
     </section>
 
+    <section id="intro" class="screen" data-screen="intro">
+      <div class="intro-card">
+        <p class="intro-kicker" id="intro-kicker">Level 1</p>
+        <h2 id="intro-title">Scout's first lunch</h2>
+        <div class="kid-row" id="intro-kids"></div>
+        <div class="need-row" id="intro-need"></div>
+        <p id="intro-blurb">Seal Scout's box with fruit + protein. Veg is extra credit if you pack it first.</p>
+        <button type="button" class="play-btn" id="intro-go">Pack lunches</button>
+      </div>
+    </section>
+
     <section id="end" class="screen" data-screen="end">
       <div class="report">
         <h2 id="end-title">Bus is here!</h2>
         <p class="big-score" id="end-score">0</p>
         <p id="new-best" class="new-best">New personal best</p>
+        <p class="end-note" id="end-note"></p>
         <ul>
-          <li><span>Lunchboxes filled</span><b id="stat-boxes">0</b></li>
+          <li><span>Lunchboxes sealed</span><b id="stat-boxes">0</b></li>
+          <li><span>Kids fed this stop</span><b id="stat-kids">0</b></li>
           <li><span>Fresh packed</span><b id="stat-good">0</b></li>
           <li><span>Spoiled / junk packed</span><b id="stat-oops">0</b></li>
           <li><span>Correct tosses</span><b id="stat-toss">0</b></li>
           <li><span>Personal best</span><b id="stat-best">0</b></li>
         </ul>
-        <button type="button" class="again-btn" id="again-btn">Play again</button>
+        <div class="end-actions">
+          <button type="button" class="next-btn" id="next-btn" hidden>Next level</button>
+          <button type="button" class="again-btn" id="again-btn">Try again</button>
+          <button type="button" class="ghost-btn" id="home-btn">Title</button>
+        </div>
       </div>
     </section>
     <div id="ghost"></div>
   </div>
 
   <script>
-    const ROUND_MS = 90000;
     const CAPACITY = 4;
-    const KIDS = ["Scout", "Pip", "Nori"];
     const BEST_KEY = "fridge-raid-best";
-    const WEIGHTS = [
-      ["good", 46],
-      ["treat", 14],
-      ["spoiled", 28],
-      ["trap", 12],
+    const CLEARED_KEY = "fridge-raid-cleared";
+    const GROUP_META = {
+      fruit: { label: "Fruit", icon: "🍎" },
+      veg: { label: "Veg", icon: "🥕" },
+      protein: { label: "Protein", icon: "🧀" },
+      grain: { label: "Grain", icon: "🍞" },
+      treat: { label: "Treat", icon: "🍪" },
+    };
+    const LEVELS = [
+      {
+        id: "l1",
+        number: 1,
+        name: "Scout's first lunch",
+        kicker: "Level 1",
+        blurb: "Seal Scout with fruit + protein. Veg is extra credit if you pack it first. Treats optional. Toss spoiled leftovers and junk.",
+        kids: ["Scout"],
+        need: ["fruit", "protein"],
+        bonus: ["veg"],
+        durationMs: 70000,
+        weights: [["good", 64], ["treat", 16], ["spoiled", 14], ["trap", 6]],
+        minGood: 7,
+        minBad: 2,
+      },
+      {
+        id: "l2",
+        number: 2,
+        name: "Two hungry",
+        kicker: "Level 2",
+        blurb: "Scout and Pip each need fruit + veg + protein. A little more spoiled stuff is hiding in here.",
+        kids: ["Scout", "Pip"],
+        need: ["fruit", "veg", "protein"],
+        bonus: [],
+        durationMs: 80000,
+        weights: [["good", 50], ["treat", 14], ["spoiled", 24], ["trap", 12]],
+        minGood: 6,
+        minBad: 3,
+      },
+      {
+        id: "l3",
+        number: 3,
+        name: "Full house",
+        kicker: "Level 3",
+        blurb: "All three kids. Fruit + veg + protein + grain. A sandwich covers protein and grain in one bite.",
+        kids: ["Scout", "Pip", "Nori"],
+        need: ["fruit", "veg", "protein", "grain"],
+        bonus: [],
+        durationMs: 90000,
+        weights: [["good", 42], ["treat", 12], ["spoiled", 30], ["trap", 16]],
+        minGood: 6,
+        minBad: 4,
+      },
+      {
+        id: "rush",
+        number: 4,
+        name: "Bus rush",
+        kicker: "Free play",
+        blurb: "Full house rules, rising leftovers, and a score multiplier that climbs with every sealed lunch. Ride until the bus.",
+        kids: ["Scout", "Pip", "Nori"],
+        need: ["fruit", "veg", "protein", "grain"],
+        bonus: [],
+        durationMs: 90000,
+        weights: [["good", 40], ["treat", 12], ["spoiled", 32], ["trap", 16]],
+        minGood: 5,
+        minBad: 4,
+        endless: true,
+        risingSpoil: true,
+      },
     ];
 
     const CATALOG = {
-      apple: { kind: "good", name: "Apple", draw: drawApple },
-      sandwich: { kind: "good", name: "Sandwich", draw: drawSandwich },
-      yogurt: { kind: "good", name: "Yogurt", draw: drawYogurt },
-      carrot: { kind: "good", name: "Carrot", draw: drawCarrot },
-      grapes: { kind: "good", name: "Grapes", draw: drawGrapes },
-      banana: { kind: "good", name: "Banana", draw: drawBanana },
-      cheddar: { kind: "good", name: "Cheddar", draw: drawCheddar },
-      milk: { kind: "good", name: "Milk", draw: drawMilk },
-      berries: { kind: "good", name: "Strawberries", draw: drawBerries },
-      cookie: { kind: "treat", name: "Cookie", draw: drawCookie },
-      chips: { kind: "treat", name: "Chips", draw: drawChips },
-      juice: { kind: "treat", name: "Juice box", draw: drawJuice },
+      apple: { kind: "good", name: "Apple", foodGroup: "fruit", draw: drawApple },
+      sandwich: { kind: "good", name: "Sandwich", foodGroup: "protein", foodGroups: ["protein", "grain"], draw: drawSandwich },
+      yogurt: { kind: "good", name: "Yogurt", foodGroup: "protein", draw: drawYogurt },
+      carrot: { kind: "good", name: "Carrot", foodGroup: "veg", draw: drawCarrot },
+      grapes: { kind: "good", name: "Grapes", foodGroup: "fruit", draw: drawGrapes },
+      banana: { kind: "good", name: "Banana", foodGroup: "fruit", draw: drawBanana },
+      cheddar: { kind: "good", name: "Cheddar", foodGroup: "protein", draw: drawCheddar },
+      milk: { kind: "good", name: "Milk", foodGroup: "protein", draw: drawMilk },
+      berries: { kind: "good", name: "Strawberries", foodGroup: "fruit", draw: drawBerries },
+      broccoli: { kind: "good", name: "Broccoli", foodGroup: "veg", draw: drawBroccoli },
+      cucumber: { kind: "good", name: "Cucumber", foodGroup: "veg", draw: drawCucumber },
+      roll: { kind: "good", name: "Roll", foodGroup: "grain", draw: drawRoll },
+      cookie: { kind: "treat", name: "Cookie", foodGroup: "treat", draw: drawCookie },
+      chips: { kind: "treat", name: "Chips", foodGroup: "treat", draw: drawChips },
+      juice: { kind: "treat", name: "Juice box", foodGroup: "treat", draw: drawJuice },
       moldy: { kind: "spoiled", name: "Moldy cheese", draw: drawMoldy },
       slime: { kind: "spoiled", name: "Slimy leftovers", draw: drawSlime },
       expired: { kind: "spoiled", name: "Expired milk", draw: drawExpired },
@@ -492,7 +705,20 @@
     };
 
     const BY_KIND = { good: [], treat: [], spoiled: [], trap: [] };
-    for (const [id, item] of Object.entries(CATALOG)) BY_KIND[item.kind].push(id);
+    const BY_GROUP = { fruit: [], veg: [], protein: [], grain: [], treat: [] };
+    const ASSET_READY = {};
+    for (const [id, item] of Object.entries(CATALOG)) {
+      BY_KIND[item.kind].push(id);
+      for (const group of foodGroupsOf(item)) {
+        if (BY_GROUP[group]) BY_GROUP[group].push(id);
+      }
+    }
+
+    function foodGroupsOf(meta) {
+      if (!meta) return [];
+      if (Array.isArray(meta.foodGroups) && meta.foodGroups.length) return meta.foodGroups;
+      return meta.foodGroup ? [meta.foodGroup] : [];
+    }
 
     let svgN = 0;
     function gid(prefix) {
@@ -733,6 +959,40 @@
       `);
     }
 
+    function drawBroccoli() {
+      return wrap("Broccoli", `
+        <ellipse cx="40" cy="72" rx="14" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <path d="M36 44h8l3 22h-14z" fill="#7c5a2a"/>
+        <circle cx="28" cy="34" r="10" fill="#2f9e44"/>
+        <circle cx="40" cy="26" r="12" fill="#3fa34d"/>
+        <circle cx="52" cy="34" r="10" fill="#2f9e44"/>
+        <circle cx="34" cy="38" r="8" fill="#24803a"/>
+        <circle cx="46" cy="38" r="8" fill="#24803a"/>
+        <ellipse cx="36" cy="24" rx="3" ry="2" fill="rgba(255,255,255,0.22)"/>
+      `);
+    }
+
+    function drawCucumber() {
+      return wrap("Cucumber", `
+        <ellipse cx="40" cy="72" rx="16" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <path d="M14 44c6-16 46-16 52 0 4 10-6 16-26 16S10 54 14 44z" fill="#6fbf57"/>
+        <path d="M18 42c8-8 36-8 44 2 2 6-4 8-22 8S16 48 18 42z" fill="#8ed27a"/>
+        <path d="M22 40c6 2 12-2 18 2M30 48c6 2 10 0 16 2" stroke="#2f9e44" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="28" cy="38" rx="4" ry="2.4" fill="rgba(255,255,255,0.28)"/>
+      `);
+    }
+
+    function drawRoll() {
+      return wrap("Roll", `
+        <ellipse cx="40" cy="72" rx="16" ry="3.8" fill="rgba(20,40,50,0.16)"/>
+        <ellipse cx="40" cy="46" rx="24" ry="18" fill="#e8b86a"/>
+        <ellipse cx="40" cy="42" rx="20" ry="14" fill="#f3d27a"/>
+        <path d="M24 40c8-8 24-8 32 2" stroke="#d4a05a" stroke-width="2.2" fill="none"/>
+        <path d="M28 48c6-4 18-4 24 2" stroke="#c9843a" stroke-width="2" fill="none"/>
+        <ellipse cx="32" cy="36" rx="5" ry="3" fill="rgba(255,255,255,0.28)"/>
+      `);
+    }
+
     const app = document.getElementById("app");
     const fridgeEl = document.getElementById("fridge");
     const boxesEl = document.getElementById("boxes");
@@ -746,54 +1006,120 @@
 
     const state = {
       screen: "title",
+      levelIndex: 0,
       score: 0,
+      scoreAtLevelStart: 0,
       combo: 0,
       filled: 0,
       packedGood: 0,
       packedOops: 0,
       tossedBad: 0,
+      fedKids: new Set(),
       selected: null,
       fridge: [],
       boxes: [],
       startedAt: 0,
       raf: 0,
+      closing: false,
+      endNext: "next",
+      endAgain: "retry",
     };
 
     let drag = null;
     let seq = 0;
+
+    function currentLevel() {
+      return LEVELS[state.levelIndex] || LEVELS[0];
+    }
 
     function nextId() {
       seq += 1;
       return "i" + seq;
     }
 
+    function remainingMs() {
+      return currentLevel().durationMs - (performance.now() - state.startedAt);
+    }
+
+    function currentWeights() {
+      const level = currentLevel();
+      const weights = level.weights.map((row) => [row[0], row[1]]);
+      if (!level.risingSpoil || state.screen !== "play") return weights;
+      const spent = Math.max(0, Math.min(1, 1 - remainingMs() / level.durationMs));
+      const bump = Math.round(spent * 22);
+      for (const row of weights) {
+        if (row[0] === "spoiled") row[1] += bump;
+        if (row[0] === "trap") row[1] += Math.round(bump * 0.45);
+        if (row[0] === "good") row[1] = Math.max(16, row[1] - bump);
+      }
+      return weights;
+    }
+
+    function rushMult() {
+      if (!currentLevel().risingSpoil) return 1;
+      return 1 + Math.floor(state.filled / 2);
+    }
+
     function pickKind() {
-      const total = WEIGHTS.reduce((sum, row) => sum + row[1], 0);
+      const weights = currentWeights();
+      const total = weights.reduce((sum, row) => sum + row[1], 0);
       let roll = Math.random() * total;
-      for (const [kind, weight] of WEIGHTS) {
+      for (const [kind, weight] of weights) {
         roll -= weight;
         if (roll <= 0) return kind;
       }
       return "good";
     }
 
-    function spawnItem(avoidId, kindHint) {
+    function spawnItem(avoidId, kindHint, groupHint) {
       const kind = kindHint || pickKind();
-      const pool = BY_KIND[kind].filter((id) => id !== avoidId);
+      let pool;
+      if (kind === "good") {
+        const group = groupHint || (Math.random() < 0.74 ? pickNeededGroup() : null);
+        pool = (group && BY_GROUP[group] && BY_GROUP[group].length ? BY_GROUP[group] : BY_KIND.good)
+          .filter((id) => id !== avoidId);
+      } else {
+        pool = BY_KIND[kind].filter((id) => id !== avoidId);
+      }
       const typeId = pool[Math.floor(Math.random() * pool.length)] || BY_KIND[kind][0];
       return { id: nextId(), typeId };
     }
 
+    function pickNeededGroup() {
+      const need = currentLevel().need;
+      return need[Math.floor(Math.random() * need.length)];
+    }
+
     function seedFridge() {
+      const level = currentLevel();
       const items = Array.from({ length: 16 }, () => spawnItem());
       const count = (kind) => items.filter((entry) => itemMeta(entry).kind === kind).length;
-      if (count("good") < 4) items[0] = spawnItem(undefined, "good");
-      if (count("good") < 5) items[1] = spawnItem(undefined, "good");
-      if (count("spoiled") + count("trap") < 3) {
-        items[2] = spawnItem(undefined, "spoiled");
-        items[3] = spawnItem(undefined, "trap");
+      if (count("good") < level.minGood) {
+        for (let i = 0; i < level.minGood - count("good"); i += 1) {
+          items[i] = spawnItem(undefined, "good");
+        }
       }
+      const bad = count("spoiled") + count("trap");
+      if (bad < level.minBad) {
+        items[14] = spawnItem(undefined, "spoiled");
+        if (level.minBad > 1) items[15] = spawnItem(undefined, "trap");
+      }
+      ensureNeededGroups(items);
       return items;
+    }
+
+    function ensureNeededGroups(items) {
+      const level = currentLevel();
+      for (const group of level.need) {
+        const has = items.some((entry) => foodGroupsOf(itemMeta(entry)).includes(group));
+        if (has) continue;
+        let idx = items.findIndex((entry) => {
+          const kind = itemMeta(entry).kind;
+          return kind === "spoiled" || kind === "trap" || kind === "treat";
+        });
+        if (idx < 0) idx = items.length - 1;
+        items[idx] = spawnItem(undefined, "good", group);
+      }
     }
 
     function itemMeta(entry) {
@@ -802,7 +1128,24 @@
 
     function markupFor(entry) {
       const meta = itemMeta(entry);
+      if (ASSET_READY[entry.typeId]) {
+        return `<img src="assets/${entry.typeId}.png" alt="${meta.name}" draggable="false">`;
+      }
       return meta.draw();
+    }
+
+    function preloadAssets() {
+      for (const id of Object.keys(CATALOG)) {
+        const img = new Image();
+        img.onload = () => {
+          ASSET_READY[id] = true;
+          if (state.screen === "play") {
+            renderFridge();
+            renderBoxes();
+          }
+        };
+        img.src = "assets/" + id + ".png";
+      }
     }
 
     function loadBest() {
@@ -824,6 +1167,15 @@
       }
     }
 
+    function loadCleared() {
+      const value = Number(localStorage.getItem(CLEARED_KEY));
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function saveCleared(levelNumber) {
+      localStorage.setItem(CLEARED_KEY, String(Math.max(loadCleared(), levelNumber)));
+    }
+
     function showTitleBest() {
       const best = loadBest();
       const chip = document.getElementById("title-best");
@@ -831,6 +1183,7 @@
         chip.textContent = "Best " + best;
         chip.classList.add("show");
       }
+      document.getElementById("rush-title-btn").hidden = loadCleared() < 3;
     }
 
     function formatTime(ms) {
@@ -841,15 +1194,33 @@
     }
 
     function renderHud(remaining) {
+      const level = currentLevel();
       scoreEl.textContent = state.score.toLocaleString();
       timerEl.textContent = formatTime(remaining);
+      document.getElementById("level-chip").textContent = level.endless ? "Rush" : "L" + level.number;
+      document.getElementById("goal-label").textContent = level.endless ? "Sealed" : "Packed";
+      document.getElementById("goal").textContent = level.endless
+        ? String(state.filled)
+        : state.fedKids.size + "/" + level.kids.length;
       const comboOn = state.combo >= 2;
       comboEl.classList.toggle("on", comboOn);
       comboEl.querySelector("b").textContent = "x" + comboMult();
-      const ratio = Math.max(0, Math.min(1, remaining / ROUND_MS));
+      const rush = document.getElementById("rush-mult");
+      const mult = rushMult();
+      rush.classList.toggle("on", level.risingSpoil && mult > 1);
+      rush.textContent = "x" + mult;
+      const ratio = Math.max(0, Math.min(1, remaining / level.durationMs));
       busFill.style.transform = "scaleX(" + ratio + ")";
       busIcon.style.left = (100 - ratio * 100) + "%";
       app.classList.toggle("hurry", remaining <= 15000);
+    }
+
+    function renderMission() {
+      const level = currentLevel();
+      const parts = level.need.map((group) => GROUP_META[group].icon + " " + GROUP_META[group].label.toLowerCase());
+      let text = "Need " + parts.join(" + ");
+      if (level.bonus && level.bonus.length) text += " · veg extra";
+      document.getElementById("mission-need").textContent = text;
     }
 
     function renderFridge() {
@@ -869,6 +1240,7 @@
             btn.dataset.id = entry.id;
             btn.dataset.kind = meta.kind;
             btn.dataset.type = entry.typeId;
+            btn.dataset.groups = foodGroupsOf(meta).join(" ");
             btn.setAttribute("aria-label", meta.name);
             btn.innerHTML = markupFor(entry);
             if (state.selected === entry.id) btn.classList.add("selected");
@@ -880,14 +1252,45 @@
       }
     }
 
+    function groupsInBox(box) {
+      const groups = new Set();
+      for (const entry of box.slots) {
+        for (const group of foodGroupsOf(itemMeta(entry))) {
+          if (group !== "treat") groups.add(group);
+        }
+      }
+      return groups;
+    }
+
+    function boxMeetsNeed(box) {
+      const have = groupsInBox(box);
+      return currentLevel().need.every((group) => have.has(group));
+    }
+
+    function pipMarkup(box) {
+      const level = currentLevel();
+      const have = groupsInBox(box);
+      const required = level.need.map((group) => {
+        const meta = GROUP_META[group];
+        return `<span class="pip${have.has(group) ? " filled" : ""}" data-group="${group}" title="${meta.label}">${meta.icon}</span>`;
+      }).join("");
+      const extra = (level.bonus || []).map((group) => {
+        const meta = GROUP_META[group];
+        return `<span class="pip bonus${have.has(group) ? " filled" : ""}" data-group="${group}" title="${meta.label} extra">${meta.icon}</span>`;
+      }).join("");
+      return required + extra;
+    }
+
     function renderBoxes() {
       boxesEl.replaceChildren();
+      boxesEl.dataset.count = String(state.boxes.length);
       state.boxes.forEach((box, index) => {
         const el = document.createElement("div");
         el.className = "box";
         el.dataset.box = String(index);
         el.dataset.kid = box.kid;
-        el.innerHTML = `<div class="kid">${box.kid}</div><div class="slots"></div>`;
+        if (boxMeetsNeed(box)) el.classList.add("ready");
+        el.innerHTML = `<div class="kid">${box.kid}</div><div class="pips">${pipMarkup(box)}</div><div class="slots"></div>`;
         const grid = el.querySelector(".slots");
         for (let i = 0; i < CAPACITY; i += 1) {
           const pocket = document.createElement("div");
@@ -934,14 +1337,16 @@
     }
 
     function addScore(amount, comboable) {
+      const rush = rushMult();
       if (comboable) {
         state.combo += 1;
-        const gained = amount * comboMult();
+        const gained = amount * comboMult() * rush;
         state.score += gained;
         return gained;
       }
-      state.score += amount;
-      return amount;
+      const gained = amount * rush;
+      state.score += gained;
+      return gained;
     }
 
     function breakCombo() {
@@ -957,11 +1362,72 @@
       if (index < 0) return;
       const old = state.fridge[index].typeId;
       state.fridge[index] = spawnItem(old);
+      ensureNeededGroups(state.fridge);
+    }
+
+    function findReplaceable(box) {
+      const need = currentLevel().need;
+      for (let i = 0; i < box.slots.length; i += 1) {
+        if (itemMeta(box.slots[i]).kind === "treat") return i;
+      }
+      const seen = new Set();
+      for (let i = 0; i < box.slots.length; i += 1) {
+        const groups = foodGroupsOf(itemMeta(box.slots[i])).filter((group) => group !== "treat");
+        const duplicate = groups.some((group) => seen.has(group));
+        const unused = groups.length > 0 && groups.every((group) => !need.includes(group));
+        for (const group of groups) seen.add(group);
+        if (duplicate || unused) return i;
+      }
+      return -1;
+    }
+
+    function acceptIntoBox(box, entry, meta) {
+      if (box.slots.length < CAPACITY) {
+        box.slots.push(entry);
+        return "added";
+      }
+      const have = groupsInBox(box);
+      const incoming = foodGroupsOf(meta).filter((group) => group !== "treat");
+      const helps = incoming.some((group) => currentLevel().need.includes(group) && !have.has(group));
+      if (!helps) return "full";
+      const idx = findReplaceable(box);
+      if (idx < 0) return "full";
+      box.slots[idx] = entry;
+      return "swapped";
+    }
+
+    function sealBox(box, boxIndex, x, y) {
+      const level = currentLevel();
+      const have = groupsInBox(box);
+      let bonus = 250 * rushMult();
+      if ((level.bonus || []).some((group) => have.has(group))) {
+        bonus += 75;
+        floatText(x, y - 18, "+75 extra veg", "good");
+      }
+      state.filled += 1;
+      state.fedKids.add(box.kid);
+      if (!level.endless && level.kids.every((name) => state.fedKids.has(name))) {
+        state.closing = true;
+        cancelAnimationFrame(state.raf);
+      }
+      state.score += bonus;
+      floatText(x, y - 40, "+" + bonus + " sealed!", "bonus");
+      const kid = box.kid;
+      const node = boxesEl.querySelector(`[data-box="${boxIndex}"]`);
+      if (node) node.classList.add("slam", "ready");
+      window.setTimeout(() => {
+        if (state.screen !== "play" || state.closing) return;
+        state.boxes[boxIndex] = { kid, slots: [] };
+        renderBoxes();
+        if (!level.endless && level.kids.every((name) => state.fedKids.has(name))) {
+          finishLevel(true);
+        }
+      }, 560);
     }
 
     function placeInBox(entry, boxIndex, clientX, clientY) {
       const box = state.boxes[boxIndex];
-      if (!box || box.slots.length >= CAPACITY) return;
+      if (!box || state.closing) return;
       const meta = itemMeta(entry);
       const rect = app.getBoundingClientRect();
       const x = clientX - rect.left;
@@ -976,6 +1442,7 @@
         app.classList.add("shake");
         floatText(x, y, "−200 yuck", "bad");
         buzz(false);
+        restock(entry.id);
       } else if (meta.kind === "trap") {
         state.score -= 250;
         state.packedOops += 1;
@@ -985,42 +1452,40 @@
         app.classList.add("shake");
         floatText(x, y, "−250 not food", "bad");
         buzz(false);
-      } else if (meta.kind === "treat") {
-        const gained = addScore(35, false);
-        box.slots.push(entry);
-        state.packedGood += 1;
-        floatText(x, y, "+" + gained, "good");
-        buzz(true);
+        restock(entry.id);
       } else {
-        const gained = addScore(100, true);
-        box.slots.push(entry);
-        state.packedGood += 1;
-        floatText(x, y, "+" + gained, "good");
-        buzz(true);
+        const result = acceptIntoBox(box, entry, meta);
+        if (result === "full") {
+          floatText(x, y, "Need a missing group", "bad");
+          buzz(false);
+          state.selected = null;
+          renderFridge();
+          renderHud(remainingMs());
+          return;
+        }
+        if (meta.kind === "treat") {
+          const gained = addScore(35, false);
+          state.packedGood += 1;
+          floatText(x, y, result === "swapped" ? "swap +" + gained : "+" + gained, "good");
+          buzz(true);
+        } else {
+          const gained = addScore(100, true);
+          state.packedGood += 1;
+          floatText(x, y, result === "swapped" ? "swap +" + gained : "+" + gained, "good");
+          buzz(true);
+        }
+        restock(entry.id);
       }
 
-      restock(entry.id);
       state.selected = null;
       renderFridge();
       renderBoxes();
 
-      if (meta.kind !== "spoiled" && meta.kind !== "trap" && box.slots.length >= CAPACITY) {
-        state.filled += 1;
-        state.score += 300;
-        floatText(x, y - 28, "+300 packed!", "bonus");
-        const kid = box.kid;
-        const node = boxesEl.querySelector(`[data-box="${boxIndex}"]`);
-        if (node) node.classList.add("slam");
-        window.setTimeout(() => {
-          if (state.screen !== "play") return;
-          if (state.boxes[boxIndex] && state.boxes[boxIndex].slots.length >= CAPACITY) {
-            state.boxes[boxIndex] = { kid, slots: [] };
-            renderBoxes();
-          }
-        }, 420);
+      if (meta.kind !== "spoiled" && meta.kind !== "trap" && boxMeetsNeed(box)) {
+        sealBox(box, boxIndex, x, y);
       }
 
-      renderHud(ROUND_MS - (performance.now() - state.startedAt));
+      renderHud(remainingMs());
     }
 
     function tossItem(entry, clientX, clientY) {
@@ -1042,7 +1507,7 @@
       restock(entry.id);
       state.selected = null;
       renderFridge();
-      renderHud(ROUND_MS - (performance.now() - state.startedAt));
+      renderHud(remainingMs());
     }
 
     function targetFromPoint(x, y) {
@@ -1054,47 +1519,154 @@
       return null;
     }
 
-    function startRound() {
-      cancelAnimationFrame(state.raf);
+    function fillIntro() {
+      const level = currentLevel();
+      document.getElementById("intro-kicker").textContent = level.kicker;
+      document.getElementById("intro-title").textContent = level.name;
+      document.getElementById("intro-blurb").textContent = level.blurb;
+      document.getElementById("intro-kids").innerHTML = level.kids
+        .map((kid) => `<span class="kid-chip" data-kid="${kid}">${kid}</span>`)
+        .join("");
+      document.getElementById("intro-need").innerHTML =
+        level.need
+          .map((group) => `<span class="need-pill">${GROUP_META[group].icon} ${GROUP_META[group].label}</span>`)
+          .join("") +
+        (level.bonus || [])
+          .map((group) => `<span class="need-pill bonus">${GROUP_META[group].icon} ${GROUP_META[group].label} extra</span>`)
+          .join("");
+    }
+
+    function showIntro() {
+      fillIntro();
+      showScreen("intro");
+    }
+
+    function startCampaign() {
+      state.levelIndex = 0;
       state.score = 0;
+      showIntro();
+    }
+
+    function startRushFromTitle() {
+      state.levelIndex = LEVELS.findIndex((level) => level.id === "rush");
+      state.score = 0;
+      showIntro();
+    }
+
+    function startLevel() {
+      cancelAnimationFrame(state.raf);
+      const level = currentLevel();
+      state.scoreAtLevelStart = state.score;
       state.combo = 0;
       state.filled = 0;
       state.packedGood = 0;
       state.packedOops = 0;
       state.tossedBad = 0;
+      state.fedKids = new Set();
       state.selected = null;
+      state.closing = false;
       state.fridge = seedFridge();
-      state.boxes = KIDS.map((kid) => ({ kid, slots: [] }));
+      state.boxes = level.kids.map((kid) => ({ kid, slots: [] }));
       state.startedAt = performance.now();
+      boxesEl.dataset.count = String(level.kids.length);
       showScreen("play");
       renderFridge();
       renderBoxes();
-      renderHud(ROUND_MS);
+      renderMission();
+      renderHud(level.durationMs);
       tick();
     }
 
-    function finishRound() {
+    function configureEndButtons(won) {
+      const level = currentLevel();
+      const nextBtn = document.getElementById("next-btn");
+      const againBtn = document.getElementById("again-btn");
+      if (level.endless) {
+        nextBtn.hidden = false;
+        nextBtn.textContent = "Bus rush again";
+        againBtn.hidden = false;
+        againBtn.textContent = "Play campaign";
+        state.endNext = "rush";
+        state.endAgain = "campaign";
+        return;
+      }
+      if (won) {
+        nextBtn.hidden = false;
+        nextBtn.textContent = level.id === "l3" ? "Bus rush" : "Next level";
+        againBtn.hidden = true;
+        state.endNext = "next";
+        return;
+      }
+      nextBtn.hidden = true;
+      againBtn.hidden = false;
+      againBtn.textContent = "Try again";
+      state.endAgain = "retry";
+    }
+
+    function finishLevel(won) {
+      if (state.closing && state.screen === "end") return;
+      state.closing = true;
       cancelAnimationFrame(state.raf);
       state.selected = null;
       ghostEl.classList.remove("show");
+      const level = currentLevel();
+      let note = "";
+      if (won && !level.endless) {
+        const timeBonus = Math.ceil(Math.max(0, remainingMs()) / 1000) * 12;
+        state.score += timeBonus;
+        saveCleared(level.number);
+        note = timeBonus > 0 ? "Time bonus +" + timeBonus : "Packed just in time.";
+      } else if (!won && !level.endless) {
+        note = "Feed every kid a balanced lunch before the bus.";
+      } else {
+        note = "Spoiled leftovers kept coming. Nice raid.";
+      }
       const best = saveBest(state.score);
       document.getElementById("end-score").textContent = state.score.toLocaleString();
       document.getElementById("stat-boxes").textContent = String(state.filled);
+      document.getElementById("stat-kids").textContent = state.fedKids.size + "/" + level.kids.length;
       document.getElementById("stat-good").textContent = String(state.packedGood);
       document.getElementById("stat-oops").textContent = String(state.packedOops);
       document.getElementById("stat-toss").textContent = String(state.tossedBad);
       document.getElementById("stat-best").textContent = String(best);
       document.getElementById("new-best").classList.toggle("show", state.score >= best && state.score > 0);
-      const title = state.filled >= 4 ? "Lunch hero!" : state.packedOops > 3 ? "Bus still left." : "Bus is here!";
+      document.getElementById("end-note").textContent = note;
+      const title = won
+        ? (level.endless ? "Bus is here!" : level.name + " packed!")
+        : (state.packedOops > 3 ? "Bus still left." : "Bus is here!");
       document.getElementById("end-title").textContent = title;
+      configureEndButtons(won);
       showScreen("end");
     }
 
+    function goNext() {
+      if (state.endNext === "rush") {
+        state.score = currentLevel().endless ? 0 : state.score;
+        state.levelIndex = LEVELS.findIndex((level) => level.id === "rush");
+        showIntro();
+        return;
+      }
+      state.levelIndex = Math.min(LEVELS.length - 1, state.levelIndex + 1);
+      showIntro();
+    }
+
+    function goAgain() {
+      if (state.endAgain === "campaign") {
+        startCampaign();
+        return;
+      }
+      state.score = state.scoreAtLevelStart;
+      startLevel();
+    }
+
     function tick() {
-      const remaining = ROUND_MS - (performance.now() - state.startedAt);
+      if (state.closing) return;
+      const remaining = remainingMs();
       renderHud(remaining);
       if (remaining <= 0) {
-        finishRound();
+        const level = currentLevel();
+        const won = !level.endless && level.kids.every((name) => state.fedKids.has(name));
+        finishLevel(won);
         return;
       }
       state.raf = requestAnimationFrame(tick);
@@ -1194,10 +1766,47 @@
     tossEl.addEventListener("pointerup", deliverSelected);
     tossEl.addEventListener("click", deliverSelected);
 
-    document.getElementById("play-btn").addEventListener("click", startRound);
-    document.getElementById("again-btn").addEventListener("click", startRound);
+    document.getElementById("play-btn").addEventListener("click", startCampaign);
+    document.getElementById("rush-title-btn").addEventListener("click", startRushFromTitle);
+    document.getElementById("intro-go").addEventListener("click", startLevel);
+    document.getElementById("next-btn").addEventListener("click", goNext);
+    document.getElementById("again-btn").addEventListener("click", goAgain);
+    document.getElementById("home-btn").addEventListener("click", () => {
+      cancelAnimationFrame(state.raf);
+      showTitleBest();
+      showScreen("title");
+    });
 
     showTitleBest();
+    preloadAssets();
+
+    window.__fridgeRaid = {
+      levels: LEVELS,
+      getState() {
+        return {
+          screen: state.screen,
+          levelId: currentLevel().id,
+          levelIndex: state.levelIndex,
+          score: state.score,
+          fed: Array.from(state.fedKids),
+          need: currentLevel().need,
+          kids: currentLevel().kids,
+          filled: state.filled,
+          fridge: state.fridge.map((entry) => ({
+            id: entry.id,
+            typeId: entry.typeId,
+            kind: itemMeta(entry).kind,
+            groups: foodGroupsOf(itemMeta(entry)),
+          })),
+          boxes: state.boxes.map((box) => ({
+            kid: box.kid,
+            groups: Array.from(groupsInBox(box)),
+            count: box.slots.length,
+            ready: boxMeetsNeed(box),
+          })),
+        };
+      },
+    };
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
