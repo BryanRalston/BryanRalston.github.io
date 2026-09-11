@@ -41,6 +41,24 @@
       margin: 0 0 0.25rem;
     }
     header p { margin: 0; color: var(--muted); font-size: 1rem; }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem;
+      margin-top: 0.85rem;
+    }
+    #share-note {
+      display: none;
+      margin-top: 0.7rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      color: var(--ok);
+      background: #e4efe8;
+      border-radius: 8px;
+      padding: 0.45rem 0.7rem;
+    }
+    #share-note.show { display: block; }
     .badge {
       display: inline-block;
       margin-top: 0.7rem;
@@ -177,7 +195,7 @@
     .print-only { display: none; }
 
     @media print {
-      #storage-fail, .no-print, footer { display: none !important; }
+      #storage-fail, #share-note, .no-print, footer { display: none !important; }
       body { background: #fff; }
       .wrap { padding: 0; max-width: none; }
       .print-only { display: block; }
@@ -200,8 +218,12 @@
   <div class="wrap">
     <header>
       <h1>Pickup Swap</h1>
-      <p>After-school pickup board for a trusted circle.</p>
-      <span class="badge no-print">Stays on this device</span>
+      <p>No accounts. Data stays on each device. Use Share today to text a link that loads the same board on another phone.</p>
+      <div class="header-actions no-print">
+        <button type="button" id="share-today">Share today</button>
+        <span class="badge">Stays on this device</span>
+      </div>
+      <p id="share-note" role="status"></p>
       <p class="print-only print-date" id="print-date"></p>
     </header>
 
@@ -242,7 +264,7 @@
       </div>
     </section>
 
-    <footer class="no-print">Data never leaves this browser. Use Print for a paper copy.</footer>
+    <footer class="no-print">No accounts. Data stays on each device. Use Share today to text a link that loads the same board on another phone.</footer>
   </div>
   <script>
     const STORAGE_KEY = "pickup-swap-v1";
@@ -263,6 +285,92 @@
     function newId() {
       if (crypto.randomUUID) return crypto.randomUUID();
       return "id-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function bytesToBase64(bytes) {
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(binary);
+    }
+
+    function encodeSharePayload(obj) {
+      const bytes = new TextEncoder().encode(JSON.stringify(obj));
+      return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+
+    function decodeSharePayload(token) {
+      let b64 = token.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = b64.length % 4;
+      if (pad) b64 += "=".repeat(4 - pad);
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    }
+
+    function shareUrl() {
+      const payload = {
+        date: state.date,
+        people: state.adults,
+        kids: state.kids,
+        assignments: state.assignments
+      };
+      return location.origin + location.pathname + "#s=" + encodeSharePayload(payload);
+    }
+
+    function showShareNote(message) {
+      const note = document.getElementById("share-note");
+      note.textContent = message;
+      note.classList.add("show");
+    }
+
+    async function shareToday() {
+      const url = shareUrl();
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "Pickup Swap",
+            text: "Today’s pickup board",
+            url: url
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(url);
+          showShareNote("Link copied. Text it to open this board on another phone.");
+          return;
+        } catch (err) {
+          /* fall through to prompt */
+        }
+      }
+      prompt("Copy this Pickup Swap link:", url);
+    }
+
+    function applyShareHash() {
+      const hash = location.hash;
+      if (!hash.startsWith("#s=")) return;
+      const encoded = hash.slice(3);
+      try {
+        const data = decodeSharePayload(decodeURIComponent(encoded));
+        if (data.date) state.date = data.date;
+        if (Array.isArray(data.kids)) state.kids = data.kids;
+        if (Array.isArray(data.people)) state.adults = data.people;
+        if (data.assignments && typeof data.assignments === "object") {
+          state.assignments = data.assignments;
+        }
+        save();
+        history.replaceState(null, "", location.pathname + location.search);
+        showShareNote("Board loaded from a shared link.");
+      } catch (err) {
+        history.replaceState(null, "", location.pathname + location.search);
+      }
     }
 
     function probeStorage() {
@@ -461,8 +569,13 @@
       save();
       renderBoard();
     });
+    document.getElementById("share-today").addEventListener("click", () => {
+      shareToday();
+    });
 
     load();
+    applyShareHash();
+    dateInput.value = state.date;
     render();
 
     if ("serviceWorker" in navigator) {
