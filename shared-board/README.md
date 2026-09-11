@@ -15,4 +15,4 @@ The board starts empty. There are no sample families.
 - Recurring items store one rule. The calendar expands occurrences for the day you are viewing. Done is per occurrence date. Monthly rules skip months that do not have that day-of-month (for example the 31st).
 - Install as app is a shortcut to this same local page. It does not add an account or background sync.
 
-Cache name: `shared-board-v6`.
+Cache name: `shared-board-v7`.
