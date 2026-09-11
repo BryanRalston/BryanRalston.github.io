@@ -1,5 +1,31 @@
-const CACHE = "fridge-raid-v5";
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
+const CACHE = "fridge-raid-v7";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./assets/fridge.png",
+  "./assets/apple.png",
+  "./assets/banana.png",
+  "./assets/berries.png",
+  "./assets/carrot.png",
+  "./assets/cheddar.png",
+  "./assets/chips.png",
+  "./assets/cookie.png",
+  "./assets/expired.png",
+  "./assets/grapes.png",
+  "./assets/juice.png",
+  "./assets/keys.png",
+  "./assets/milk.png",
+  "./assets/moldy.png",
+  "./assets/mystery.png",
+  "./assets/phone.png",
+  "./assets/remote.png",
+  "./assets/rotten.png",
+  "./assets/sandwich.png",
+  "./assets/slime.png",
+  "./assets/yogurt.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -23,7 +49,14 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request);
+      return fetch(event.request).then((response) => {
+        const url = new URL(event.request.url);
+        if (response.ok && url.pathname.includes("/assets/")) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      });
     })
   );
 });
