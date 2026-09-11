@@ -666,7 +666,7 @@
         </div>
       </div>
     </section>
-    <div id="event-banner" aria-live="polite">
+    <div id="event-banner" aria-live="polite" hidden>
       <strong id="event-title">Fresh delivery!</strong>
       <span id="event-sub">Good food just hit the shelves</span>
     </div>
@@ -1407,9 +1407,13 @@
       document.getElementById("event-title").textContent = title;
       document.getElementById("event-sub").textContent = sub;
       banner.dataset.event = type;
+      banner.hidden = false;
       banner.classList.add("show");
       window.clearTimeout(showEventBanner.timer);
-      showEventBanner.timer = window.setTimeout(() => banner.classList.remove("show"), 1000);
+      showEventBanner.timer = window.setTimeout(() => {
+        banner.classList.remove("show");
+        banner.hidden = true;
+      }, 1000);
     }
 
     function deliverFresh() {
@@ -1899,6 +1903,7 @@
       state.eventLog = [];
       state.events = (level.events || []).map((event) => ({ type: event.type, atMs: event.atMs, fired: false }));
       document.getElementById("event-banner").classList.remove("show");
+      document.getElementById("event-banner").hidden = true;
       if (!level.kids.every((kid) => state.cravings[kid])) assignCravings();
       state.fridge = seedFridge();
       state.boxes = level.kids.map((kid) => ({ kid, slots: [], cravingHit: false }));
@@ -1944,6 +1949,10 @@
       cancelAnimationFrame(state.raf);
       state.selected = null;
       ghostEl.classList.remove("show");
+      const banner = document.getElementById("event-banner");
+      banner.classList.remove("show");
+      banner.hidden = true;
+      window.clearTimeout(showEventBanner.timer);
       const level = currentLevel();
       let note = "";
       if (won && !level.endless) {
