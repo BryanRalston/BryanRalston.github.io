@@ -107,6 +107,14 @@
       align-items: center;
     }
     .stack { display: flex; flex-direction: column; gap: 0.5rem; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    @media (max-width: 36rem) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
     label.field {
       display: flex;
       flex-direction: column;
@@ -129,6 +137,8 @@
     }
     input[type="text"],
     input[type="password"],
+    input[type="time"],
+    select,
     textarea {
       font: inherit;
       font-family: ui-sans-serif, system-ui, sans-serif;
@@ -141,7 +151,7 @@
       width: 100%;
     }
     textarea { min-height: 4.5rem; resize: vertical; }
-    input:focus, textarea:focus, button:focus-visible {
+    input:focus, textarea:focus, select:focus, button:focus-visible {
       outline: 2px solid var(--wood);
       outline-offset: 1px;
     }
@@ -171,6 +181,10 @@
       background: #ebe4d6;
       color: var(--ink);
     }
+    button.danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -198,6 +212,11 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
+    .meta {
+      margin: 0.2rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
     .item-actions {
       display: flex;
       flex-direction: column;
@@ -210,6 +229,13 @@
       font-size: 0.95rem;
       margin: 0.4rem 0 0;
     }
+    .first-loop {
+      margin: 0.55rem 0 0;
+      padding-left: 1.2rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      color: var(--ink);
+    }
+    .first-loop li { margin: 0.2rem 0; }
     footer {
       margin-top: 1.5rem;
       color: var(--muted);
@@ -241,6 +267,22 @@
       margin-bottom: 0.65rem;
     }
     .cal-nav h2 { margin: 0; text-align: center; flex: 1; }
+    .view-toggle {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .view-toggle button {
+      border-radius: 0;
+      background: #fff;
+      color: var(--ink);
+      padding: 0.4rem 0.7rem;
+    }
+    .view-toggle button[aria-pressed="true"] {
+      background: var(--wood);
+      color: var(--wood-ink);
+    }
     .calendar {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -281,6 +323,37 @@
       border-radius: 50%;
       background: currentColor;
       transform: translateX(-50%);
+    }
+    .week-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .week-day {
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.7rem;
+    }
+    .week-day.today { border-color: var(--wood); }
+    .week-day.selected {
+      background: var(--wood);
+      color: var(--wood-ink);
+    }
+    .week-day-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-weight: 650;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    .week-titles {
+      margin: 0.3rem 0 0;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.85rem;
+      opacity: 0.92;
     }
     .selected-day {
       margin: 0.7rem 0 0;
@@ -376,6 +449,56 @@
       word-break: break-all;
     }
 
+    .meter-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .meter {
+      height: 0.4rem;
+      background: var(--line);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .meter span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--danger);
+      transition: width 0.15s ease, background 0.15s ease;
+    }
+    .meter.fair span { background: #b7791f; }
+    .meter.strong span { background: var(--ok); }
+    .meter-label {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.45rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: #efe6d6;
+      border-radius: 999px;
+      padding: 0.15rem 0.25rem 0.15rem 0.65rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.88rem;
+    }
+    .chip button {
+      padding: 0.15rem 0.45rem;
+      background: transparent;
+      color: var(--clay);
+    }
+
     dialog {
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -388,6 +511,9 @@
       max-width: 100%;
       max-height: 70vh;
       margin: 0 auto 0.6rem;
+    }
+    dialog.edit-dialog {
+      width: min(28rem, 94vw);
     }
 
     @media print {
@@ -404,7 +530,7 @@
 </head>
 <body>
   <div id="storage-fail" role="alert">
-    <p>Shared Board cannot save on this device. Browser storage is blocked (private mode or a storage setting). Items will not persist.</p>
+    <p>Shared Board cannot save on this device. Browser storage is blocked — often private/incognito mode or a storage setting. Items and photos will not persist.</p>
   </div>
   <div class="wrap">
     <header>
@@ -415,6 +541,15 @@
       <p id="incoming-note" role="status"></p>
     </header>
 
+    <section class="panel no-print" id="install-panel" aria-labelledby="install-heading">
+      <h2 id="install-heading">Install as app</h2>
+      <p class="hint">Optional shortcut to this same local page. There is still no account and no server. Reminders only run while the page or installed app is open.</p>
+      <div class="toolbar" style="margin-top: 0.55rem;">
+        <button type="button" id="install-btn" hidden>Install Shared Board</button>
+      </div>
+      <p class="hint" id="install-how"></p>
+    </section>
+
     <section class="panel no-print" aria-labelledby="pass-heading">
       <h2 id="pass-heading">Household passphrase</h2>
       <div class="stack">
@@ -422,6 +557,11 @@
           Passphrase (12 or more characters)
           <input type="password" id="passphrase" name="passphrase" minlength="12" autocomplete="off" spellcheck="false">
         </label>
+        <div class="meter-wrap" aria-live="polite">
+          <div class="meter" id="pass-meter"><span></span></div>
+          <p class="meter-label" id="pass-meter-label">Strength: empty</p>
+        </div>
+        <p class="hint">Never reuse a password from email, banking, or other sites. This phrase only protects share links and photo packs on devices that already have it.</p>
         <label class="check">
           <input type="checkbox" id="remember-pass">
           Remember passphrase on this device only
@@ -430,7 +570,7 @@
           <button type="button" id="share-update">Share update</button>
           <button type="button" class="secondary" id="apply-incoming" hidden>Open shared update</button>
         </div>
-        <p class="hint">Share update puts encrypted text and checkoffs in a link. Photo bytes are omitted (photos stay on this device). Use Export JSON to copy photos.</p>
+        <p class="hint">Share update puts encrypted text and checkoffs in a link. Photo bytes are omitted (photos stay on this device). Use Export JSON for a full copy, or Encrypted photo pack to move photos with the same passphrase.</p>
         <div id="share-link-box" class="share-link-box no-print" hidden>
           <label class="field" for="share-link-text">Encrypted share link</label>
           <textarea id="share-link-text" readonly rows="3"></textarea>
@@ -444,11 +584,17 @@
 
     <section class="panel" aria-labelledby="cal-heading">
       <div class="cal-nav no-print">
-        <button type="button" class="secondary" id="cal-prev" aria-label="Previous month">Prev</button>
+        <button type="button" class="secondary" id="cal-prev" aria-label="Previous">Prev</button>
         <h2 id="cal-heading">Calendar</h2>
-        <button type="button" class="secondary" id="cal-next" aria-label="Next month">Next</button>
+        <button type="button" class="secondary" id="cal-next" aria-label="Next">Next</button>
       </div>
       <h2 class="print-only" id="cal-print-heading">Calendar</h2>
+      <div class="toolbar no-print" style="margin-bottom: 0.55rem;">
+        <div class="view-toggle" role="group" aria-label="Calendar view">
+          <button type="button" id="view-month" aria-pressed="true">Month</button>
+          <button type="button" id="view-week" aria-pressed="false">Week</button>
+        </div>
+      </div>
       <div id="calendar" class="calendar" aria-label="Month calendar"></div>
       <p class="selected-day" id="selected-day-label"></p>
       <div class="toolbar no-print" style="margin-top: 0.55rem;">
@@ -458,6 +604,12 @@
 
     <section class="panel no-print" aria-labelledby="add-heading">
       <h2 id="add-heading">Add item</h2>
+      <p class="hint">Templates fill the form only. You still pick the day above, then tap Add.</p>
+      <div class="toolbar" style="margin-bottom: 0.55rem;">
+        <button type="button" class="secondary" data-template="grocery">Grocery run</button>
+        <button type="button" class="secondary" data-template="doctor">Doctor visit</button>
+        <button type="button" class="secondary" data-template="practice">Practice day</button>
+      </div>
       <form id="item-form" class="stack">
         <label class="field" for="item-title">
           Item
@@ -467,8 +619,30 @@
           Notes (optional)
           <textarea id="item-notes" name="notes" placeholder="Details, who, when…" maxlength="2000"></textarea>
         </label>
-        <div class="row">
+        <div class="grid-2">
+          <label class="field" for="item-recur">
+            Repeat
+            <select id="item-recur" name="recur">
+              <option value="none">Does not repeat</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly (this weekday)</option>
+              <option value="monthly">Monthly (this day of month)</option>
+            </select>
+          </label>
+          <label class="field" for="item-assignee">
+            Who’s responsible (optional)
+            <input type="text" id="item-assignee" name="assignee" list="circle-list" placeholder="Name from your circle" autocomplete="off" maxlength="80">
+          </label>
+        </div>
+        <datalist id="circle-list"></datalist>
+        <label class="field" for="item-remind">
+          Remind at (optional, this device)
+          <input type="time" id="item-remind" name="remind">
+        </label>
+        <p class="hint" id="remind-hint">Reminders use the Notification API only after you allow them. They are scheduled with a timer while this page is open. A closed tab cannot wake itself — there is no push server. An installed PWA helps only while that window stays running.</p>
+        <div class="toolbar">
           <button type="submit">Add</button>
+          <button type="button" class="secondary" id="notify-btn">Allow notifications</button>
         </div>
       </form>
     </section>
@@ -482,14 +656,32 @@
         </label>
       </div>
       <h2 class="print-only">Shared Board</h2>
-      <p class="empty" id="board-empty">Nothing on the board for this day yet.</p>
-      <ul class="list" id="item-list"></ul>
-      <div class="toolbar no-print" style="margin-top: 0.9rem;">
-        <button type="button" class="secondary" id="print-btn">Print</button>
-        <button type="button" class="secondary" id="export-btn">Export JSON</button>
-        <button type="button" class="secondary" id="import-btn">Import JSON</button>
-        <input type="file" id="import-file" class="visually-hidden" accept="application/json,.json">
+      <div id="board-empty-wrap">
+        <p class="empty" id="board-empty">Nothing on the board for this day yet.</p>
+        <ol class="first-loop no-print" id="first-loop" hidden>
+          <li>Pick a day on the calendar</li>
+          <li>Add an item (or tap a template, then Add)</li>
+          <li>Optional: drop a photo on the item — it stays on this device</li>
+          <li>Share update to send encrypted text to your household</li>
+        </ol>
       </div>
+      <ul class="list" id="item-list"></ul>
+    </section>
+
+    <section class="panel no-print" aria-labelledby="circle-heading">
+      <h2 id="circle-heading">Trusted circle</h2>
+      <p class="hint">Simple names for “who’s responsible.” Stored on this device and included in Share update text (not photos).</p>
+      <form id="circle-form" class="stack">
+        <label class="field" for="circle-name">
+          Name
+          <input type="text" id="circle-name" maxlength="80" placeholder="Add a person" autocomplete="off">
+        </label>
+        <div class="toolbar">
+          <button type="submit" class="secondary">Add to circle</button>
+        </div>
+      </form>
+      <ul class="chip-list" id="circle-chips"></ul>
+      <p class="empty" id="circle-empty">No names yet. Add people you share this board with.</p>
     </section>
 
     <section class="panel" aria-labelledby="album-heading">
@@ -505,11 +697,26 @@
         </div>
         <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here, or use Add album photo</div>
       </form>
-      <p class="empty" id="album-empty">No album photos yet.</p>
+      <p class="empty" id="album-empty">No album photos yet. Add a general photo after you have an item on the board, or start here. Use Encrypted photo pack to copy photos to another device.</p>
       <div class="album-grid" id="album-grid"></div>
     </section>
 
-    <footer class="no-print">No server. Share update encrypts text and checkoffs into a link. Photos stay local on share links — Export JSON includes the photos map if you need a full copy.</footer>
+    <section class="panel no-print" aria-labelledby="backup-heading">
+      <h2 id="backup-heading">Backup and this device</h2>
+      <p class="hint">Export JSON is a full local copy (items, album, photos). Encrypted photo pack is ciphertext only — same household passphrase, AES-GCM. Share update links stay text-only.</p>
+      <div class="toolbar" style="margin-top: 0.55rem;">
+        <button type="button" class="secondary" id="print-btn">Print</button>
+        <button type="button" class="secondary" id="export-btn">Export JSON</button>
+        <button type="button" class="secondary" id="import-btn">Import JSON</button>
+        <button type="button" class="secondary" id="photo-pack-export">Download photo pack</button>
+        <button type="button" class="secondary" id="photo-pack-import">Import photo pack</button>
+        <button type="button" class="danger" id="clear-data">Clear data</button>
+        <input type="file" id="import-file" class="visually-hidden" accept="application/json,.json">
+        <input type="file" id="photo-pack-file" class="visually-hidden" accept="application/json,.json,.sbphotos.json">
+      </div>
+    </section>
+
+    <footer class="no-print">No server. Share update encrypts text and checkoffs into a link. Photos stay local on share links — Export JSON includes the photos map if you need a full copy. Reminders need this page (or installed app) open. Private/incognito windows often block saving.</footer>
   </div>
 
   <input type="file" id="photo-file" class="visually-hidden" accept="image/*">
@@ -519,12 +726,52 @@
     <form method="dialog"><button type="submit" class="secondary">Close</button></form>
   </dialog>
 
+  <dialog id="edit-dialog" class="edit-dialog" aria-labelledby="edit-heading">
+    <form id="edit-form" class="stack">
+      <h2 id="edit-heading">Edit item</h2>
+      <label class="field" for="edit-title">
+        Item
+        <input type="text" id="edit-title" maxlength="200" required>
+      </label>
+      <label class="field" for="edit-notes">
+        Notes
+        <textarea id="edit-notes" maxlength="2000"></textarea>
+      </label>
+      <div class="grid-2">
+        <label class="field" for="edit-recur">
+          Repeat
+          <select id="edit-recur">
+            <option value="none">Does not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly (this weekday)</option>
+            <option value="monthly">Monthly (this day of month)</option>
+          </select>
+        </label>
+        <label class="field" for="edit-assignee">
+          Who’s responsible
+          <input type="text" id="edit-assignee" list="circle-list" maxlength="80">
+        </label>
+      </div>
+      <label class="field" for="edit-remind">
+        Remind at
+        <input type="time" id="edit-remind">
+      </label>
+      <p class="hint">Repeat and reminder belong to this one stored item. Done is per occurrence date. Changing the rule does not copy extra rows.</p>
+      <div class="toolbar">
+        <button type="submit">Save</button>
+        <button type="button" class="secondary" id="edit-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
   <script>
     const ITEMS_KEY = "shared-board-items";
     const ALBUM_KEY = "shared-board-album";
     const PASS_KEY = "shared-board-passphrase";
     const REMEMBER_KEY = "shared-board-remember";
     const HIDE_KEY = "shared-board-hide-done";
+    const CIRCLE_KEY = "shared-board-circle";
+    const VIEW_KEY = "shared-board-cal-view";
     const DB_NAME = "shared-board-db";
     const DB_VERSION = 1;
     const PHOTO_STORE = "photos";
@@ -532,6 +779,12 @@
     const PHOTO_QUALITY = 0.82;
     const PBKDF2_ITERATIONS = 310000;
     const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const TEMPLATES = {
+      grocery: { title: "Grocery run", notes: "List what’s short. Check fridge and pantry." },
+      doctor: { title: "Doctor visit", notes: "Bring insurance card, meds list, and questions." },
+      practice: { title: "Practice day", notes: "Gear, water, and pickup time." }
+    };
     const te = new TextEncoder();
     const td = new TextDecoder();
 
@@ -539,17 +792,23 @@
       ok: false,
       items: [],
       album: [],
+      circle: [],
       hideDone: false,
+      calView: "month",
       pendingShare: null,
       selectedDay: toDayKey(new Date()),
       viewYear: new Date().getFullYear(),
       viewMonth: new Date().getMonth(),
       photoTarget: null,
-      dbReady: false
+      dbReady: false,
+      editingId: null,
+      deferredInstall: null
     };
 
     const photoUrls = new Map();
+    const reminderTimers = [];
     let renderGen = 0;
+    let storageBannerKind = "";
 
     function newId() {
       if (crypto.randomUUID) return crypto.randomUUID();
@@ -577,6 +836,18 @@
       return new Date(y, m - 1, d);
     }
 
+    function addDays(key, n) {
+      const d = parseDayKey(key);
+      d.setDate(d.getDate() + n);
+      return toDayKey(d);
+    }
+
+    function startOfWeek(key) {
+      const d = parseDayKey(key);
+      d.setDate(d.getDate() - d.getDay());
+      return toDayKey(d);
+    }
+
     function formatDayLong(key) {
       return parseDayKey(key).toLocaleDateString(undefined, {
         weekday: "long",
@@ -586,11 +857,27 @@
       });
     }
 
+    function formatDayShort(key) {
+      return parseDayKey(key).toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
     function formatMonthHeading(year, month) {
       return new Date(year, month, 1).toLocaleDateString(undefined, {
         month: "long",
         year: "numeric"
       });
+    }
+
+    function formatWeekHeading(weekStart) {
+      const a = parseDayKey(weekStart);
+      const b = parseDayKey(addDays(weekStart, 6));
+      const left = a.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      const right = b.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      return left + " – " + right;
     }
 
     function dayFromTimestamp(ts) {
@@ -604,6 +891,94 @@
         return item.day;
       }
       return dayFromTimestamp(item && item.updated);
+    }
+
+    function normalizeRecur(value) {
+      if (value === "daily" || value === "weekly" || value === "monthly") return value;
+      return "none";
+    }
+
+    function itemOccursOn(item, dayKey) {
+      if (!item || item.deleted) return false;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dayKey || ""))) return false;
+      const start = itemDay(item);
+      const recur = normalizeRecur(item.recur);
+      switch (recur) {
+        case "none":
+          return start === dayKey;
+        case "daily":
+          return dayKey >= start;
+        case "weekly":
+          if (dayKey < start) return false;
+          return parseDayKey(dayKey).getDay() === parseDayKey(start).getDay();
+        case "monthly":
+          if (dayKey < start) return false;
+          return parseDayKey(dayKey).getDate() === parseDayKey(start).getDate();
+        default: {
+          const _never = recur;
+          return start === dayKey;
+        }
+      }
+    }
+
+    function isRecurring(item) {
+      return normalizeRecur(item && item.recur) !== "none";
+    }
+
+    function isDoneOn(item, dayKey) {
+      if (isRecurring(item)) {
+        return !!(item.doneDates && item.doneDates[dayKey]);
+      }
+      return !!item.done;
+    }
+
+    function setDoneOn(item, dayKey, done) {
+      if (isRecurring(item)) {
+        if (!item.doneDates || typeof item.doneDates !== "object") item.doneDates = {};
+        if (done) item.doneDates[dayKey] = true;
+        else delete item.doneDates[dayKey];
+      } else {
+        item.done = !!done;
+      }
+      item.updated = now();
+    }
+
+    function recurLabel(item) {
+      const recur = normalizeRecur(item && item.recur);
+      const start = itemDay(item);
+      switch (recur) {
+        case "none":
+          return "";
+        case "daily":
+          return "Repeats daily";
+        case "weekly":
+          return "Repeats weekly (" + WEEKDAYS[parseDayKey(start).getDay()] + ")";
+        case "monthly":
+          return "Repeats monthly (day " + parseDayKey(start).getDate() + ")";
+        default: {
+          const _never = recur;
+          return "";
+        }
+      }
+    }
+
+    function normalizeRemindTime(value) {
+      const raw = String(value || "").trim();
+      if (/^\d{2}:\d{2}$/.test(raw)) return raw;
+      return "";
+    }
+
+    function normalizeAssignee(value) {
+      return String(value || "").trim().slice(0, 80);
+    }
+
+    function normalizeDoneDates(raw) {
+      const out = {};
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+      Object.keys(raw).forEach((key) => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(key) && raw[key]) out[key] = true;
+      });
+      return out;
     }
 
     function showNote(id, message, kind) {
@@ -631,14 +1006,32 @@
       }
     }
 
-    function failLoud(reason) {
-      state.ok = false;
+    function storageBannerText(kind, extra) {
+      const tail = extra ? " (" + extra + ")" : "";
+      if (kind === "idb") {
+        return "Photos cannot be saved on this device. IndexedDB is blocked — often a private/incognito window or a storage setting. Text items can still save if this browser allows localStorage. Open a regular window to keep photos.";
+      }
+      if (kind === "ls") {
+        return "Shared Board cannot save on this device. Browser storage is blocked" + tail +
+          " — often private/incognito mode or a storage setting. Items will not persist.";
+      }
+      return "Shared Board cannot save on this device. Browser storage is blocked" + tail +
+        " — often private/incognito mode or a storage setting. Items and photos will not persist.";
+    }
+
+    function showStorageBanner(kind, extra) {
+      const rank = { idb: 1, ls: 2, all: 3 };
+      if ((rank[storageBannerKind] || 0) > (rank[kind] || 0)) return;
+      if (storageBannerKind === "idb" && kind === "ls") kind = "all";
+      storageBannerKind = kind;
       const banner = document.getElementById("storage-fail");
       banner.classList.add("show");
-      const extra = reason ? " (" + reason + ")" : "";
-      banner.querySelector("p").textContent =
-        "Shared Board cannot save on this device. Browser storage is blocked" + extra +
-        ". Items will not persist.";
+      banner.querySelector("p").textContent = storageBannerText(kind, extra);
+    }
+
+    function failLoud(reason) {
+      state.ok = false;
+      showStorageBanner("ls", reason);
     }
 
     function openDb() {
@@ -719,6 +1112,11 @@
       }
     }
 
+    function forgetAllPhotoUrls() {
+      photoUrls.forEach((url) => URL.revokeObjectURL(url));
+      photoUrls.clear();
+    }
+
     async function urlForPhoto(id) {
       if (photoUrls.has(id)) return photoUrls.get(id);
       const rec = await getPhoto(id);
@@ -774,6 +1172,17 @@
       });
     }
 
+    function loadCircle(raw) {
+      if (!raw) return [];
+      try {
+        const data = JSON.parse(raw);
+        const list = Array.isArray(data) ? data : [];
+        return Array.from(new Set(list.map(normalizeAssignee).filter(Boolean)));
+      } catch (err) {
+        return [];
+      }
+    }
+
     function load() {
       if (!probeStorage()) {
         failLoud();
@@ -796,7 +1205,9 @@
         } else {
           state.album = [];
         }
+        state.circle = loadCircle(localStorage.getItem(CIRCLE_KEY));
         state.hideDone = localStorage.getItem(HIDE_KEY) === "1";
+        state.calView = localStorage.getItem(VIEW_KEY) === "week" ? "week" : "month";
         const remember = localStorage.getItem(REMEMBER_KEY) === "1";
         document.getElementById("remember-pass").checked = remember;
         if (remember) {
@@ -817,7 +1228,8 @@
         state.dbReady = true;
       } catch (err) {
         state.dbReady = false;
-        showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked). Text items still save.", "err");
+        showStorageBanner("idb");
+        showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked). Text items still save if localStorage is allowed.", "err");
       }
     }
 
@@ -829,6 +1241,7 @@
       try {
         localStorage.setItem(ITEMS_KEY, JSON.stringify(state.items));
         localStorage.setItem(ALBUM_KEY, JSON.stringify(state.album));
+        localStorage.setItem(CIRCLE_KEY, JSON.stringify(state.circle));
         return true;
       } catch (err) {
         failLoud(err && err.name ? err.name : "write failed");
@@ -853,33 +1266,48 @@
       }
     }
 
+    function persistCalView() {
+      if (!state.ok) return;
+      try {
+        localStorage.setItem(VIEW_KEY, state.calView);
+      } catch (err) {
+        failLoud(err && err.name ? err.name : "write failed");
+      }
+    }
+
     function activeItems() {
       return state.items.filter((item) => !item.deleted);
     }
 
+    function itemsForDay(dayKey) {
+      return activeItems().filter((item) => itemOccursOn(item, dayKey));
+    }
+
     function itemsForSelectedDay() {
-      return activeItems().filter((item) => itemDay(item) === state.selectedDay);
+      return itemsForDay(state.selectedDay);
     }
 
     function visibleItems() {
       const items = itemsForSelectedDay();
       if (!state.hideDone) return items;
-      return items.filter((item) => !item.done);
+      return items.filter((item) => !isDoneOn(item, state.selectedDay));
     }
 
-    function daysWithItemsInView() {
+    function daysWithItemsInMonth(year, month) {
       const marked = new Set();
-      const prefix = state.viewYear + "-" + pad2(state.viewMonth + 1) + "-";
-      activeItems().forEach((item) => {
-        const day = itemDay(item);
-        if (day.indexOf(prefix) === 0) marked.add(day);
-      });
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const key = year + "-" + pad2(month + 1) + "-" + pad2(day);
+        if (itemsForDay(key).length) marked.add(key);
+      }
       return marked;
     }
 
-    function sortItems(items) {
+    function sortItems(items, dayKey) {
       return items.slice().sort((a, b) => {
-        if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+        const aDone = isDoneOn(a, dayKey);
+        const bDone = isDoneOn(b, dayKey);
+        if (aDone !== bDone) return aDone ? 1 : -1;
         return (b.updated || 0) - (a.updated || 0);
       });
     }
@@ -888,46 +1316,107 @@
       return state.album.filter((entry) => !entry.deleted);
     }
 
-    function mergeById(localList, remoteList, photosOmitted, keepLocalPhotos) {
+    function itemFingerprint(row) {
+      return JSON.stringify({
+        title: row.title || "",
+        notes: row.notes || "",
+        done: !!row.done,
+        deleted: !!row.deleted,
+        day: itemDay(row),
+        photoIds: Array.isArray(row.photoIds) ? row.photoIds : [],
+        recur: normalizeRecur(row.recur),
+        assignee: normalizeAssignee(row.assignee),
+        remindTime: normalizeRemindTime(row.remindTime),
+        doneDates: normalizeDoneDates(row.doneDates)
+      });
+    }
+
+    function albumFingerprint(row) {
+      return JSON.stringify({
+        caption: row.caption || "",
+        deleted: !!row.deleted
+      });
+    }
+
+    function mergeById(localList, remoteList, photosOmitted, keepLocalPhotos, fingerprint) {
       const map = new Map();
       localList.forEach((row) => {
         if (row && row.id) map.set(row.id, row);
       });
       let added = 0;
       let updated = 0;
+      let skipped = 0;
+      let conflicted = 0;
       remoteList.forEach((row) => {
         if (!row || !row.id) return;
         const existing = map.get(row.id);
-        if (!existing || (row.updated || 0) > (existing.updated || 0)) {
+        const remoteTs = row.updated || 0;
+        const localTs = existing ? (existing.updated || 0) : 0;
+        if (!existing) {
+          map.set(row.id, Object.assign({}, row));
+          added += 1;
+          return;
+        }
+        if (remoteTs > localTs) {
           const next = Object.assign({}, row);
-          if (photosOmitted && existing && keepLocalPhotos) {
+          if (photosOmitted && keepLocalPhotos) {
             keepLocalPhotos(next, existing);
           }
           map.set(row.id, next);
-          if (!existing) added += 1;
-          else updated += 1;
+          updated += 1;
+          return;
         }
+        if (remoteTs === localTs) {
+          const same = fingerprint ? fingerprint(existing) === fingerprint(row) : true;
+          if (same) skipped += 1;
+          else conflicted += 1;
+          return;
+        }
+        skipped += 1;
       });
-      return { list: Array.from(map.values()), added: added, updated: updated };
+      return {
+        list: Array.from(map.values()),
+        added: added,
+        updated: updated,
+        skipped: skipped,
+        conflicted: conflicted
+      };
     }
 
     function mergeItems(localItems, remoteItems, photosOmitted) {
       return mergeById(localItems, remoteItems, photosOmitted, (next, existing) => {
         next.photoIds = Array.isArray(existing.photoIds) ? existing.photoIds.slice() : [];
-      });
+      }, itemFingerprint);
     }
 
     function mergeAlbum(localAlbum, remoteAlbum, photosOmitted) {
-      return mergeById(localAlbum, remoteAlbum, photosOmitted, null);
+      return mergeById(localAlbum, remoteAlbum, photosOmitted, null, albumFingerprint);
+    }
+
+    function mergeCircle(localCircle, remoteCircle) {
+      const names = [];
+      const seen = new Set();
+      [].concat(localCircle || [], remoteCircle || []).forEach((name) => {
+        const clean = normalizeAssignee(name);
+        const key = clean.toLowerCase();
+        if (!clean || seen.has(key)) return;
+        seen.add(key);
+        names.push(clean);
+      });
+      return names;
     }
 
     function describeMerge(remoteItemCount, itemMerge, albumMerge, photosOmitted) {
       const n = remoteItemCount;
       let msg = "Merged " + n + " item" + (n === 1 ? "" : "s");
       if (photosOmitted) msg += " (photos stayed local)";
-      msg += ". Added " + itemMerge.added + ", updated " + itemMerge.updated + ".";
-      if (albumMerge.added || albumMerge.updated) {
-        msg += " Album: added " + albumMerge.added + ", updated " + albumMerge.updated + ".";
+      msg += ". Added " + itemMerge.added + ", updated " + itemMerge.updated +
+        ", skipped " + (itemMerge.skipped || 0) +
+        ", conflicted " + (itemMerge.conflicted || 0) + " (same timestamp — local kept).";
+      if (albumMerge.added || albumMerge.updated || albumMerge.skipped || albumMerge.conflicted) {
+        msg += " Album: added " + albumMerge.added + ", updated " + albumMerge.updated +
+          ", skipped " + (albumMerge.skipped || 0) +
+          ", conflicted " + (albumMerge.conflicted || 0) + ".";
       }
       return msg;
     }
@@ -948,7 +1437,11 @@
         deleted: !!raw.deleted,
         updated: updated,
         day: itemDay({ day: raw.day, updated: updated }),
-        photoIds: photoIds
+        photoIds: photoIds,
+        recur: normalizeRecur(raw.recur),
+        assignee: normalizeAssignee(raw.assignee),
+        remindTime: normalizeRemindTime(raw.remindTime),
+        doneDates: normalizeDoneDates(raw.doneDates)
       };
     }
 
@@ -973,7 +1466,11 @@
         deleted: !!item.deleted,
         updated: item.updated,
         day: itemDay(item),
-        photoIds: Array.isArray(item.photoIds) ? item.photoIds.slice() : []
+        photoIds: Array.isArray(item.photoIds) ? item.photoIds.slice() : [],
+        recur: normalizeRecur(item.recur),
+        assignee: normalizeAssignee(item.assignee),
+        remindTime: normalizeRemindTime(item.remindTime),
+        doneDates: normalizeDoneDates(item.doneDates)
       }));
     }
 
@@ -1057,14 +1554,19 @@
         return {
           items: data.map(normalizeItem).filter(Boolean),
           album: [],
+          circle: [],
+          photos: null,
           photosOmitted: false
         };
       }
       const list = data && Array.isArray(data.items) ? data.items : [];
       const album = data && Array.isArray(data.album) ? data.album : [];
+      const circle = data && Array.isArray(data.circle) ? data.circle : [];
       return {
         items: list.map(normalizeItem).filter(Boolean),
         album: album.map(normalizeAlbum).filter(Boolean),
+        circle: circle.map(normalizeAssignee).filter(Boolean),
+        photos: data && data.photos && typeof data.photos === "object" ? data.photos : null,
         photosOmitted: !!data.photosOmitted
       };
     }
@@ -1075,6 +1577,34 @@
 
     function passphraseOk() {
       return currentPassphrase().length >= 12;
+    }
+
+    function scorePassphrase(pass) {
+      if (!pass) return { score: 0, label: "empty", cls: "" };
+      let score = 0;
+      if (pass.length >= 12) score += 1;
+      if (pass.length >= 16) score += 1;
+      if (pass.length >= 20) score += 1;
+      if (/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score += 1;
+      if (/\d/.test(pass)) score += 1;
+      if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+      if (pass.length < 12) {
+        return { score: Math.max(score, 1), label: "too short (need 12+)", cls: "" };
+      }
+      if (score <= 2) return { score: score, label: "weak", cls: "" };
+      if (score <= 4) return { score: score, label: "fair", cls: "fair" };
+      return { score: score, label: "strong", cls: "strong" };
+    }
+
+    function renderPassMeter() {
+      const pass = currentPassphrase();
+      const result = scorePassphrase(pass);
+      const meter = document.getElementById("pass-meter");
+      const label = document.getElementById("pass-meter-label");
+      const bar = meter.querySelector("span");
+      meter.className = "meter" + (result.cls ? " " + result.cls : "");
+      bar.style.width = Math.round((result.score / 6) * 100) + "%";
+      label.textContent = pass ? ("Strength: " + result.label) : "Strength: empty";
     }
 
     function parseIncomingHash() {
@@ -1095,19 +1625,114 @@
       state.viewMonth = d.getMonth();
     }
 
+    function setCalView(view) {
+      state.calView = view === "week" ? "week" : "month";
+      persistCalView();
+      setViewFromSelected();
+      render();
+    }
+
+    function renderCircle() {
+      const chips = document.getElementById("circle-chips");
+      const empty = document.getElementById("circle-empty");
+      const list = document.getElementById("circle-list");
+      chips.innerHTML = "";
+      list.innerHTML = "";
+      empty.hidden = state.circle.length > 0;
+      state.circle.forEach((name) => {
+        const li = document.createElement("li");
+        li.className = "chip";
+        li.append(document.createTextNode(name));
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.setAttribute("aria-label", "Remove " + name);
+        remove.addEventListener("click", () => {
+          state.circle = state.circle.filter((row) => row !== name);
+          saveAll();
+          renderCircle();
+        });
+        li.append(remove);
+        chips.append(li);
+        const opt = document.createElement("option");
+        opt.value = name;
+        list.append(opt);
+      });
+    }
+
     function renderCalendar() {
       const root = document.getElementById("calendar");
       const heading = document.getElementById("cal-heading");
       const printHeading = document.getElementById("cal-print-heading");
-      const label = formatMonthHeading(state.viewYear, state.viewMonth);
-      heading.textContent = label;
-      printHeading.textContent = label;
+      const monthBtn = document.getElementById("view-month");
+      const weekBtn = document.getElementById("view-week");
+      const prevBtn = document.getElementById("cal-prev");
+      const nextBtn = document.getElementById("cal-next");
+      monthBtn.setAttribute("aria-pressed", state.calView === "month" ? "true" : "false");
+      weekBtn.setAttribute("aria-pressed", state.calView === "week" ? "true" : "false");
+
       document.getElementById("selected-day-label").textContent =
         "Selected day: " + formatDayLong(state.selectedDay);
       document.getElementById("add-heading").textContent =
         "Add item for " + formatDayLong(state.selectedDay);
 
       root.innerHTML = "";
+      if (state.calView === "week") {
+        const weekStart = startOfWeek(state.selectedDay);
+        const label = formatWeekHeading(weekStart);
+        heading.textContent = label;
+        printHeading.textContent = "Week of " + label;
+        root.className = "week-list";
+        root.setAttribute("aria-label", "Week calendar");
+        prevBtn.setAttribute("aria-label", "Previous week");
+        nextBtn.setAttribute("aria-label", "Next week");
+        const todayKey = toDayKey(new Date());
+        for (let i = 0; i < 7; i++) {
+          const key = addDays(weekStart, i);
+          const dayItems = sortItems(itemsForDay(key), key);
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "week-day";
+          if (key === todayKey) btn.classList.add("today");
+          if (key === state.selectedDay) btn.classList.add("selected");
+          btn.setAttribute("aria-pressed", key === state.selectedDay ? "true" : "false");
+          const head = document.createElement("div");
+          head.className = "week-day-head";
+          const name = document.createElement("span");
+          name.textContent = formatDayShort(key);
+          const count = document.createElement("span");
+          const n = dayItems.length;
+          count.textContent = n + " item" + (n === 1 ? "" : "s");
+          head.append(name, count);
+          btn.append(head);
+          if (n) {
+            const titles = document.createElement("div");
+            titles.className = "week-titles";
+            titles.textContent = dayItems.slice(0, 4).map((item) => {
+              const mark = isDoneOn(item, key) ? "✓ " : "";
+              return mark + (item.title || "(untitled)");
+            }).join(" · ");
+            if (n > 4) titles.textContent += " · +" + (n - 4) + " more";
+            btn.append(titles);
+          }
+          btn.addEventListener("click", () => {
+            state.selectedDay = key;
+            setViewFromSelected();
+            render();
+          });
+          root.append(btn);
+        }
+        return;
+      }
+
+      const label = formatMonthHeading(state.viewYear, state.viewMonth);
+      heading.textContent = label;
+      printHeading.textContent = label;
+      root.className = "calendar";
+      root.setAttribute("aria-label", "Month calendar");
+      prevBtn.setAttribute("aria-label", "Previous month");
+      nextBtn.setAttribute("aria-label", "Next month");
+
       DOW.forEach((name) => {
         const el = document.createElement("div");
         el.className = "dow";
@@ -1118,7 +1743,7 @@
       const first = new Date(state.viewYear, state.viewMonth, 1);
       const startPad = first.getDay();
       const daysInMonth = new Date(state.viewYear, state.viewMonth + 1, 0).getDate();
-      const marked = daysWithItemsInView();
+      const marked = daysWithItemsInMonth(state.viewYear, state.viewMonth);
       const todayKey = toDayKey(new Date());
 
       for (let i = 0; i < startPad; i++) {
@@ -1145,6 +1770,16 @@
         });
         root.append(btn);
       }
+    }
+
+    function itemMetaLine(item, dayKey) {
+      const bits = [];
+      if (item.assignee) bits.push(item.assignee);
+      const repeat = recurLabel(item);
+      if (repeat) bits.push(repeat);
+      if (item.remindTime) bits.push("Remind " + item.remindTime);
+      if (isRecurring(item) && isDoneOn(item, dayKey)) bits.push("Done for this date");
+      return bits.join(" · ");
     }
 
     function openPhoto(url, alt) {
@@ -1174,27 +1809,54 @@
       return wrap;
     }
 
+    function openEdit(item) {
+      state.editingId = item.id;
+      document.getElementById("edit-title").value = item.title || "";
+      document.getElementById("edit-notes").value = item.notes || "";
+      document.getElementById("edit-recur").value = normalizeRecur(item.recur);
+      document.getElementById("edit-assignee").value = item.assignee || "";
+      document.getElementById("edit-remind").value = item.remindTime || "";
+      const dialog = document.getElementById("edit-dialog");
+      if (typeof dialog.showModal === "function") dialog.showModal();
+    }
+
+    function closeEdit() {
+      state.editingId = null;
+      const dialog = document.getElementById("edit-dialog");
+      if (dialog.open) dialog.close();
+    }
+
     async function renderItems() {
       const list = document.getElementById("item-list");
       const empty = document.getElementById("board-empty");
-      const shown = sortItems(visibleItems());
+      const loop = document.getElementById("first-loop");
+      const shown = sortItems(visibleItems(), state.selectedDay);
       list.innerHTML = "";
+      const anyOnDay = itemsForSelectedDay().length > 0;
+      const anyAtAll = activeItems().length > 0;
       empty.hidden = shown.length > 0;
-      empty.textContent = state.hideDone
-        ? "No open items for this day."
-        : "Nothing on the board for this day yet.";
+      loop.hidden = shown.length > 0 || anyOnDay;
+      if (shown.length) {
+        empty.textContent = "";
+      } else if (state.hideDone && anyOnDay) {
+        empty.textContent = "No open items for this day.";
+      } else if (anyAtAll) {
+        empty.textContent = "Nothing on the board for this day. Pick another day, or add an item for " + formatDayLong(state.selectedDay) + ".";
+      } else {
+        empty.textContent = "Board is empty. First loop: pick a day → add an item → optional photo → Share update.";
+      }
 
       shown.forEach((item) => {
         const li = document.createElement("li");
-        if (item.done) li.classList.add("done");
+        const done = isDoneOn(item, state.selectedDay);
+        if (done) li.classList.add("done");
 
         const check = document.createElement("input");
         check.type = "checkbox";
-        check.checked = !!item.done;
+        check.checked = done;
         check.setAttribute("aria-label", "Done: " + item.title);
         check.addEventListener("change", () => {
-          item.done = check.checked;
-          item.updated = now();
+          setDoneOn(item, state.selectedDay, check.checked);
           saveAll();
           render();
         });
@@ -1204,6 +1866,13 @@
         title.className = "title";
         title.textContent = item.title || "(untitled)";
         body.append(title);
+        const meta = itemMetaLine(item, state.selectedDay);
+        if (meta) {
+          const line = document.createElement("p");
+          line.className = "meta";
+          line.textContent = meta;
+          body.append(line);
+        }
         if (item.notes) {
           const notes = document.createElement("p");
           notes.className = "notes";
@@ -1245,13 +1914,17 @@
         const edit = document.createElement("button");
         edit.type = "button";
         edit.className = "ghost";
-        edit.textContent = "Edit notes";
-        edit.addEventListener("click", () => editNotes(item));
+        edit.textContent = "Edit";
+        edit.addEventListener("click", () => openEdit(item));
         const del = document.createElement("button");
         del.type = "button";
         del.className = "ghost";
         del.textContent = "Delete";
         del.addEventListener("click", () => {
+          const warn = isRecurring(item)
+            ? "Delete this repeating item and all its dates?"
+            : "Delete this item?";
+          if (!confirm(warn)) return;
           item.deleted = true;
           item.updated = now();
           saveAll();
@@ -1270,6 +1943,11 @@
       const rows = activeAlbum().slice().sort((a, b) => (b.updated || 0) - (a.updated || 0));
       grid.innerHTML = "";
       empty.hidden = rows.length > 0;
+      if (!rows.length) {
+        empty.textContent = activeItems().length
+          ? "No album photos yet. Add a general photo (not tied to a task). Photos stay on this device. Share update stays text-only — use Encrypted photo pack to copy pictures."
+          : "No album photos yet. First loop: pick a day → add an item → optional photo → Share update. Album photos are extra and stay local.";
+      }
 
       for (const entry of rows) {
         const fig = document.createElement("figure");
@@ -1310,21 +1988,78 @@
       }
     }
 
+    function notificationsAvailable() {
+      return !!(window.isSecureContext && typeof Notification !== "undefined");
+    }
+
+    function updateNotifyUi() {
+      const btn = document.getElementById("notify-btn");
+      const hint = document.getElementById("remind-hint");
+      if (!notificationsAvailable()) {
+        btn.hidden = true;
+        hint.textContent = "Notifications need a secure context (HTTPS or localhost). This page has no server and cannot send background push. Reminders only run while the page is open.";
+        return;
+      }
+      if (Notification.permission === "granted") {
+        btn.hidden = true;
+        hint.textContent = "Notifications allowed. Reminders fire at the item time with a timer while this page (or installed app) stays open. A closed tab will miss them — there is no push server.";
+        return;
+      }
+      if (Notification.permission === "denied") {
+        btn.hidden = true;
+        hint.textContent = "Notifications are blocked in this browser. Shared Board will not show reminder popups. You can still use the board.";
+        return;
+      }
+      btn.hidden = false;
+      hint.textContent = "Reminders use the Notification API only after you allow them. They are scheduled with a timer while this page is open. A closed tab cannot wake itself — there is no push server. An installed PWA helps only while that window stays running.";
+    }
+
+    function clearReminders() {
+      reminderTimers.forEach((id) => clearTimeout(id));
+      reminderTimers.length = 0;
+    }
+
+    function scheduleReminders() {
+      clearReminders();
+      updateNotifyUi();
+      if (!notificationsAvailable()) return;
+      if (Notification.permission !== "granted") return;
+      const today = toDayKey(new Date());
+      activeItems().forEach((item) => {
+        const time = normalizeRemindTime(item.remindTime);
+        if (!time || !itemOccursOn(item, today) || isDoneOn(item, today)) return;
+        const parts = time.split(":");
+        const when = parseDayKey(today);
+        when.setHours(Number(parts[0]), Number(parts[1]), 0, 0);
+        const wait = when.getTime() - Date.now();
+        if (wait <= 0 || wait > 86400000) return;
+        const tid = setTimeout(() => {
+          try {
+            const bodyBits = [];
+            if (item.assignee) bodyBits.push("For " + item.assignee);
+            if (item.notes) bodyBits.push(item.notes);
+            new Notification(item.title || "Shared Board", {
+              body: bodyBits.join(" · ") || "Reminder for " + formatDayLong(today)
+            });
+          } catch (err) {
+            /* Notification may still be blocked at fire time */
+          }
+        }, wait);
+        reminderTimers.push(tid);
+      });
+    }
+
     async function render() {
       const gen = ++renderGen;
       renderCalendar();
+      renderCircle();
+      renderPassMeter();
+      updateNotifyUi();
       await renderItems();
       if (gen !== renderGen) return;
       await renderAlbum();
-    }
-
-    function editNotes(item) {
-      const next = prompt("Notes", item.notes || "");
-      if (next === null) return;
-      item.notes = next;
-      item.updated = now();
-      saveAll();
-      render();
+      if (gen !== renderGen) return;
+      scheduleReminders();
     }
 
     function editCaption(entry) {
@@ -1341,6 +2076,8 @@
     }
 
     function bindImageDrop(el, onFile) {
+      if (el.dataset.dropBound === "1") return;
+      el.dataset.dropBound = "1";
       el.addEventListener("dragenter", (event) => {
         event.preventDefault();
         el.classList.add("dragover");
@@ -1376,6 +2113,10 @@
         showNote("share-note", "No file selected.", "info");
         return;
       }
+      if (kind === "photopack") {
+        showNote("share-note", "No photo pack selected.", "info");
+        return;
+      }
       showNote("share-note", "No photo selected.", "info");
     }
 
@@ -1408,6 +2149,22 @@
       },
       () => {
         noteNoFileSelected("import");
+      }
+    );
+
+    const photoPackPicker = bindFilePicker(
+      document.getElementById("photo-pack-file"),
+      (file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          importPhotoPackText(String(reader.result || "")).catch(() => {
+            showNote("share-note", "Could not import that photo pack. Check the passphrase and file.", "err");
+          });
+        };
+        reader.readAsText(file);
+      },
+      () => {
+        noteNoFileSelected("photopack");
       }
     );
 
@@ -1450,6 +2207,7 @@
 
     function pickPhoto(target) {
       if (!state.dbReady) {
+        showStorageBanner("idb");
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
         return;
       }
@@ -1472,6 +2230,7 @@
     async function applyPhotoFile(target, file) {
       if (!file || !target) return;
       if (!state.dbReady) {
+        showStorageBanner("idb");
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
         return;
       }
@@ -1552,6 +2311,7 @@
       const payload = {
         items: shareableItems(state.items),
         album: shareableAlbum(state.album),
+        circle: state.circle.slice(),
         photosOmitted: true
       };
       let packed;
@@ -1602,6 +2362,7 @@
         const albumMerge = mergeAlbum(state.album, remote.album, remote.photosOmitted);
         state.items = itemMerge.list;
         state.album = albumMerge.list;
+        state.circle = mergeCircle(state.circle, remote.circle);
         saveAll();
         persistPassphrasePreference();
         clearHash();
@@ -1633,35 +2394,93 @@
       }
     }
 
-    async function exportJson() {
+    async function collectPhotosMap() {
       const photos = {};
+      const rows = await getAllPhotos();
+      for (const rec of rows || []) {
+        if (!rec || !rec.id || !rec.blob) continue;
+        const bytes = await blobToBytes(rec.blob);
+        photos[rec.id] = {
+          type: rec.type || rec.blob.type || "image/jpeg",
+          data: bytesToBase64Url(bytes)
+        };
+      }
+      return photos;
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function exportJson() {
+      let photos = {};
       try {
-        const rows = await getAllPhotos();
-        for (const rec of rows || []) {
-          if (!rec || !rec.id || !rec.blob) continue;
-          const bytes = await blobToBytes(rec.blob);
-          photos[rec.id] = {
-            type: rec.type || rec.blob.type || "image/jpeg",
-            data: bytesToBase64Url(bytes)
-          };
-        }
+        photos = await collectPhotosMap();
       } catch (err) {
         showNote("share-note", "Exporting items without photos — IndexedDB read failed.", "err");
       }
       const payload = {
-        v: 2,
+        v: 3,
         exported: new Date().toISOString(),
         items: state.items,
         album: state.album,
+        circle: state.circle,
         photos: photos
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "shared-board.json";
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }), "shared-board.json");
+    }
+
+    async function exportPhotoPack() {
+      if (!passphraseOk()) {
+        showNote("share-note", "Enter a household passphrase of at least 12 characters to encrypt a photo pack.", "err");
+        document.getElementById("passphrase").focus();
+        return;
+      }
+      if (!state.dbReady) {
+        showStorageBanner("idb");
+        showNote("share-note", "Photos cannot be read on this device (IndexedDB blocked).", "err");
+        return;
+      }
+      persistPassphrasePreference();
+      let photos;
+      try {
+        photos = await collectPhotosMap();
+      } catch (err) {
+        showNote("share-note", "Could not read photos from IndexedDB.", "err");
+        return;
+      }
+      const ids = Object.keys(photos);
+      if (!ids.length) {
+        showNote("share-note", "No local photos to pack.", "info");
+        return;
+      }
+      let cipher;
+      try {
+        cipher = await encryptPayload(currentPassphrase(), {
+          v: 1,
+          kind: "sbphotos",
+          exported: new Date().toISOString(),
+          photos: photos
+        });
+      } catch (err) {
+        showNote("share-note", "Could not encrypt the photo pack.", "err");
+        return;
+      }
+      const pack = {
+        v: 1,
+        kind: "sbphotos",
+        cipher: cipher
+      };
+      downloadBlob(
+        new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" }),
+        "shared-board.sbphotos.json"
+      );
+      showNote("share-note", "Encrypted photo pack downloaded (" + ids.length + " photo" + (ids.length === 1 ? "" : "s") + "). Share update links stay text-only.", "ok");
     }
 
     async function importPhotosMap(photos) {
@@ -1694,6 +2513,9 @@
       const albumMerge = mergeAlbum(state.album, remoteAlbum, false);
       state.items = itemMerge.list;
       state.album = albumMerge.list;
+      if (data && Array.isArray(data.circle)) {
+        state.circle = mergeCircle(state.circle, data.circle);
+      }
       let photoCount = 0;
       if (data && data.photos) {
         photoCount = await importPhotosMap(data.photos);
@@ -1702,9 +2524,174 @@
       render();
       showNote(
         "share-note",
-        "Imported JSON and merged by id" + (photoCount ? ", including " + photoCount + " photos." : "."),
+        describeMerge(remoteItems.length, itemMerge, albumMerge, false) +
+          (photoCount ? " Imported " + photoCount + " photos." : ""),
         "ok"
       );
+    }
+
+    async function importPhotoPackText(text) {
+      if (!passphraseOk()) {
+        showNote("share-note", "Enter the household passphrase (12+ characters) to decrypt a photo pack.", "err");
+        document.getElementById("passphrase").focus();
+        throw new Error("passphrase");
+      }
+      if (!state.dbReady) {
+        showStorageBanner("idb");
+        showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
+        throw new Error("idb");
+      }
+      const data = JSON.parse(text);
+      const packed = (data && typeof data.cipher === "string")
+        ? data.cipher
+        : (typeof data === "string" ? data : "");
+      if (!packed) throw new Error("No cipher");
+      const parts = packed.split(".");
+      if (parts.length !== 4 || parts[0] !== "e1") throw new Error("Unrecognized photo pack");
+      const salt = base64UrlToBytes(parts[1]);
+      const iv = base64UrlToBytes(parts[2]);
+      const ciphertext = base64UrlToBytes(parts[3]);
+      const key = await deriveKey(currentPassphrase(), salt);
+      const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ciphertext);
+      const payload = JSON.parse(td.decode(plain));
+      if (!payload || payload.kind !== "sbphotos" || !payload.photos || typeof payload.photos !== "object") {
+        throw new Error("Not a photo pack");
+      }
+      const map = payload.photos;
+      const count = await importPhotosMap(map);
+      persistPassphrasePreference();
+      render();
+      showNote(
+        "share-note",
+        count
+          ? "Imported " + count + " photo" + (count === 1 ? "" : "s") + " from the encrypted pack into this browser."
+          : "Photo pack opened, but no photos were imported.",
+        count ? "ok" : "info"
+      );
+    }
+
+    async function wipeIdb() {
+      forgetAllPhotoUrls();
+      return new Promise((resolve) => {
+        if (!window.indexedDB) {
+          resolve();
+          return;
+        }
+        const req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+      });
+    }
+
+    async function clearAllData() {
+      const proceed = confirm("This removes items, album, photos, circle names, and the saved passphrase from this browser. Export a backup first?");
+      if (!proceed) return;
+      const wantExport = confirm("Export JSON now before wiping? This is the full local copy, including photos if IndexedDB is available.");
+      if (wantExport) {
+        await exportJson();
+        if (!confirm("Export started. Wipe this browser now? This cannot be undone.")) return;
+      } else if (!confirm("Wipe without exporting? This cannot be undone.")) {
+        return;
+      }
+      clearReminders();
+      try {
+        localStorage.removeItem(ITEMS_KEY);
+        localStorage.removeItem(ALBUM_KEY);
+        localStorage.removeItem(PASS_KEY);
+        localStorage.removeItem(REMEMBER_KEY);
+        localStorage.removeItem(HIDE_KEY);
+        localStorage.removeItem(CIRCLE_KEY);
+        localStorage.removeItem(VIEW_KEY);
+      } catch (err) {
+        failLoud(err && err.name ? err.name : "clear failed");
+        return;
+      }
+      await wipeIdb();
+      state.items = [];
+      state.album = [];
+      state.circle = [];
+      state.hideDone = false;
+      state.calView = "month";
+      state.pendingShare = null;
+      state.editingId = null;
+      document.getElementById("passphrase").value = "";
+      document.getElementById("remember-pass").checked = false;
+      document.getElementById("hide-done").checked = false;
+      document.getElementById("item-form").reset();
+      hideShareLinkFallback();
+      clearNote("share-note");
+      clearNote("incoming-note");
+      try {
+        const db = await openDb();
+        db.close();
+        state.dbReady = true;
+      } catch (err) {
+        state.dbReady = false;
+      }
+      renderPassMeter();
+      render();
+      showNote("share-note", "This browser’s Shared Board data was cleared.", "ok");
+    }
+
+    function applyTemplate(id) {
+      const tpl = TEMPLATES[id];
+      if (!tpl) return;
+      document.getElementById("item-title").value = tpl.title;
+      document.getElementById("item-notes").value = tpl.notes;
+      document.getElementById("item-title").focus();
+      showNote("share-note", "Template filled. The selected day stays " + formatDayLong(state.selectedDay) + ". Tap Add when ready.", "info");
+    }
+
+    function isStandalone() {
+      return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    }
+
+    function installHowTo() {
+      const ua = navigator.userAgent || "";
+      const iOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      if (iOS) {
+        return "On iPhone or iPad: open this page in Safari, tap Share, then Add to Home Screen. Chrome on iOS cannot fully install PWAs.";
+      }
+      if (/android/i.test(ua)) {
+        return "On Android: open the browser menu and choose Install app or Add to Home Screen. If that item is missing, the browser does not offer install for this page.";
+      }
+      return "On desktop Chrome or Edge: use the install icon in the address bar, or the browser menu. If you do not see it, this browser is not offering an install prompt.";
+    }
+
+    function setupInstall() {
+      const panel = document.getElementById("install-panel");
+      const btn = document.getElementById("install-btn");
+      const how = document.getElementById("install-how");
+      if (isStandalone()) {
+        how.textContent = "Opened as an installed app on this device. It is still this same local page — no account, no server.";
+        btn.hidden = true;
+        return;
+      }
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        state.deferredInstall = event;
+        btn.hidden = false;
+        how.textContent = "This browser can install Shared Board. Install is only a shortcut. Reminders still need the app or tab open.";
+      });
+      window.addEventListener("appinstalled", () => {
+        state.deferredInstall = null;
+        btn.hidden = true;
+        how.textContent = "Installed. Reminders still need the app window open — there is no push server.";
+      });
+      btn.addEventListener("click", async () => {
+        if (!state.deferredInstall) return;
+        state.deferredInstall.prompt();
+        try {
+          await state.deferredInstall.userChoice;
+        } catch (err) {
+          /* user dismissed */
+        }
+        state.deferredInstall = null;
+        btn.hidden = true;
+      });
+      how.textContent = installHowTo();
+      panel.hidden = false;
     }
 
     document.getElementById("item-form").addEventListener("submit", (event) => {
@@ -1720,12 +2707,50 @@
         deleted: false,
         updated: now(),
         day: state.selectedDay,
-        photoIds: []
+        photoIds: [],
+        recur: normalizeRecur(document.getElementById("item-recur").value),
+        assignee: normalizeAssignee(document.getElementById("item-assignee").value),
+        remindTime: normalizeRemindTime(document.getElementById("item-remind").value),
+        doneDates: {}
       });
       saveAll();
       event.target.reset();
       document.getElementById("item-title").focus();
       render();
+    });
+
+    document.getElementById("edit-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const item = state.items.find((row) => row.id === state.editingId);
+      if (!item) {
+        closeEdit();
+        return;
+      }
+      item.title = document.getElementById("edit-title").value.trim();
+      item.notes = document.getElementById("edit-notes").value.trim();
+      item.recur = normalizeRecur(document.getElementById("edit-recur").value);
+      item.assignee = normalizeAssignee(document.getElementById("edit-assignee").value);
+      item.remindTime = normalizeRemindTime(document.getElementById("edit-remind").value);
+      if (!isRecurring(item)) item.doneDates = {};
+      item.updated = now();
+      saveAll();
+      closeEdit();
+      render();
+    });
+    document.getElementById("edit-cancel").addEventListener("click", () => closeEdit());
+
+    document.getElementById("circle-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = normalizeAssignee(document.getElementById("circle-name").value);
+      if (!name) return;
+      state.circle = mergeCircle(state.circle, [name]);
+      document.getElementById("circle-name").value = "";
+      saveAll();
+      renderCircle();
+    });
+
+    document.querySelectorAll("[data-template]").forEach((btn) => {
+      btn.addEventListener("click", () => applyTemplate(btn.getAttribute("data-template")));
     });
 
     document.getElementById("album-form").addEventListener("submit", (event) => {
@@ -1759,7 +2784,10 @@
     });
 
     document.getElementById("cal-prev").addEventListener("click", () => {
-      if (state.viewMonth === 0) {
+      if (state.calView === "week") {
+        state.selectedDay = addDays(state.selectedDay, -7);
+        setViewFromSelected();
+      } else if (state.viewMonth === 0) {
         state.viewMonth = 11;
         state.viewYear -= 1;
       } else {
@@ -1768,7 +2796,10 @@
       render();
     });
     document.getElementById("cal-next").addEventListener("click", () => {
-      if (state.viewMonth === 11) {
+      if (state.calView === "week") {
+        state.selectedDay = addDays(state.selectedDay, 7);
+        setViewFromSelected();
+      } else if (state.viewMonth === 11) {
         state.viewMonth = 0;
         state.viewYear += 1;
       } else {
@@ -1781,6 +2812,8 @@
       setViewFromSelected();
       render();
     });
+    document.getElementById("view-month").addEventListener("click", () => setCalView("month"));
+    document.getElementById("view-week").addEventListener("click", () => setCalView("week"));
 
     document.getElementById("hide-done").addEventListener("change", (event) => {
       state.hideDone = event.target.checked;
@@ -1797,8 +2830,12 @@
     document.getElementById("remember-pass").addEventListener("change", () => {
       persistPassphrasePreference();
     });
+    document.getElementById("passphrase").addEventListener("input", () => {
+      renderPassMeter();
+    });
     document.getElementById("passphrase").addEventListener("change", () => {
       persistPassphrasePreference();
+      renderPassMeter();
     });
 
     document.getElementById("share-update").addEventListener("click", () => {
@@ -1814,9 +2851,34 @@
     document.getElementById("import-btn").addEventListener("click", () => {
       importPicker();
     });
+    document.getElementById("photo-pack-export").addEventListener("click", () => {
+      exportPhotoPack();
+    });
+    document.getElementById("photo-pack-import").addEventListener("click", () => {
+      photoPackPicker();
+    });
+    document.getElementById("clear-data").addEventListener("click", () => {
+      clearAllData();
+    });
+    document.getElementById("notify-btn").addEventListener("click", async () => {
+      if (!notificationsAvailable()) {
+        updateNotifyUi();
+        return;
+      }
+      try {
+        await Notification.requestPermission();
+      } catch (err) {
+        showNote("share-note", "Could not request notification permission.", "err");
+      }
+      updateNotifyUi();
+      scheduleReminders();
+    });
 
     load();
     setViewFromSelected();
+    setupInstall();
+    renderPassMeter();
+    updateNotifyUi();
     initDb().then(() => {
       render();
       handleIncomingHash();
