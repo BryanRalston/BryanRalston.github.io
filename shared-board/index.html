@@ -1610,9 +1610,13 @@
     function parseIncomingHash() {
       const hash = location.hash || "";
       if (!hash.startsWith("#u=")) return null;
-      const packed = decodeURIComponent(hash.slice(3));
-      if (!packed) return null;
-      return packed;
+      const raw = hash.slice(3);
+      if (!raw) return null;
+      try {
+        return decodeURIComponent(raw);
+      } catch (err) {
+        return raw;
+      }
     }
 
     function clearHash() {
@@ -2881,6 +2885,9 @@
     updateNotifyUi();
     initDb().then(() => {
       render();
+      handleIncomingHash();
+    });
+    window.addEventListener("hashchange", () => {
       handleIncomingHash();
     });
 
