@@ -1,7 +1,7 @@
 {
   "name": "Shared Board",
   "short_name": "Shared Board",
-  "description": "General household board for items, notes, and checkoffs. Plaintext stays on this device.",
+  "description": "Household calendar, items, album, and encrypted share links. Plaintext stays on this device. No server.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
