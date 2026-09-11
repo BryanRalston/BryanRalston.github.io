@@ -5,28 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shared Board</title>
   <meta name="description" content="Household calendar, items, and family album. No server. Encrypted Share update for text and checkoffs; photos stay local.">
-  <meta name="theme-color" content="#8a4b1f">
+  <meta name="theme-color" content="#c42958">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238a4b1f'/%3E%3Crect x='16' y='14' width='32' height='36' rx='3' fill='%23fffaf3'/%3E%3Cpath d='M22 26h20M22 34h20M22 42h12' stroke='%238a4b1f' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" type="image/svg+xml">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23c42958'/%3E%3Ccircle cx='50' cy='13' r='6' fill='%23ffe27a'/%3E%3Crect x='16' y='14' width='32' height='36' rx='4' fill='%23fffefb'/%3E%3Cpath d='M22 26h20M22 34h20M22 42h12' stroke='%23c42958' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" type="image/svg+xml">
   <style>
     :root {
-      --paper: #f3eee4;
-      --card: #fffaf3;
-      --ink: #241e18;
-      --muted: #655c53;
-      --line: #e2d6c4;
-      --wood: #8a4b1f;
-      --wood-ink: #fffaf3;
-      --clay: #a84b28;
-      --danger: #8f1d1d;
-      --danger-bg: #f8e4e0;
-      --ok: #2f6f4e;
-      --ok-bg: #e4efe8;
-      --wash: #f7f1e6;
-      --tile: #fffdf8;
-      --shadow: 0 1px 2px rgba(36, 30, 24, 0.04), 0 10px 28px rgba(36, 30, 24, 0.055);
-      --radius: 16px;
-      --radius-sm: 10px;
+      --paper: #e7f4f8;
+      --card: #fffefb;
+      --ink: #17212b;
+      --muted: #445260;
+      --line: #c5dde6;
+      --accent: #c42958;
+      --accent-ink: #fffefb;
+      --accent-deep: #a81e48;
+      --danger: #9f1239;
+      --danger-bg: #ffe3ea;
+      --ok: #0c6b4f;
+      --ok-bg: #d5f3e6;
+      --wash: #e3f7ef;
+      --tile: #ffffff;
+      --sun: #ffe27a;
+      --sun-soft: #fff4c2;
+      --lilac: #e4d9fb;
+      --info: #d8eef8;
+      --shadow: 0 1px 2px rgba(23, 33, 43, 0.04), 0 12px 28px rgba(23, 33, 43, 0.06);
+      --radius: 18px;
+      --radius-sm: 12px;
     }
 
     * { box-sizing: border-box; }
@@ -36,14 +40,40 @@
     body {
       font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
       background:
-        radial-gradient(900px 420px at 12% -8%, rgba(168, 75, 40, 0.07), transparent 52%),
-        radial-gradient(700px 380px at 108% 0%, rgba(138, 75, 31, 0.06), transparent 48%),
+        radial-gradient(880px 420px at 8% -12%, rgba(143, 208, 234, 0.55), transparent 54%),
+        radial-gradient(640px 360px at 108% 2%, rgba(228, 217, 251, 0.7), transparent 50%),
+        radial-gradient(500px 260px at 72% -8%, rgba(255, 226, 122, 0.32), transparent 46%),
         var(--paper);
       color: var(--ink);
       line-height: 1.45;
       min-height: 100vh;
+      position: relative;
+    }
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 50%;
+    }
+    body::before {
+      width: 7.5rem;
+      height: 7.5rem;
+      left: -1.6rem;
+      top: 11rem;
+      background: rgba(125, 211, 182, 0.28);
+    }
+    body::after {
+      width: 5.5rem;
+      height: 5.5rem;
+      right: -1.2rem;
+      top: 22rem;
+      background: rgba(255, 226, 122, 0.38);
     }
     .wrap {
+      position: relative;
+      z-index: 1;
       max-width: 40rem;
       margin: 0 auto;
       padding: 1.1rem 1rem calc(3.25rem + env(safe-area-inset-bottom, 0px));
@@ -56,7 +86,7 @@
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--clay);
+      color: var(--accent-deep);
     }
     header h1 {
       font-size: 1.7rem;
@@ -115,7 +145,7 @@
     #share-note.err,
     #incoming-note.err { color: var(--danger); background: var(--danger-bg); }
     #share-note.info,
-    #incoming-note.info { color: var(--ink); background: #efe6d6; }
+    #incoming-note.info { color: var(--ink); background: var(--info); }
 
     .panel {
       background: var(--card);
@@ -148,7 +178,7 @@
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--clay);
+      color: var(--accent-deep);
     }
     .row {
       display: flex;
@@ -189,7 +219,7 @@
     .list input[type="checkbox"] {
       width: 1.25rem;
       height: 1.25rem;
-      accent-color: var(--wood);
+      accent-color: var(--accent);
       flex: 0 0 1.25rem;
     }
     input[type="text"],
@@ -210,7 +240,7 @@
     }
     textarea { min-height: 4.75rem; resize: vertical; }
     input:focus, textarea:focus, select:focus, button:focus-visible, .file-btn:focus-within, summary:focus-visible {
-      outline: 2px solid var(--wood);
+      outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
     button,
@@ -223,8 +253,8 @@
       padding: 0.65rem 0.95rem;
       min-height: 2.75rem;
       cursor: pointer;
-      background: var(--wood);
-      color: var(--wood-ink);
+      background: var(--accent);
+      color: var(--accent-ink);
     }
     .file-btn {
       position: relative;
@@ -243,13 +273,13 @@
     }
     button.ghost {
       background: transparent;
-      color: var(--clay);
+      color: var(--accent-deep);
       padding: 0.45rem 0.55rem;
       min-height: 2.5rem;
     }
     button.secondary,
     .file-btn.secondary {
-      background: #efe6d6;
+      background: var(--lilac);
       color: var(--ink);
     }
     .file-btn-face {
@@ -288,7 +318,7 @@
       margin-bottom: 0.15rem;
     }
     .templates button {
-      background: var(--wash);
+      background: var(--lilac);
       color: var(--ink);
       border: 1px solid var(--line);
       min-height: 2.5rem;
@@ -296,6 +326,8 @@
       font-size: 0.85rem;
       box-shadow: none;
     }
+    .templates button:nth-child(2) { background: var(--sun-soft); }
+    .templates button:nth-child(3) { background: var(--wash); }
     .list { list-style: none; margin: 0.35rem 0 0; padding: 0; }
     .list li {
       display: grid;
@@ -346,11 +378,35 @@
       line-height: 1.45;
     }
     .empty-card {
+      position: relative;
+      overflow: hidden;
       margin-top: 0.7rem;
       padding: 0.95rem 1rem;
       background: var(--wash);
       border-radius: var(--radius-sm);
       border: 1px dashed var(--line);
+    }
+    .empty-card::before,
+    .empty-card::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .empty-card::before {
+      width: 2.6rem;
+      height: 2.6rem;
+      right: -0.55rem;
+      top: -0.7rem;
+      background: var(--sun);
+      opacity: 0.55;
+    }
+    .empty-card::after {
+      width: 1.35rem;
+      height: 1.35rem;
+      right: 1.4rem;
+      top: -0.2rem;
+      background: var(--lilac);
     }
     .first-loop { display: none; }
     footer {
@@ -402,8 +458,8 @@
       content: "";
       width: 0.42rem;
       height: 0.42rem;
-      border-right: 2px solid var(--clay);
-      border-bottom: 2px solid var(--clay);
+      border-right: 2px solid var(--accent-deep);
+      border-bottom: 2px solid var(--accent-deep);
       transform: rotate(45deg);
       flex: 0 0 auto;
     }
@@ -460,8 +516,8 @@
       min-height: 2.5rem;
     }
     .view-toggle button[aria-pressed="true"] {
-      background: var(--wood);
-      color: var(--wood-ink);
+      background: var(--accent);
+      color: var(--accent-ink);
     }
     .calendar {
       display: grid;
@@ -489,11 +545,11 @@
       border: 1px solid transparent;
       box-shadow: none;
     }
-    .calendar button.day.today { border-color: var(--clay); }
+    .calendar button.day.today { border-color: var(--accent-deep); }
     .calendar button.day.selected {
-      background: var(--wood);
-      color: var(--wood-ink);
-      border-color: var(--wood);
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
     }
     .calendar button.day.has-items::after {
       content: "";
@@ -520,11 +576,11 @@
       padding: 0.7rem 0.8rem;
       min-height: 3rem;
     }
-    .week-day.today { border-color: var(--clay); }
+    .week-day.today { border-color: var(--accent-deep); }
     .week-day.selected {
-      background: var(--wood);
-      color: var(--wood-ink);
-      border-color: var(--wood);
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
     }
     .week-day-head {
       display: flex;
@@ -558,13 +614,16 @@
       position: relative;
       flex: 0 0 5.4rem;
       width: 5.4rem;
-      background: #fff;
+      background: var(--sun-soft);
       padding: 0.28rem 0.28rem 0.15rem;
-      border-radius: 3px;
-      box-shadow: 0 1px 2px rgba(36, 30, 24, 0.08), 0 6px 14px rgba(36, 30, 24, 0.08);
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(23, 33, 43, 0.08), 0 6px 14px rgba(23, 33, 43, 0.08);
       transform: rotate(-1.2deg);
     }
-    .thumb:nth-child(even) { transform: rotate(1.1deg); }
+    .thumb:nth-child(even) {
+      background: var(--lilac);
+      transform: rotate(1.1deg);
+    }
     .thumb:nth-child(3n) { transform: rotate(-0.4deg); }
     .thumb img {
       display: block;
@@ -573,7 +632,7 @@
       object-fit: cover;
       border-radius: 1px;
       border: 0;
-      background: #efe6d6;
+      background: var(--sun-soft);
       cursor: pointer;
     }
     .thumb .ghost {
@@ -596,15 +655,18 @@
       margin: 0;
       flex: 0 0 9.6rem;
       width: 9.6rem;
-      background: #fffdf8;
+      background: var(--sun-soft);
       padding: 0.45rem 0.45rem 0.55rem;
-      border-radius: 3px;
-      box-shadow: 0 1px 2px rgba(36, 30, 24, 0.07), 0 10px 20px rgba(36, 30, 24, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(23, 33, 43, 0.07), 0 10px 20px rgba(23, 33, 43, 0.08);
       font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
       scroll-snap-align: start;
       transform: rotate(-1deg);
     }
-    .album-card:nth-child(even) { transform: rotate(1.15deg); }
+    .album-card:nth-child(even) {
+      background: var(--lilac);
+      transform: rotate(1.15deg);
+    }
     .album-card:nth-child(3n) { transform: rotate(-0.35deg); }
     .album-card img {
       display: block;
@@ -613,7 +675,7 @@
       object-fit: cover;
       border-radius: 1px;
       border: 0;
-      background: #efe6d6;
+      background: var(--sun-soft);
       cursor: pointer;
     }
     .album-card figcaption {
@@ -631,7 +693,7 @@
     }
 
     .dropzone {
-      border: 1.5px dashed #d5c7b2;
+      border: 1.5px dashed var(--line);
       border-radius: var(--radius-sm);
       padding: 0.7rem 0.8rem;
       font-family: ui-sans-serif, system-ui, sans-serif;
@@ -641,7 +703,7 @@
       text-align: center;
     }
     .dropzone.dragover {
-      border-color: var(--wood);
+      border-color: var(--accent);
       background: var(--ok-bg);
       color: var(--ink);
     }
@@ -677,7 +739,7 @@
       background: var(--danger);
       transition: width 0.15s ease, background 0.15s ease;
     }
-    .meter.fair span { background: #b7791f; }
+    .meter.fair span { background: #d97706; }
     .meter.strong span { background: var(--ok); }
     .meter-label {
       font-family: ui-sans-serif, system-ui, sans-serif;
@@ -697,7 +759,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.15rem;
-      background: #efe6d6;
+      background: var(--lilac);
       border-radius: 999px;
       padding: 0.15rem 0.2rem 0.15rem 0.75rem;
       font-family: ui-sans-serif, system-ui, sans-serif;
@@ -708,7 +770,7 @@
       min-height: 2.5rem;
       min-width: 2.5rem;
       background: transparent;
-      color: var(--clay);
+      color: var(--accent-deep);
     }
 
     dialog {
@@ -773,9 +835,9 @@
   </div>
   <div class="wrap">
     <header>
-      <p class="kicker">This household</p>
+      <p class="kicker">Around the house</p>
       <h1>Shared Board</h1>
-      <p class="lede">A calm place for the week — the day, what’s open, and a few photos. Stays on this phone. Share an encrypted update when you want.</p>
+      <p class="lede">The family board for the week — pick a day, jot what’s open, keep a few photos. Stays on this phone. Share an encrypted update when you want.</p>
       <span class="badge">No server · Encrypted share links</span>
       <p id="share-note" role="status"></p>
       <p id="incoming-note" role="status"></p>
@@ -811,7 +873,7 @@
       </div>
       <h2 class="print-only">Shared Board</h2>
       <div id="board-empty-wrap">
-        <p class="empty empty-card" id="board-empty">Nothing on the board for this day yet.</p>
+        <p class="empty empty-card" id="board-empty">The board is wide open. Add the first thing for this day.</p>
         <ol class="first-loop no-print" id="first-loop" hidden></ol>
       </div>
       <ul class="list" id="item-list"></ul>
@@ -890,7 +952,7 @@
         <p class="hint">Choose from photos opens Gallery or Photos when the phone offers it.</p>
         <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here</div>
       </form>
-      <p class="empty empty-card" id="album-empty">No pictures yet. Add one when you want a scrap of the week.</p>
+      <p class="empty empty-card" id="album-empty">No pictures yet. Add one when you have a scrap of the week worth keeping.</p>
       <div class="album-grid" id="album-grid"></div>
     </section>
 
@@ -2098,11 +2160,11 @@
       if (shown.length) {
         empty.textContent = "";
       } else if (state.hideDone && anyOnDay) {
-        empty.textContent = "Everything for this day is done.";
+        empty.textContent = "Everything for this day is done. Nice work.";
       } else if (anyAtAll) {
         empty.textContent = "Quiet day. Add something for " + formatDayLong(state.selectedDay) + ", or pick another date.";
       } else {
-        empty.textContent = "Nothing here yet. Add one thing when you’re ready.";
+        empty.textContent = "The board is wide open. Add the first thing when you’re ready.";
       }
 
       shown.forEach((item) => {
@@ -2204,7 +2266,7 @@
       grid.innerHTML = "";
       empty.hidden = rows.length > 0;
       if (!rows.length) {
-        empty.textContent = "No pictures yet. Add one when you want a scrap of the week.";
+        empty.textContent = "No pictures yet. Add one when you have a scrap of the week worth keeping.";
       }
 
       for (const entry of rows) {
