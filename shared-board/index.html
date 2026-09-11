@@ -1409,18 +1409,19 @@
       return names;
     }
 
+    function countPhrase(merge) {
+      return "added " + (merge && merge.added ? merge.added : 0) +
+        ", updated " + (merge && merge.updated ? merge.updated : 0) +
+        ", skipped " + (merge && merge.skipped ? merge.skipped : 0) +
+        ", conflicted " + (merge && merge.conflicted ? merge.conflicted : 0);
+    }
+
     function describeMerge(remoteItemCount, itemMerge, albumMerge, photosOmitted) {
       const n = remoteItemCount;
       let msg = "Merged " + n + " item" + (n === 1 ? "" : "s");
-      if (photosOmitted) msg += " (photos stayed local)";
-      msg += ". Added " + itemMerge.added + ", updated " + itemMerge.updated +
-        ", skipped " + (itemMerge.skipped || 0) +
-        ", conflicted " + (itemMerge.conflicted || 0) + " (same timestamp — local kept).";
-      if (albumMerge.added || albumMerge.updated || albumMerge.skipped || albumMerge.conflicted) {
-        msg += " Album: added " + albumMerge.added + ", updated " + albumMerge.updated +
-          ", skipped " + (albumMerge.skipped || 0) +
-          ", conflicted " + (albumMerge.conflicted || 0) + ".";
-      }
+      if (photosOmitted) msg += " (photos omitted)";
+      msg += ". " + countPhrase(itemMerge) + ".";
+      msg += " Album: " + countPhrase(albumMerge) + ".";
       return msg;
     }
 
@@ -2359,7 +2360,6 @@
         return;
       }
       const url = location.origin + location.pathname + "#u=" + packed;
-      const hint = "Encrypted Share update ready. Text and checkoffs are in the link; photos stay local (photosOmitted).";
       if (navigator.share) {
         try {
           await navigator.share({
@@ -2367,23 +2367,23 @@
             text: "Encrypted household board update (photos stay local)",
             url: url
           });
-          showNote("share-note", hint, "ok");
+          showNote("share-note", "Encrypted link copied — photos omitted.", "ok");
           return;
         } catch (err) {
-          if (err && err.name === "AbortError") return;
+          /* Share canceled or unavailable — try clipboard next */
         }
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(url);
-          showNote("share-note", hint + " Link copied.", "ok");
+          showNote("share-note", "Encrypted link copied — photos omitted.", "ok");
           return;
         } catch (err) {
           /* fall through */
         }
       }
       showShareLinkFallback(url);
-      showNote("share-note", hint + " Copy the link below.", "info");
+      showNote("share-note", "Encrypted link ready — photos omitted. Copy the link below.", "info");
     }
 
     async function applyIncoming(packed) {
@@ -2405,11 +2405,9 @@
         clearHash();
         state.pendingShare = null;
         document.getElementById("apply-incoming").hidden = true;
-        showNote(
-          "incoming-note",
-          describeMerge(remote.items.length, itemMerge, albumMerge, remote.photosOmitted),
-          "ok"
-        );
+        const mergeMsg = describeMerge(remote.items.length, itemMerge, albumMerge, remote.photosOmitted);
+        showNote("incoming-note", mergeMsg, "ok");
+        showNote("share-note", mergeMsg, "ok");
         render();
         return true;
       } catch (err) {
@@ -2877,6 +2875,7 @@
     document.getElementById("passphrase").addEventListener("change", () => {
       persistPassphrasePreference();
       renderPassMeter();
+      if (state.pendingShare && passphraseOk()) applyIncoming(state.pendingShare);
     });
 
     document.getElementById("share-update").addEventListener("click", () => {
