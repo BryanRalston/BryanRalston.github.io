@@ -1,4 +1,4 @@
-const CACHE = "shared-board-v9";
+const CACHE = "shared-board-v10";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

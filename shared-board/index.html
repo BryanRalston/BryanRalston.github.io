@@ -151,12 +151,12 @@
       width: 100%;
     }
     textarea { min-height: 4.5rem; resize: vertical; }
-    input:focus, textarea:focus, select:focus, button:focus-visible, label.btn:focus-visible {
+    input:focus, textarea:focus, select:focus, button:focus-visible, .file-btn:focus-within {
       outline: 2px solid var(--wood);
       outline-offset: 1px;
     }
     button,
-    label.btn {
+    .file-btn {
       font-family: ui-sans-serif, system-ui, sans-serif;
       font-size: 0.95rem;
       font-weight: 650;
@@ -167,9 +167,14 @@
       background: var(--wood);
       color: var(--wood-ink);
     }
-    label.btn { display: inline-block; }
+    .file-btn {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: middle;
+    }
     button:hover,
-    label.btn:hover { filter: brightness(1.05); }
+    .file-btn:hover { filter: brightness(1.05); }
     button:disabled {
       opacity: 0.45;
       cursor: not-allowed;
@@ -181,9 +186,28 @@
       padding: 0.35rem 0.45rem;
     }
     button.secondary,
-    label.btn.secondary {
+    .file-btn.secondary {
       background: #ebe4d6;
       color: var(--ink);
+    }
+    .file-btn-face {
+      pointer-events: none;
+      user-select: none;
+    }
+    .file-btn-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .file-btn-input:focus {
+      outline: none;
     }
     button.danger {
       background: var(--danger-bg);
@@ -697,10 +721,16 @@
           <input type="text" id="album-caption" name="caption" placeholder="Who, where, when…" autocomplete="off" maxlength="200">
         </label>
         <div class="toolbar">
-          <label class="btn" for="photo-gallery" id="album-gallery">Choose from photos</label>
-          <label class="btn secondary" for="photo-camera" id="album-camera">Take photo</label>
+          <span class="file-btn" id="album-gallery">
+            <span class="file-btn-face">Choose from photos</span>
+            <input type="file" class="file-btn-input" accept="image/*" data-photo-kind="gallery" aria-label="Choose from photos">
+          </span>
+          <span class="file-btn secondary" id="album-camera">
+            <span class="file-btn-face">Take photo</span>
+            <input type="file" class="file-btn-input" accept="image/*" capture="environment" data-photo-kind="camera" aria-label="Take photo">
+          </span>
         </div>
-        <p class="hint">If your phone still lists Files only, open My Files → Images once — or update Chrome. Choose from photos should offer Gallery/Photos.</p>
+        <p class="hint">Choose from photos targets the Android Photo Picker (Gallery/Photos). If the OS still shows Files, open Images in My Files.</p>
         <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here, or use Choose from photos / Take photo</div>
       </form>
       <p class="empty" id="album-empty">No album photos yet. Add a general photo after you have an item on the board, or start here. Use Encrypted photo pack to copy photos to another device.</p>
@@ -724,9 +754,6 @@
 
     <footer class="no-print">No server. Share update encrypts text and checkoffs into a link. Photos stay local on share links — Export JSON includes the photos map if you need a full copy. Reminders need this page (or installed app) open. Private/incognito windows often block saving.</footer>
   </div>
-
-  <input type="file" id="photo-gallery" class="visually-hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/*">
-  <input type="file" id="photo-camera" class="visually-hidden" accept="image/*" capture="environment">
 
   <dialog id="photo-dialog" aria-label="Photo">
     <img id="photo-dialog-img" alt="">
@@ -1915,8 +1942,8 @@
         photoBar.className = "toolbar no-print";
         photoBar.style.marginTop = "0.45rem";
         photoBar.append(
-          makePhotoLabel("photo-gallery", "Choose from photos", "btn secondary", () => ({ type: "item", item: item })),
-          makePhotoLabel("photo-camera", "Take photo", "btn secondary", () => ({ type: "item", item: item }))
+          makePhotoControl("gallery", "Choose from photos", "secondary", () => ({ type: "item", item: item })),
+          makePhotoControl("camera", "Take photo", "secondary", () => ({ type: "item", item: item }))
         );
         const drop = document.createElement("div");
         drop.className = "dropzone item-drop no-print";
@@ -2143,9 +2170,6 @@
       applyPhotoFile(target, file);
     }
 
-    bindPhotoInput(document.getElementById("photo-gallery"));
-    bindPhotoInput(document.getElementById("photo-camera"));
-
     const importPicker = bindFilePicker(
       document.getElementById("import-file"),
       (file) => {
@@ -2229,27 +2253,55 @@
         if (event) event.preventDefault();
         showStorageBanner("idb");
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
-        return;
+        return false;
       }
       state.photoTarget = target;
+      return true;
     }
 
-    function makePhotoLabel(inputId, text, className, targetFn) {
-      const label = document.createElement("label");
-      label.htmlFor = inputId;
-      label.className = className;
-      label.textContent = text;
-      bindPhotoLabel(label, targetFn);
-      return label;
+    function makePhotoControl(kind, text, extraClass, targetFn) {
+      const wrap = document.createElement("span");
+      wrap.className = extraClass ? "file-btn " + extraClass : "file-btn";
+
+      const face = document.createElement("span");
+      face.className = "file-btn-face";
+      face.textContent = text;
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.className = "file-btn-input";
+      input.accept = "image/*";
+      input.setAttribute("aria-label", text);
+      input.setAttribute("data-photo-kind", kind);
+      switch (kind) {
+        case "camera":
+          input.setAttribute("capture", "environment");
+          break;
+        case "gallery":
+          break;
+        default:
+          throw new Error("Unknown photo control: " + kind);
+      }
+
+      wrap.append(face, input);
+      bindPhotoControl(wrap, targetFn);
+      return wrap;
     }
 
-    function bindPhotoLabel(el, targetFn) {
-      el.addEventListener("pointerdown", (event) => {
+    function bindPhotoControl(wrap, targetFn) {
+      const input = wrap.querySelector("input[type='file']");
+      function arm(event) {
+        armPhotoTarget(targetFn(), event);
+      }
+      input.addEventListener("pointerdown", arm);
+      input.addEventListener("click", (event) => {
+        if (!state.dbReady) {
+          event.preventDefault();
+          return;
+        }
         armPhotoTarget(targetFn(), event);
       });
-      el.addEventListener("click", (event) => {
-        if (!state.dbReady) event.preventDefault();
-      });
+      bindPhotoInput(input);
     }
 
     function albumPhotoTarget() {
@@ -2797,8 +2849,8 @@
     document.getElementById("album-form").addEventListener("submit", (event) => {
       event.preventDefault();
     });
-    bindPhotoLabel(document.getElementById("album-gallery"), albumPhotoTarget);
-    bindPhotoLabel(document.getElementById("album-camera"), albumPhotoTarget);
+    bindPhotoControl(document.getElementById("album-gallery"), albumPhotoTarget);
+    bindPhotoControl(document.getElementById("album-camera"), albumPhotoTarget);
 
     bindImageDrop(document.getElementById("album-drop"), (file) => {
       const caption = document.getElementById("album-caption").value.trim();
