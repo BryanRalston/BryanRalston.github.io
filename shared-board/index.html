@@ -347,6 +347,35 @@
       flex-wrap: wrap;
     }
 
+    .dropzone {
+      border: 1.5px dashed var(--line);
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: #fff;
+      text-align: center;
+    }
+    .dropzone.dragover {
+      border-color: var(--wood);
+      background: var(--ok-bg);
+      color: var(--ink);
+    }
+    .item-drop {
+      margin-top: 0.45rem;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .share-link-box {
+      margin-top: 0.75rem;
+    }
+    .share-link-box textarea {
+      min-height: 5.5rem;
+      word-break: break-all;
+    }
+
     dialog {
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -362,7 +391,7 @@
     }
 
     @media print {
-      #storage-fail, #share-note, #incoming-note, .no-print, footer { display: none !important; }
+      #storage-fail, #share-note, #incoming-note, #share-link-box, .no-print, footer { display: none !important; }
       body { background: #fff; }
       .wrap { padding: 0; max-width: none; }
       .print-only { display: block; }
@@ -402,6 +431,14 @@
           <button type="button" class="secondary" id="apply-incoming" hidden>Open shared update</button>
         </div>
         <p class="hint">Share update puts encrypted text and checkoffs in a link. Photo bytes are omitted (photos stay on this device). Use Export JSON to copy photos.</p>
+        <div id="share-link-box" class="share-link-box no-print" hidden>
+          <label class="field" for="share-link-text">Encrypted share link</label>
+          <textarea id="share-link-text" readonly rows="3"></textarea>
+          <div class="toolbar" style="margin-top: 0.45rem;">
+            <button type="button" class="secondary" id="share-link-select">Select</button>
+            <button type="button" class="secondary" id="share-link-copy">Copy</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -466,6 +503,7 @@
         <div class="toolbar">
           <button type="submit">Add album photo</button>
         </div>
+        <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here, or use Add album photo</div>
       </form>
       <p class="empty" id="album-empty">No album photos yet.</p>
       <div class="album-grid" id="album-grid"></div>
@@ -855,6 +893,8 @@
       localList.forEach((row) => {
         if (row && row.id) map.set(row.id, row);
       });
+      let added = 0;
+      let updated = 0;
       remoteList.forEach((row) => {
         if (!row || !row.id) return;
         const existing = map.get(row.id);
@@ -864,9 +904,11 @@
             keepLocalPhotos(next, existing);
           }
           map.set(row.id, next);
+          if (!existing) added += 1;
+          else updated += 1;
         }
       });
-      return Array.from(map.values());
+      return { list: Array.from(map.values()), added: added, updated: updated };
     }
 
     function mergeItems(localItems, remoteItems, photosOmitted) {
@@ -877,6 +919,17 @@
 
     function mergeAlbum(localAlbum, remoteAlbum, photosOmitted) {
       return mergeById(localAlbum, remoteAlbum, photosOmitted, null);
+    }
+
+    function describeMerge(remoteItemCount, itemMerge, albumMerge, photosOmitted) {
+      const n = remoteItemCount;
+      let msg = "Merged " + n + " item" + (n === 1 ? "" : "s");
+      if (photosOmitted) msg += " (photos stayed local)";
+      msg += ". Added " + itemMerge.added + ", updated " + itemMerge.updated + ".";
+      if (albumMerge.added || albumMerge.updated) {
+        msg += " Album: added " + albumMerge.added + ", updated " + albumMerge.updated + ".";
+      }
+      return msg;
     }
 
     function normalizeItem(raw) {
@@ -1182,6 +1235,13 @@
         addPhoto.className = "ghost";
         addPhoto.textContent = "Add photo";
         addPhoto.addEventListener("click", () => pickPhoto({ type: "item", item: item }));
+        const drop = document.createElement("div");
+        drop.className = "dropzone item-drop no-print";
+        drop.textContent = "Drop a photo here";
+        bindImageDrop(drop, (file) => {
+          applyPhotoFile({ type: "item", item: item }, file);
+        });
+        body.append(drop);
         const edit = document.createElement("button");
         edit.type = "button";
         edit.className = "ghost";
@@ -1276,15 +1336,125 @@
       render();
     }
 
+    function isImageFile(file) {
+      return !!(file && typeof file.type === "string" && file.type.indexOf("image/") === 0);
+    }
+
+    function bindImageDrop(el, onFile) {
+      el.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+        el.classList.add("dragover");
+      });
+      el.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+        el.classList.add("dragover");
+      });
+      el.addEventListener("dragleave", (event) => {
+        if (el.contains(event.relatedTarget)) return;
+        el.classList.remove("dragover");
+      });
+      el.addEventListener("drop", (event) => {
+        event.preventDefault();
+        el.classList.remove("dragover");
+        const files = event.dataTransfer && event.dataTransfer.files;
+        const file = files && files[0];
+        if (!file) {
+          showNote("share-note", "No photo selected.", "info");
+          return;
+        }
+        if (!isImageFile(file)) {
+          showNote("share-note", "That drop was not an image.", "err");
+          return;
+        }
+        onFile(file);
+      });
+    }
+
+    function noteNoFileSelected(kind) {
+      if (kind === "import") {
+        showNote("share-note", "No file selected.", "info");
+        return;
+      }
+      showNote("share-note", "No photo selected.", "info");
+    }
+
+    const photoPicker = bindFilePicker(
+      document.getElementById("photo-file"),
+      (file) => {
+        const target = state.photoTarget;
+        state.photoTarget = null;
+        if (target && target.type === "album") {
+          document.getElementById("album-caption").value = "";
+        }
+        applyPhotoFile(target, file);
+      },
+      () => {
+        state.photoTarget = null;
+        noteNoFileSelected("photo");
+      }
+    );
+
+    const importPicker = bindFilePicker(
+      document.getElementById("import-file"),
+      (file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          importJsonText(String(reader.result || "")).catch(() => {
+            showNote("share-note", "Could not import that JSON file.", "err");
+          });
+        };
+        reader.readAsText(file);
+      },
+      () => {
+        noteNoFileSelected("import");
+      }
+    );
+
+    function bindFilePicker(input, onFile, onEmpty) {
+      let expecting = false;
+      let settled = false;
+
+      function settleEmpty() {
+        if (!expecting || settled) return;
+        if (input.files && input.files.length) return;
+        settled = true;
+        expecting = false;
+        onEmpty();
+      }
+
+      input.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        if (!expecting && !file) return;
+        expecting = false;
+        settled = true;
+        if (!file) {
+          onEmpty();
+          return;
+        }
+        onFile(file);
+      });
+
+      input.addEventListener("cancel", () => {
+        settleEmpty();
+      });
+
+      return function openPicker() {
+        settled = false;
+        expecting = true;
+        input.value = "";
+        input.click();
+      };
+    }
+
     function pickPhoto(target) {
       if (!state.dbReady) {
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
         return;
       }
       state.photoTarget = target;
-      const input = document.getElementById("photo-file");
-      input.value = "";
-      input.click();
+      photoPicker();
     }
 
     async function removeItemPhoto(item, photoId) {
@@ -1299,9 +1469,7 @@
       render();
     }
 
-    async function handlePhotoFile(file) {
-      const target = state.photoTarget;
-      state.photoTarget = null;
+    async function applyPhotoFile(target, file) {
       if (!file || !target) return;
       if (!state.dbReady) {
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
@@ -1334,6 +1502,9 @@
           });
           saveAll();
           showNote("share-note", "Album photo saved on this device. It is not included in Share update links.", "ok");
+        } else {
+          showNote("share-note", "Could not save that photo in IndexedDB.", "err");
+          return;
         }
       } catch (err) {
         showNote("share-note", "Could not save that photo in IndexedDB.", "err");
@@ -1342,8 +1513,36 @@
       render();
     }
 
+    function hideShareLinkFallback() {
+      const box = document.getElementById("share-link-box");
+      const field = document.getElementById("share-link-text");
+      field.value = "";
+      box.hidden = true;
+    }
+
+    function showShareLinkFallback(url) {
+      const box = document.getElementById("share-link-box");
+      const field = document.getElementById("share-link-text");
+      field.value = url;
+      box.hidden = false;
+      field.focus();
+      field.select();
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      const field = document.getElementById("share-link-text");
+      field.focus();
+      field.select();
+      return document.execCommand("copy");
+    }
+
     async function shareUpdate() {
       clearNote("share-note");
+      hideShareLinkFallback();
       if (!passphraseOk()) {
         showNote("share-note", "Enter a household passphrase of at least 12 characters before sharing.", "err");
         document.getElementById("passphrase").focus();
@@ -1386,8 +1585,8 @@
           /* fall through */
         }
       }
-      prompt("Copy this encrypted Shared Board link (photos omitted):", url);
-      showNote("share-note", hint, "ok");
+      showShareLinkFallback(url);
+      showNote("share-note", hint + " Copy the link below.", "info");
     }
 
     async function applyIncoming(packed) {
@@ -1399,17 +1598,20 @@
       }
       try {
         const remote = await decryptPayload(currentPassphrase(), packed);
-        state.items = mergeItems(state.items, remote.items, remote.photosOmitted);
-        state.album = mergeAlbum(state.album, remote.album, remote.photosOmitted);
+        const itemMerge = mergeItems(state.items, remote.items, remote.photosOmitted);
+        const albumMerge = mergeAlbum(state.album, remote.album, remote.photosOmitted);
+        state.items = itemMerge.list;
+        state.album = albumMerge.list;
         saveAll();
         persistPassphrasePreference();
         clearHash();
         state.pendingShare = null;
         document.getElementById("apply-incoming").hidden = true;
-        const extra = remote.photosOmitted
-          ? " Photos were omitted from the link and stay on the sender’s device unless they sent Export JSON."
-          : "";
-        showNote("incoming-note", "Shared update merged onto this board." + extra, "ok");
+        showNote(
+          "incoming-note",
+          describeMerge(remote.items.length, itemMerge, albumMerge, remote.photosOmitted),
+          "ok"
+        );
         render();
         return true;
       } catch (err) {
@@ -1488,8 +1690,10 @@
       if (!list) throw new Error("No items array");
       const remoteItems = list.map(normalizeItem).filter(Boolean);
       const remoteAlbum = (data && Array.isArray(data.album) ? data.album : []).map(normalizeAlbum).filter(Boolean);
-      state.items = mergeItems(state.items, remoteItems, false);
-      state.album = mergeAlbum(state.album, remoteAlbum, false);
+      const itemMerge = mergeItems(state.items, remoteItems, false);
+      const albumMerge = mergeAlbum(state.album, remoteAlbum, false);
+      state.items = itemMerge.list;
+      state.album = albumMerge.list;
       let photoCount = 0;
       if (data && data.photos) {
         photoCount = await importPhotosMap(data.photos);
@@ -1530,14 +1734,28 @@
       pickPhoto({ type: "album", caption: caption });
     });
 
-    document.getElementById("photo-file").addEventListener("change", (event) => {
-      const file = event.target.files && event.target.files[0];
-      event.target.value = "";
-      if (!file) return;
-      if (state.photoTarget && state.photoTarget.type === "album") {
-        document.getElementById("album-caption").value = "";
-      }
-      handlePhotoFile(file);
+    bindImageDrop(document.getElementById("album-drop"), (file) => {
+      const caption = document.getElementById("album-caption").value.trim();
+      document.getElementById("album-caption").value = "";
+      applyPhotoFile({ type: "album", caption: caption }, file);
+    });
+
+    document.getElementById("share-link-select").addEventListener("click", () => {
+      const field = document.getElementById("share-link-text");
+      field.focus();
+      field.select();
+    });
+    document.getElementById("share-link-copy").addEventListener("click", () => {
+      const field = document.getElementById("share-link-text");
+      const url = field.value;
+      if (!url) return;
+      copyText(url).then((ok) => {
+        showNote("share-note", ok ? "Link copied." : "Select the link and copy it.", ok ? "ok" : "info");
+      }).catch(() => {
+        field.focus();
+        field.select();
+        showNote("share-note", "Select the link and copy it.", "info");
+      });
     });
 
     document.getElementById("cal-prev").addEventListener("click", () => {
@@ -1594,19 +1812,7 @@
       exportJson();
     });
     document.getElementById("import-btn").addEventListener("click", () => {
-      document.getElementById("import-file").click();
-    });
-    document.getElementById("import-file").addEventListener("change", (event) => {
-      const file = event.target.files && event.target.files[0];
-      event.target.value = "";
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        importJsonText(String(reader.result || "")).catch(() => {
-          showNote("share-note", "Could not import that JSON file.", "err");
-        });
-      };
-      reader.readAsText(file);
+      importPicker();
     });
 
     load();
