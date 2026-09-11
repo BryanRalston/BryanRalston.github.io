@@ -14,6 +14,6 @@ The board starts empty. There are no sample families.
 - Private/incognito windows often block `localStorage` and IndexedDB. The red banner is the warning.
 - Recurring items store one rule. The calendar expands occurrences for the day you are viewing. Done is per occurrence date. Monthly rules skip months that do not have that day-of-month (for example the 31st).
 - Install as app is a shortcut to this same local page. It does not add an account or background sync.
-- The page cannot force Samsung (or other Android choosers) to list Gallery. Native `<label for="photo-gallery">` activation is the correct web fix; if the OS still omits Gallery, open My Files → Images once or update Chrome.
+- The page cannot force Samsung (or other Android choosers) to list Gallery. Choose from photos uses a real `accept="image/*"` file input as the tap target so Chrome can offer the Android Photo Picker; if the OS still shows Files, open My Files → Images.
 
-Cache name: `shared-board-v9`.
+Cache name: `shared-board-v10`.
