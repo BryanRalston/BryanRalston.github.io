@@ -1,7 +1,7 @@
 {
   "name": "Fridge Raid",
   "short_name": "Fridge Raid",
-  "description": "Pack lunchboxes before the bus. Fresh food scores. Spoiled food and junk cost you.",
+  "description": "Pack balanced lunches before the bus. Start with Scout, then unlock more kids.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
