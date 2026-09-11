@@ -5,11 +5,11 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f1e8",
-  "theme_color": "#8a4b1f",
+  "background_color": "#e7f4f8",
+  "theme_color": "#c42958",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238a4b1f'/%3E%3Crect x='16' y='14' width='32' height='36' rx='3' fill='%23fffaf3'/%3E%3Cpath d='M22 26h20M22 34h20M22 42h12' stroke='%238a4b1f' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23c42958'/%3E%3Ccircle cx='50' cy='13' r='6' fill='%23ffe27a'/%3E%3Crect x='16' y='14' width='32' height='36' rx='4' fill='%23fffefb'/%3E%3Cpath d='M22 26h20M22 34h20M22 42h12' stroke='%23c42958' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
