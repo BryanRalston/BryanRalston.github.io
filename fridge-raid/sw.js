@@ -1,4 +1,4 @@
-const CACHE = "fridge-raid-v5";
+const CACHE = "fridge-raid-v6";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -23,7 +23,14 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request);
+      return fetch(event.request).then((response) => {
+        const url = new URL(event.request.url);
+        if (response.ok && url.pathname.includes("/assets/")) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      });
     })
   );
 });

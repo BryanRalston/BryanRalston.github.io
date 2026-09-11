@@ -40,6 +40,10 @@ A 3-star clear on the success screen:
 
 Best stars per level persist in localStorage.
 
+## Art
+
+If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Sprites are centered with `object-fit: contain` on rounded mint tiles so studio backgrounds stay readable at lunchbox size.
+
 ## Food groups
 
 - **Fruit:** apple, grapes, banana, strawberries

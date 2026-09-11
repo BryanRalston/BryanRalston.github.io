@@ -242,7 +242,16 @@
       position: relative;
       z-index: 1;
     }
-    .shelf {
+    .fridge.photo {
+      --fridge-photo: url("assets/fridge.png");
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(244,252,255,0.08) 36%, rgba(20, 80, 90, 0.06) 100%),
+        var(--fridge-photo) center / cover no-repeat;
+    }
+    .fridge.photo .shelf {
+      border-bottom-color: rgba(255,255,255,0.5);
+      box-shadow: 0 3px 0 rgba(20, 60, 70, 0.08);
+    }
       flex: 1 1 0;
       min-height: 0;
       display: grid;
@@ -278,7 +287,15 @@
       height: 100%;
       display: block;
       object-fit: contain;
+      object-position: center;
       filter: drop-shadow(0 1px 0 #fff) drop-shadow(0 4px 5px rgba(20, 40, 50, 0.22));
+    }
+    .item.has-sprite {
+      background: rgba(214, 245, 238, 0.55);
+      overflow: hidden;
+    }
+    .item.has-sprite img {
+      transform: scale(1.14);
     }
     .item.selected {
       outline: 3px solid var(--sun);
@@ -419,7 +436,9 @@
       place-items: center;
       overflow: hidden;
     }
-    .pocket svg, .pocket img { width: 92%; height: 92%; object-fit: contain; display: block; }
+    .pocket svg, .pocket img { width: 92%; height: 92%; object-fit: contain; object-position: center; display: block; }
+    .pocket.has-sprite { background: rgba(214, 245, 238, 0.42); }
+    .pocket.has-sprite img { transform: scale(1.2); }
     .box[data-kid="Scout"] { background: #d9f4ff; }
     .box[data-kid="Pip"] { background: #ffe1ec; }
     .box[data-kid="Nori"] { background: #e4ffe3; }
@@ -567,7 +586,8 @@
 <body>
   <div id="app">
     <section id="title" class="screen active" data-screen="title">
-      <svg class="hero-fridge" viewBox="0 0 200 220" aria-hidden="true">
+      <img id="hero-fridge-img" class="hero-fridge" alt="" hidden>
+      <svg id="hero-fridge-svg" class="hero-fridge" viewBox="0 0 200 220" aria-hidden="true">
         <defs>
           <linearGradient id="door" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0" stop-color="#f8fdff"/>
@@ -1226,16 +1246,33 @@
     function markupFor(entry) {
       const meta = itemMeta(entry);
       if (ASSET_READY[entry.typeId]) {
-        return `<img src="assets/${entry.typeId}.png" alt="${meta.name}" draggable="false">`;
+        return `<img class="sprite" src="assets/${entry.typeId}.png" alt="${meta.name}" draggable="false">`;
       }
       return meta.draw();
     }
 
+    function applyFridgePhoto() {
+      if (!ASSET_READY.fridge) return;
+      fridgeEl.classList.add("photo");
+      const heroImg = document.getElementById("hero-fridge-img");
+      const heroSvg = document.getElementById("hero-fridge-svg");
+      if (heroImg) {
+        heroImg.src = "assets/fridge.png";
+        heroImg.hidden = false;
+      }
+      if (heroSvg) heroSvg.hidden = true;
+    }
+
     function preloadAssets() {
-      for (const id of Object.keys(CATALOG)) {
+      const ids = ["fridge"].concat(Object.keys(CATALOG));
+      for (const id of ids) {
         const img = new Image();
         img.onload = () => {
           ASSET_READY[id] = true;
+          if (id === "fridge") {
+            applyFridgePhoto();
+            return;
+          }
           if (state.screen === "play") {
             renderFridge();
             renderBoxes();
@@ -1555,6 +1592,7 @@
             btn.dataset.groups = foodGroupsOf(meta).join(" ");
             btn.setAttribute("aria-label", meta.name);
             btn.innerHTML = markupFor(entry);
+            if (ASSET_READY[entry.typeId]) btn.classList.add("has-sprite");
             if (state.selected === entry.id) btn.classList.add("selected");
             slot.appendChild(btn);
           }
@@ -1609,7 +1647,10 @@
           const pocket = document.createElement("div");
           pocket.className = "pocket";
           const held = box.slots[i];
-          if (held) pocket.innerHTML = markupFor(held);
+          if (held) {
+            pocket.innerHTML = markupFor(held);
+            if (ASSET_READY[held.typeId]) pocket.classList.add("has-sprite");
+          }
           grid.appendChild(pocket);
         }
         boxesEl.appendChild(el);
@@ -1910,6 +1951,7 @@
       state.startedAt = performance.now();
       boxesEl.dataset.count = String(level.kids.length);
       showScreen("play");
+      applyFridgePhoto();
       renderFridge();
       renderBoxes();
       renderMission();
@@ -2150,6 +2192,8 @@
           events: state.events.map((event) => ({ type: event.type, atMs: event.atMs, fired: event.fired })),
           eventLog: state.eventLog.slice(),
           stars: state.lastStars.slice(),
+          assetsReady: Object.keys(ASSET_READY),
+          fridgePhoto: Boolean(ASSET_READY.fridge),
           fridge: state.fridge.map((entry) => ({
             id: entry.id,
             typeId: entry.typeId,
