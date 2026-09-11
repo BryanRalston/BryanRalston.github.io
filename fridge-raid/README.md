@@ -8,7 +8,7 @@ Tap or drag items into a kid lunchbox, or into **TOSS**. Fresh lunch food scores
 
 ## Score
 
-- Fresh food: +100, builds combo
+- Fresh food: +100, builds combo (caps at x6)
 - Treat: +35
 - Full lunchbox (4 slots): +300 and a new empty box
 - Toss spoiled or junk: +75

@@ -146,10 +146,11 @@
     }
     .combo {
       opacity: 0;
+      visibility: hidden;
       text-align: right;
       color: var(--grape);
     }
-    .combo.on { opacity: 1; }
+    .combo.on { opacity: 1; visibility: visible; }
 
     .bus-track {
       height: 10px;
@@ -175,58 +176,61 @@
     }
 
     .fridge {
-      flex: 1;
+      flex: 1 1 0;
       min-height: 0;
+      overflow: hidden;
       background:
-        radial-gradient(80% 40% at 50% 0%, #ffffff 0%, rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, #eef9ff 0%, #c5e8f6 100%);
-      border: 10px solid #f7fdff;
-      outline: 4px solid #8ad8e6;
-      border-radius: 22px;
+        radial-gradient(80% 36% at 50% 0%, #ffffff 0%, rgba(255,255,255,0) 58%),
+        linear-gradient(180deg, #f4fcff 0%, #c8eaf6 100%);
+      border: 7px solid #f7fdff;
+      outline: 3px solid #8ad8e6;
+      border-radius: 20px;
       box-shadow:
-        inset 0 18px 30px rgba(255,255,255,0.65),
-        0 10px 0 #0a8a96;
+        inset 0 16px 26px rgba(255,255,255,0.7),
+        0 8px 0 #0a8a96;
+      display: flex;
+      flex-direction: column;
+      padding: 0.35rem 0.3rem 0.2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .shelf {
+      flex: 1 1 0;
+      min-height: 0;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(4, 1fr);
-      gap: 0.28rem;
-      padding: 0.55rem 0.45rem 0.4rem;
-      position: relative;
-    }
-    .fridge::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        180deg,
-        transparent 0,
-        transparent calc(25% - 3px),
-        rgba(255,255,255,0.7) calc(25% - 3px),
-        #9fd4e8 25%
-      );
-      border-radius: 12px;
-      opacity: 0.55;
+      align-items: end;
+      gap: 0.12rem;
+      border-bottom: 3px solid rgba(255,255,255,0.88);
+      box-shadow: 0 3px 0 rgba(110, 180, 200, 0.35);
+      padding: 0 0.1rem 0.12rem;
     }
 
     .slot {
       position: relative;
       z-index: 1;
       display: grid;
-      place-items: center;
+      place-items: end center;
       min-height: 0;
+      min-width: 0;
+      height: 100%;
     }
     .item {
       width: 100%;
-      height: 100%;
-      max-width: 78px;
-      max-height: 78px;
+      height: auto;
+      max-height: 100%;
+      aspect-ratio: 1;
       background: transparent;
       padding: 0;
-      border-radius: 16px;
+      border-radius: 12px;
       position: relative;
     }
-    .item svg { width: 88%; height: 88%; display: block; margin: auto; }
+    .item svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 1px 0 #fff) drop-shadow(0 4px 5px rgba(20, 40, 50, 0.22));
+    }
     .item.selected {
       outline: 3px solid var(--sun);
       outline-offset: -2px;
@@ -236,11 +240,14 @@
     .item.pop { animation: pop 0.28s ease; }
 
     .dock {
+      flex: 0 0 auto;
       display: grid;
-      grid-template-columns: 4.6rem 1fr;
-      gap: 0.45rem;
-      margin-top: 0.55rem;
+      grid-template-columns: 4.4rem 1fr;
+      gap: 0.4rem;
+      margin-top: 0.45rem;
       align-items: stretch;
+      position: relative;
+      z-index: 3;
     }
     .toss {
       background: linear-gradient(180deg, #5b4bff, #3d2ad4);
@@ -279,13 +286,13 @@
     }
     .slots {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.16rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.12rem;
     }
     .pocket {
       aspect-ratio: 1;
-      border-radius: 8px;
-      background: #e8f4f8;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.7);
       display: grid;
       place-items: center;
       overflow: hidden;
@@ -651,12 +658,13 @@
     function drawSlime() {
       return wrap("Slimy leftovers", `
         <ellipse cx="40" cy="72" rx="15" ry="3.6" fill="rgba(20,40,50,0.16)"/>
-        <path d="M22 30h36l2 28a10 10 0 0 1-10 10H30a10 10 0 0 1-10-10z" fill="#8aa0aa"/>
-        <ellipse cx="40" cy="30" rx="18" ry="6" fill="#c5d4da"/>
-        <path d="M26 38c10 8 20-6 28 6 2 10-8 16-16 14-10-2-16-10-12-20z" fill="#6fbf57"/>
-        <path d="M30 44c6 4 12 0 16 6" stroke="#3d8b4a" stroke-width="2" fill="none"/>
-        <path d="M52 34c4 8 2 16 0 18" stroke="#7ad36a" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="36" cy="50" r="3" fill="#3d6b40"/>
+        <path d="M20 32h40l2 26a12 12 0 0 1-12 11H30a12 12 0 0 1-12-11z" fill="#9aacb4" stroke="#6d8088" stroke-width="1.5"/>
+        <ellipse cx="40" cy="32" rx="21" ry="7" fill="#d5e0e5"/>
+        <path d="M24 36c8 14 24 16 32 4 4 12-6 22-16 22S20 52 24 36z" fill="#7bc85a"/>
+        <path d="M28 44c8 6 16 2 22 8" stroke="#2f6f4e" stroke-width="2.2" fill="none"/>
+        <path d="M54 30c6 10 4 22 1 26" stroke="#9ee07a" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="34" cy="52" r="3.2" fill="#355a32"/>
+        <circle cx="46" cy="48" r="2.4" fill="#4a7a3a"/>
       `);
     }
 
@@ -833,11 +841,11 @@
     }
 
     function renderHud(remaining) {
-      scoreEl.textContent = String(state.score);
+      scoreEl.textContent = state.score.toLocaleString();
       timerEl.textContent = formatTime(remaining);
       const comboOn = state.combo >= 2;
       comboEl.classList.toggle("on", comboOn);
-      comboEl.querySelector("b").textContent = "x" + Math.max(1, state.combo);
+      comboEl.querySelector("b").textContent = "x" + comboMult();
       const ratio = Math.max(0, Math.min(1, remaining / ROUND_MS));
       busFill.style.transform = "scaleX(" + ratio + ")";
       busIcon.style.left = (100 - ratio * 100) + "%";
@@ -846,21 +854,29 @@
 
     function renderFridge() {
       fridgeEl.replaceChildren();
-      for (const entry of state.fridge) {
-        const meta = itemMeta(entry);
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "item";
-        btn.dataset.id = entry.id;
-        btn.dataset.kind = meta.kind;
-        btn.dataset.type = entry.typeId;
-        btn.setAttribute("aria-label", meta.name);
-        btn.innerHTML = markupFor(entry);
-        if (state.selected === entry.id) btn.classList.add("selected");
-        const slot = document.createElement("div");
-        slot.className = "slot";
-        slot.appendChild(btn);
-        fridgeEl.appendChild(slot);
+      for (let row = 0; row < 4; row += 1) {
+        const shelf = document.createElement("div");
+        shelf.className = "shelf";
+        for (let col = 0; col < 4; col += 1) {
+          const entry = state.fridge[row * 4 + col];
+          const slot = document.createElement("div");
+          slot.className = "slot";
+          if (entry) {
+            const meta = itemMeta(entry);
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "item";
+            btn.dataset.id = entry.id;
+            btn.dataset.kind = meta.kind;
+            btn.dataset.type = entry.typeId;
+            btn.setAttribute("aria-label", meta.name);
+            btn.innerHTML = markupFor(entry);
+            if (state.selected === entry.id) btn.classList.add("selected");
+            slot.appendChild(btn);
+          }
+          shelf.appendChild(slot);
+        }
+        fridgeEl.appendChild(shelf);
       }
     }
 
@@ -913,12 +929,16 @@
       osc.stop(ctx.currentTime + 0.15);
     }
 
+    function comboMult() {
+      return Math.min(6, Math.max(1, state.combo));
+    }
+
     function addScore(amount, comboable) {
       if (comboable) {
         state.combo += 1;
-        const mult = state.combo >= 2 ? state.combo : 1;
-        state.score += amount * mult;
-        return amount * mult;
+        const gained = amount * comboMult();
+        state.score += gained;
+        return gained;
       }
       state.score += amount;
       return amount;
@@ -1058,7 +1078,7 @@
       state.selected = null;
       ghostEl.classList.remove("show");
       const best = saveBest(state.score);
-      document.getElementById("end-score").textContent = String(state.score);
+      document.getElementById("end-score").textContent = state.score.toLocaleString();
       document.getElementById("stat-boxes").textContent = String(state.filled);
       document.getElementById("stat-good").textContent = String(state.packedGood);
       document.getElementById("stat-oops").textContent = String(state.packedOops);
@@ -1085,11 +1105,22 @@
       renderFridge();
     }
 
+    fridgeEl.addEventListener("click", (event) => {
+      const btn = event.target.closest(".item");
+      if (!btn || state.screen !== "play") return;
+      if (drag && drag.dragging) return;
+      selectItem(btn.dataset.id);
+    });
+
     fridgeEl.addEventListener("pointerdown", (event) => {
       const btn = event.target.closest(".item");
       if (!btn || state.screen !== "play") return;
       event.preventDefault();
-      btn.setPointerCapture(event.pointerId);
+      try {
+        btn.setPointerCapture(event.pointerId);
+      } catch (_) {
+        /* synthetic or already-released pointers */
+      }
       drag = {
         id: btn.dataset.id,
         startX: event.clientX,
@@ -1143,20 +1174,25 @@
       }
     });
 
-    boxesEl.addEventListener("pointerup", (event) => {
-      if (drag) return;
+    function deliverSelected(event) {
+      if (state.screen !== "play" || !state.selected) return;
+      if (drag && drag.dragging) return;
+      const entry = findFridge(state.selected);
+      if (!entry) return;
       const box = event.target.closest("[data-box]");
-      if (!box || !state.selected) return;
-      const entry = findFridge(state.selected);
-      if (entry) placeInBox(entry, Number(box.dataset.box), event.clientX, event.clientY);
-    });
+      if (box) {
+        placeInBox(entry, Number(box.dataset.box), event.clientX, event.clientY);
+        return;
+      }
+      if (event.target.closest("#toss")) {
+        tossItem(entry, event.clientX, event.clientY);
+      }
+    }
 
-    tossEl.addEventListener("pointerup", (event) => {
-      if (drag) return;
-      if (!state.selected) return;
-      const entry = findFridge(state.selected);
-      if (entry) tossItem(entry, event.clientX, event.clientY);
-    });
+    boxesEl.addEventListener("pointerup", deliverSelected);
+    boxesEl.addEventListener("click", deliverSelected);
+    tossEl.addEventListener("pointerup", deliverSelected);
+    tossEl.addEventListener("click", deliverSelected);
 
     document.getElementById("play-btn").addEventListener("click", startRound);
     document.getElementById("again-btn").addEventListener("click", startRound);

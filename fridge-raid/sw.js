@@ -1,4 +1,4 @@
-const CACHE = "fridge-raid-v1";
+const CACHE = "fridge-raid-v3";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
