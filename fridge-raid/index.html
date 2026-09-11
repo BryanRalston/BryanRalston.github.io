@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fridge Raid</title>
+  <meta name="description" content="Pack lunchboxes before the bus. Fresh food scores. Spoiled food and junk cost you.">
+  <meta name="theme-color" content="#ff3d6e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #14c8d4;
+      --teal-deep: #0a8a96;
+      --pink: #ff3d6e;
+      --sun: #ffd23f;
+      --orange: #ff7a1a;
+      --grape: #6b4eff;
+      --ink: #14202b;
+      --fridge: #f3fbff;
+      --shelf: #d7eef8;
+      --good: #1db954;
+      --bad: #ff3d6e;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #0e8f9a;
+      color: var(--ink);
+      font-family: Fredoka, "Trebuchet MS", "Segoe UI", sans-serif;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #app {
+      position: relative;
+      height: 100dvh;
+      max-width: 28rem;
+      margin: 0 auto;
+      overflow: hidden;
+      background:
+        radial-gradient(120% 70% at 50% -10%, #7af0ea 0%, transparent 52%),
+        linear-gradient(180deg, #1ad4c8 0%, #14c8d4 38%, #0fb3c4 100%);
+    }
+    #app.shake { animation: shake 0.42s ease; }
+    #app.hurry .timer { color: #fff; background: var(--pink); }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      padding: calc(0.7rem + env(safe-area-inset-top)) 0.75rem calc(0.7rem + env(safe-area-inset-bottom));
+    }
+    .screen.active { display: flex; }
+
+    h1, h2, p { margin: 0; }
+    button {
+      font: inherit;
+      font-weight: 700;
+      border: 0;
+      cursor: pointer;
+    }
+
+    #title {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 0.7rem;
+    }
+    .wordmark {
+      font-family: Nunito, Fredoka, sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.4rem, 12vw, 3.4rem);
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      color: #fff;
+      text-shadow: 0 4px 0 #0a8a96, 0 10px 18px rgba(10, 60, 70, 0.25);
+    }
+    .wordmark span { color: var(--sun); }
+    .howto {
+      max-width: 22rem;
+      color: #07343a;
+      font-size: 1.02rem;
+      line-height: 1.35;
+      background: rgba(255,255,255,0.72);
+      border-radius: 16px;
+      padding: 0.7rem 0.85rem;
+    }
+    .best-chip {
+      display: none;
+      background: #fff;
+      border-radius: 999px;
+      padding: 0.28rem 0.75rem;
+      font-weight: 700;
+      color: var(--teal-deep);
+    }
+    .best-chip.show { display: inline-block; }
+    .play-btn, .again-btn {
+      background: var(--pink);
+      color: #fff;
+      font-size: 1.35rem;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      box-shadow: 0 5px 0 #c41548, 0 12px 20px rgba(196, 21, 72, 0.28);
+    }
+    .play-btn:active, .again-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c41548; }
+
+    .hero-fridge { width: min(58vw, 220px); height: auto; filter: drop-shadow(0 14px 16px rgba(8, 50, 60, 0.22)); }
+
+    #hud {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+    .stat {
+      background: #fff;
+      border-radius: 14px;
+      padding: 0.32rem 0.55rem;
+      box-shadow: 0 3px 0 rgba(10, 80, 90, 0.12);
+      min-width: 0;
+    }
+    .stat b { display: block; font-size: 1.15rem; line-height: 1.1; }
+    .stat span { font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; color: #4a6670; }
+    .timer {
+      justify-self: center;
+      background: var(--sun);
+      color: var(--ink);
+      font-family: Nunito, sans-serif;
+      font-weight: 900;
+      font-size: 1.55rem;
+      padding: 0.28rem 0.75rem;
+      border-radius: 999px;
+      box-shadow: 0 3px 0 #e0a800;
+      min-width: 4.6rem;
+      text-align: center;
+    }
+    .combo {
+      opacity: 0;
+      text-align: right;
+      color: var(--grape);
+    }
+    .combo.on { opacity: 1; }
+
+    .bus-track {
+      height: 10px;
+      border-radius: 999px;
+      background: #0a8a96;
+      margin: 0 0 0.55rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .bus-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 100%;
+      background: linear-gradient(90deg, #ffd23f, #ff7a1a);
+      transform-origin: left center;
+    }
+    .bus-emoji {
+      position: absolute;
+      top: -11px;
+      width: 28px;
+      height: 22px;
+      transform: translateX(-50%);
+    }
+
+    .fridge {
+      flex: 1;
+      min-height: 0;
+      background:
+        radial-gradient(80% 40% at 50% 0%, #ffffff 0%, rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, #eef9ff 0%, #c5e8f6 100%);
+      border: 10px solid #f7fdff;
+      outline: 4px solid #8ad8e6;
+      border-radius: 22px;
+      box-shadow:
+        inset 0 18px 30px rgba(255,255,255,0.65),
+        0 10px 0 #0a8a96;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 0.28rem;
+      padding: 0.55rem 0.45rem 0.4rem;
+      position: relative;
+    }
+    .fridge::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent calc(25% - 3px),
+        rgba(255,255,255,0.7) calc(25% - 3px),
+        #9fd4e8 25%
+      );
+      border-radius: 12px;
+      opacity: 0.55;
+    }
+
+    .slot {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      min-height: 0;
+    }
+    .item {
+      width: 100%;
+      height: 100%;
+      max-width: 78px;
+      max-height: 78px;
+      background: transparent;
+      padding: 0;
+      border-radius: 16px;
+      position: relative;
+    }
+    .item svg { width: 88%; height: 88%; display: block; margin: auto; }
+    .item.selected {
+      outline: 3px solid var(--sun);
+      outline-offset: -2px;
+      background: rgba(255, 210, 63, 0.28);
+      transform: scale(1.06);
+    }
+    .item.pop { animation: pop 0.28s ease; }
+
+    .dock {
+      display: grid;
+      grid-template-columns: 4.6rem 1fr;
+      gap: 0.45rem;
+      margin-top: 0.55rem;
+      align-items: stretch;
+    }
+    .toss {
+      background: linear-gradient(180deg, #5b4bff, #3d2ad4);
+      color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 0 #2a1c96;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+    }
+    .toss.hot { transform: scale(1.04); filter: brightness(1.12); }
+    .toss svg { width: 34px; height: 34px; }
+    .boxes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+    }
+    .box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 0.3rem 0.28rem 0.36rem;
+      box-shadow: 0 4px 0 rgba(10, 80, 90, 0.14);
+      min-width: 0;
+    }
+    .box.hot { outline: 3px solid var(--sun); transform: translateY(-2px); }
+    .box.slam { animation: slam 0.45s ease; }
+    .kid {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.18rem;
+    }
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.16rem;
+    }
+    .pocket {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: #e8f4f8;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .pocket svg { width: 92%; height: 92%; }
+    .box[data-kid="Scout"] { background: #d9f4ff; }
+    .box[data-kid="Pip"] { background: #ffe1ec; }
+    .box[data-kid="Nori"] { background: #e4ffe3; }
+
+    .float {
+      position: absolute;
+      z-index: 20;
+      pointer-events: none;
+      font-family: Nunito, sans-serif;
+      font-weight: 900;
+      font-size: 1.15rem;
+      animation: float 700ms ease forwards;
+      text-shadow: 0 2px 0 rgba(255,255,255,0.6);
+    }
+    .float.good { color: #0d8a3e; }
+    .float.bad { color: #c41548; }
+    .float.bonus { color: #5b4bff; font-size: 1.35rem; }
+
+    #ghost {
+      position: fixed;
+      width: 72px;
+      height: 72px;
+      pointer-events: none;
+      z-index: 40;
+      display: none;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
+      transform: translate(-50%, -60%);
+    }
+    #ghost.show { display: block; }
+    #ghost svg { width: 100%; height: 100%; }
+
+    #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
+    .report {
+      background: #fff;
+      border-radius: 22px;
+      padding: 1.1rem 1.2rem 1.2rem;
+      width: min(22rem, 100%);
+      box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
+    }
+    .report h2 {
+      font-family: Nunito, sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+    .big-score {
+      font-family: Nunito, sans-serif;
+      font-size: 3rem;
+      line-height: 1;
+      color: var(--pink);
+      margin: 0.25rem 0 0.4rem;
+    }
+    .report ul {
+      list-style: none;
+      margin: 0 0 0.9rem;
+      padding: 0;
+      text-align: left;
+    }
+    .report li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.28rem 0;
+      border-top: 2px dashed #e4eef2;
+      font-weight: 600;
+    }
+    .new-best { display: none; color: #0d8a3e; font-weight: 800; }
+    .new-best.show { display: block; }
+
+    @keyframes pop { 50% { transform: scale(1.16); } }
+    @keyframes slam { 30% { transform: scale(1.08) rotate(-2deg); } 70% { transform: scale(0.96) rotate(2deg); } }
+    @keyframes shake {
+      20% { transform: translateX(-6px) rotate(-1deg); }
+      40% { transform: translateX(6px) rotate(1deg); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    @keyframes float {
+      to { transform: translateY(-46px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <section id="title" class="screen active" data-screen="title">
+      <svg class="hero-fridge" viewBox="0 0 200 220" aria-hidden="true">
+        <defs>
+          <linearGradient id="door" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#f8fdff"/>
+            <stop offset="1" stop-color="#d5eef7"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="0.35" cy="0.2" r="0.8">
+            <stop offset="0" stop-color="#fff"/>
+            <stop offset="1" stop-color="#9fe4f5"/>
+          </radialGradient>
+        </defs>
+        <rect x="28" y="10" width="130" height="196" rx="16" fill="#f4fbff" stroke="#8ad8e6" stroke-width="6"/>
+        <rect x="40" y="26" width="78" height="164" rx="8" fill="url(#glow)"/>
+        <rect x="122" y="26" width="24" height="164" rx="6" fill="url(#door)"/>
+        <circle cx="136" cy="108" r="4" fill="#14c8d4"/>
+        <rect x="48" y="58" width="62" height="4" rx="2" fill="#fff"/>
+        <rect x="48" y="104" width="62" height="4" rx="2" fill="#fff"/>
+        <rect x="48" y="150" width="62" height="4" rx="2" fill="#fff"/>
+        <circle cx="62" cy="80" r="11" fill="#e4232a"/>
+        <rect x="78" y="72" width="22" height="16" rx="3" fill="#f3d27a"/>
+        <rect x="56" y="118" width="28" height="18" rx="4" fill="#7ad36a"/>
+        <ellipse cx="88" cy="168" rx="10" ry="7" fill="#8b5a2b"/>
+      </svg>
+      <h1 class="wordmark">FRIDGE<br><span>RAID</span></h1>
+      <p class="howto">Pack fresh food into lunchboxes before the bus. Toss spoiled leftovers and junk — packing those wrecks your score.</p>
+      <p id="title-best" class="best-chip"></p>
+      <button type="button" class="play-btn" id="play-btn">Play</button>
+    </section>
+
+    <section id="play" class="screen" data-screen="play">
+      <div id="hud">
+        <div class="stat"><span>Score</span><b id="score">0</b></div>
+        <div class="timer" id="timer">1:30</div>
+        <div class="stat combo" id="combo"><span>Combo</span><b>x1</b></div>
+      </div>
+      <div class="bus-track" aria-hidden="true">
+        <div class="bus-fill" id="bus-fill"></div>
+        <svg class="bus-emoji" id="bus-icon" viewBox="0 0 28 22">
+          <rect x="1" y="6" width="24" height="10" rx="2" fill="#ffd23f" stroke="#14202b" stroke-width="1.2"/>
+          <rect x="15" y="8" width="8" height="5" rx="1" fill="#7ad7ff"/>
+          <circle cx="8" cy="17" r="2.4" fill="#14202b"/>
+          <circle cx="20" cy="17" r="2.4" fill="#14202b"/>
+        </svg>
+      </div>
+      <div class="fridge" id="fridge" aria-label="Fridge shelves"></div>
+      <div class="dock">
+        <button type="button" class="toss" id="toss" aria-label="Toss spoiled food or junk">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M8 14h24l-2 18a4 4 0 0 1-4 3.5H14A4 4 0 0 1 10 32L8 14z" fill="#fff"/>
+            <path d="M6 12h28M16 12V8h8v4" stroke="#c9c2ff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          </svg>
+          TOSS
+        </button>
+        <div class="boxes" id="boxes"></div>
+      </div>
+    </section>
+
+    <section id="end" class="screen" data-screen="end">
+      <div class="report">
+        <h2 id="end-title">Bus is here!</h2>
+        <p class="big-score" id="end-score">0</p>
+        <p id="new-best" class="new-best">New personal best</p>
+        <ul>
+          <li><span>Lunchboxes filled</span><b id="stat-boxes">0</b></li>
+          <li><span>Fresh packed</span><b id="stat-good">0</b></li>
+          <li><span>Spoiled / junk packed</span><b id="stat-oops">0</b></li>
+          <li><span>Correct tosses</span><b id="stat-toss">0</b></li>
+          <li><span>Personal best</span><b id="stat-best">0</b></li>
+        </ul>
+        <button type="button" class="again-btn" id="again-btn">Play again</button>
+      </div>
+    </section>
+    <div id="ghost"></div>
+  </div>
+
+  <script>
+    const ROUND_MS = 90000;
+    const CAPACITY = 4;
+    const KIDS = ["Scout", "Pip", "Nori"];
+    const BEST_KEY = "fridge-raid-best";
+    const WEIGHTS = [
+      ["good", 46],
+      ["treat", 14],
+      ["spoiled", 28],
+      ["trap", 12],
+    ];
+
+    const CATALOG = {
+      apple: { kind: "good", name: "Apple", draw: drawApple },
+      sandwich: { kind: "good", name: "Sandwich", draw: drawSandwich },
+      yogurt: { kind: "good", name: "Yogurt", draw: drawYogurt },
+      carrot: { kind: "good", name: "Carrot", draw: drawCarrot },
+      grapes: { kind: "good", name: "Grapes", draw: drawGrapes },
+      banana: { kind: "good", name: "Banana", draw: drawBanana },
+      cheddar: { kind: "good", name: "Cheddar", draw: drawCheddar },
+      milk: { kind: "good", name: "Milk", draw: drawMilk },
+      berries: { kind: "good", name: "Strawberries", draw: drawBerries },
+      cookie: { kind: "treat", name: "Cookie", draw: drawCookie },
+      chips: { kind: "treat", name: "Chips", draw: drawChips },
+      juice: { kind: "treat", name: "Juice box", draw: drawJuice },
+      moldy: { kind: "spoiled", name: "Moldy cheese", draw: drawMoldy },
+      slime: { kind: "spoiled", name: "Slimy leftovers", draw: drawSlime },
+      expired: { kind: "spoiled", name: "Expired milk", draw: drawExpired },
+      mystery: { kind: "spoiled", name: "Mystery tub", draw: drawMystery },
+      rotten: { kind: "spoiled", name: "Rotten banana", draw: drawRotten },
+      keys: { kind: "trap", name: "Car keys", draw: drawKeys },
+      phone: { kind: "trap", name: "Phone", draw: drawPhone },
+      remote: { kind: "trap", name: "Remote", draw: drawRemote },
+    };
+
+    const BY_KIND = { good: [], treat: [], spoiled: [], trap: [] };
+    for (const [id, item] of Object.entries(CATALOG)) BY_KIND[item.kind].push(id);
+
+    let svgN = 0;
+    function gid(prefix) {
+      svgN += 1;
+      return prefix + svgN;
+    }
+
+    function wrap(label, inner) {
+      return `<svg viewBox="0 0 80 80" role="img" aria-label="${label}">${inner}</svg>`;
+    }
+
+    function drawApple() {
+      const g = gid("a");
+      return wrap("Apple", `
+        <defs><radialGradient id="${g}" cx="0.38" cy="0.32" r="0.7">
+          <stop offset="0" stop-color="#ff6b6b"/><stop offset="0.55" stop-color="#e4232a"/><stop offset="1" stop-color="#9d1018"/>
+        </radialGradient></defs>
+        <ellipse cx="40" cy="70" rx="16" ry="4.5" fill="rgba(20,40,50,0.18)"/>
+        <path d="M40 20c8-10 18-6 18 4 8 2 16 14 14 28-2 16-14 24-24 24s-22-6-26-22C18 36 26 24 34 22c0-8 4-14 6-2z" fill="url(#${g})"/>
+        <ellipse cx="30" cy="36" rx="7" ry="11" fill="rgba(255,255,255,0.28)"/>
+        <path d="M40 22c1-10 6-14 10-16" stroke="#5a3310" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M42 16c8-2 12 4 10 10-6 1-10-2-10-10z" fill="#3fa34d"/>
+      `);
+    }
+
+    function drawSandwich() {
+      return wrap("Sandwich", `
+        <ellipse cx="40" cy="70" rx="18" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M16 48l24 16 24-16-6-8-18 10-18-10z" fill="#c9843a"/>
+        <path d="M16 42l24 16 24-16-4-10H20z" fill="#f3d27a"/>
+        <path d="M18 40l22 14 22-14-2-5-20 10-20-10z" fill="#6fbf57"/>
+        <path d="M20 36l20 12 20-12-20-12z" fill="#f3d27a"/>
+        <path d="M22 34l18 10 18-10-3-4-15 7-15-7z" fill="#e85d4c"/>
+        <path d="M24 30l16 10 16-10-16-10z" fill="#f6de98"/>
+        <path d="M26 28c8-2 12 2 14 0 4 4-2 8-8 8s-10-2-6-8z" fill="#f0c14a"/>
+      `);
+    }
+
+    function drawYogurt() {
+      const g = gid("y");
+      return wrap("Yogurt", `
+        <defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#f7f3ea"/><stop offset="1" stop-color="#ddd4c4"/>
+        </linearGradient></defs>
+        <ellipse cx="40" cy="70" rx="14" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M26 28h28l4 34a10 10 0 0 1-10 9H32a10 10 0 0 1-10-9z" fill="url(#${g})" stroke="#c9c0b2" stroke-width="1.5"/>
+        <ellipse cx="40" cy="28" rx="15" ry="6" fill="#fff6f0"/>
+        <ellipse cx="40" cy="26" rx="12" ry="4.5" fill="#ff7aa2"/>
+        <path d="M34 38c6 4 12-2 16 4 0 8-6 12-10 12s-10-6-6-16z" fill="#ffb3c8"/>
+        <rect x="30" y="48" width="20" height="8" rx="2" fill="#14c8d4"/>
+      `);
+    }
+
+    function drawCarrot() {
+      return wrap("Carrot", `
+        <ellipse cx="40" cy="72" rx="12" ry="3.5" fill="rgba(20,40,50,0.16)"/>
+        <path d="M40 22c10 18 12 28 8 42-2 8-16 8-18 0-4-16 0-28 10-42z" fill="#f47b20"/>
+        <path d="M34 36c6 2 10-2 14 2 2 8-4 8-8 6s-8-2-6-8z" fill="#d65c0f" opacity="0.45"/>
+        <path d="M38 22c-8-12-4-16 2-12 2-10 10-8 10 0 8-4 10 6 4 10-2-8-10-4-16 2z" fill="#2f9e44"/>
+      `);
+    }
+
+    function drawGrapes() {
+      return wrap("Grapes", `
+        <ellipse cx="42" cy="72" rx="16" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M36 16c8-2 14 8 8 14" stroke="#5a3310" stroke-width="2.4" fill="none"/>
+        <path d="M44 18c6-6 12-2 10 4" fill="#3fa34d"/>
+        <circle cx="32" cy="34" r="8" fill="#7a3dff"/><circle cx="46" cy="32" r="8" fill="#8b52ff"/>
+        <circle cx="28" cy="48" r="8" fill="#6b2ee0"/><circle cx="42" cy="46" r="8.4" fill="#7a3dff"/>
+        <circle cx="54" cy="46" r="7.4" fill="#5b22c8"/><circle cx="36" cy="58" r="7.6" fill="#6b2ee0"/>
+        <circle cx="50" cy="58" r="7" fill="#4c1aae"/>
+        <ellipse cx="30" cy="31" rx="2.4" ry="1.8" fill="rgba(255,255,255,0.35)"/>
+      `);
+    }
+
+    function drawBanana() {
+      return wrap("Banana", `
+        <ellipse cx="40" cy="70" rx="18" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M18 28c8-10 20-12 34-4 10 6 16 20 10 28-8 8-20 4-30-6-8-8-16-12-14-18z" fill="#ffe14a"/>
+        <path d="M22 32c10-6 22-6 30 2 4 6 2 12-2 10-10-6-20-4-28-8z" fill="#fff3a0"/>
+        <path d="M18 28c-2 2 0 6 4 6" fill="#6b4a1e"/>
+        <path d="M62 52c2 4-2 8-6 6" fill="#6b4a1e"/>
+      `);
+    }
+
+    function drawCheddar() {
+      return wrap("Cheddar", `
+        <ellipse cx="42" cy="70" rx="16" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M18 50l8-26 38 10v22c0 6-8 10-18 10H30c-8 0-12-6-12-16z" fill="#f5c44a"/>
+        <path d="M26 24l30 8v-6L26 24z" fill="#ffe08a"/>
+        <circle cx="36" cy="46" r="4" fill="#e0a322"/>
+        <circle cx="50" cy="42" r="3.2" fill="#e0a322"/>
+        <circle cx="44" cy="56" r="2.6" fill="#e0a322"/>
+      `);
+    }
+
+    function drawMilk() {
+      return wrap("Milk carton", `
+        <ellipse cx="40" cy="72" rx="13" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <path d="M28 22l12-10 12 10v44a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6z" fill="#f7fbff" stroke="#b9d4e0" stroke-width="1.6"/>
+        <path d="M28 22h24l-12 10z" fill="#d9eef6"/>
+        <rect x="31" y="36" width="18" height="16" rx="3" fill="#14c8d4"/>
+        <circle cx="40" cy="44" r="4.5" fill="#fff"/>
+      `);
+    }
+
+    function drawBerries() {
+      return wrap("Strawberries", `
+        <ellipse cx="40" cy="72" rx="16" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M22 40c0-12 10-16 16-10 2-10 14-10 16 0 8-4 16 6 10 16-6 12-18 18-26 16-10-2-16-12-16-22z" fill="#e4232a"/>
+        <circle cx="30" cy="42" r="1.4" fill="#ffd23f"/><circle cx="38" cy="50" r="1.4" fill="#ffd23f"/>
+        <circle cx="46" cy="40" r="1.4" fill="#ffd23f"/><circle cx="50" cy="50" r="1.4" fill="#ffd23f"/>
+        <path d="M32 28c4 4 8 2 10-2 4 6 10 4 12-2-8 2-10-4-22 4z" fill="#2f9e44"/>
+      `);
+    }
+
+    function drawCookie() {
+      return wrap("Cookie", `
+        <ellipse cx="40" cy="70" rx="16" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <circle cx="40" cy="40" r="22" fill="#d4a05a"/>
+        <circle cx="40" cy="40" r="18.5" fill="#e8b86a"/>
+        <circle cx="30" cy="34" r="3.2" fill="#5a3310"/>
+        <circle cx="46" cy="30" r="2.6" fill="#5a3310"/>
+        <circle cx="50" cy="44" r="3" fill="#5a3310"/>
+        <circle cx="34" cy="48" r="2.4" fill="#5a3310"/>
+        <circle cx="42" cy="40" r="2" fill="#5a3310"/>
+      `);
+    }
+
+    function drawChips() {
+      return wrap("Chips", `
+        <ellipse cx="40" cy="72" rx="14" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <path d="M26 18h28l4 48a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8z" fill="#ff7a1a"/>
+        <path d="M26 18c4 6 24 6 28 0v10H26z" fill="#ffd23f"/>
+        <rect x="32" y="40" width="16" height="10" rx="2" fill="#fff"/>
+      `);
+    }
+
+    function drawJuice() {
+      return wrap("Juice box", `
+        <ellipse cx="40" cy="72" rx="13" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <rect x="26" y="22" width="28" height="42" rx="4" fill="#ff3d6e"/>
+        <rect x="26" y="22" width="10" height="42" rx="4" fill="rgba(255,255,255,0.12)"/>
+        <rect x="32" y="30" width="16" height="12" rx="2" fill="#ffd23f"/>
+        <path d="M48 18c8 2 8 12 2 14" stroke="#f4fbff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="51" cy="16" r="3" fill="#ffd23f"/>
+      `);
+    }
+
+    function drawMoldy() {
+      return wrap("Moldy cheese", `
+        <ellipse cx="42" cy="70" rx="16" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M16 52l10-28 40 12v20c0 6-10 10-20 10H28c-8 0-12-4-12-14z" fill="#c6b25a"/>
+        <path d="M26 24l30 9v-6L26 24z" fill="#d9c86e"/>
+        <circle cx="34" cy="46" r="4.5" fill="#5aa86a"/>
+        <circle cx="48" cy="42" r="5" fill="#3d8b6e"/>
+        <circle cx="42" cy="56" r="3.5" fill="#7ecb8a"/>
+        <circle cx="54" cy="52" r="3" fill="#2f6f4e"/>
+        <circle cx="30" cy="38" r="2.4" fill="#9ee0a8"/>
+      `);
+    }
+
+    function drawSlime() {
+      return wrap("Slimy leftovers", `
+        <ellipse cx="40" cy="72" rx="15" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <path d="M22 30h36l2 28a10 10 0 0 1-10 10H30a10 10 0 0 1-10-10z" fill="#8aa0aa"/>
+        <ellipse cx="40" cy="30" rx="18" ry="6" fill="#c5d4da"/>
+        <path d="M26 38c10 8 20-6 28 6 2 10-8 16-16 14-10-2-16-10-12-20z" fill="#6fbf57"/>
+        <path d="M30 44c6 4 12 0 16 6" stroke="#3d8b4a" stroke-width="2" fill="none"/>
+        <path d="M52 34c4 8 2 16 0 18" stroke="#7ad36a" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="36" cy="50" r="3" fill="#3d6b40"/>
+      `);
+    }
+
+    function drawExpired() {
+      return wrap("Expired milk", `
+        <ellipse cx="40" cy="72" rx="13" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <path d="M27 20l13-10 14 12v42a6 6 0 0 1-6 7H33a6 6 0 0 1-6-6z" fill="#e7d9a8" stroke="#b49a5a" stroke-width="1.6"/>
+        <path d="M27 22h27l-13 10z" fill="#cbb56a"/>
+        <rect x="32" y="38" width="16" height="12" rx="2" fill="#8f1d1d"/>
+        <path d="M35 41l10 6M45 41l-10 6" stroke="#fff" stroke-width="2"/>
+        <path d="M50 62c4 6 0 10-4 8" fill="#d6c36a"/>
+      `);
+    }
+
+    function drawMystery() {
+      return wrap("Mystery Tupperware", `
+        <ellipse cx="40" cy="72" rx="16" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <rect x="18" y="28" width="44" height="30" rx="8" fill="#6d7c86"/>
+        <rect x="16" y="22" width="48" height="12" rx="5" fill="#8b99a3"/>
+        <rect x="20" y="32" width="40" height="22" rx="6" fill="#4f5d66"/>
+        <text x="40" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="#ffd23f" font-family="Nunito, sans-serif">?</text>
+        <ellipse cx="40" cy="36" rx="10" ry="3" fill="rgba(255,255,255,0.12)"/>
+      `);
+    }
+
+    function drawRotten() {
+      return wrap("Rotten banana", `
+        <ellipse cx="40" cy="70" rx="18" ry="4" fill="rgba(20,40,50,0.16)"/>
+        <path d="M18 30c8-10 22-12 34-2 10 8 14 20 8 26-8 8-20 2-30-8-8-8-16-10-12-16z" fill="#6b4a1e"/>
+        <path d="M24 34c8-4 18-4 24 4 4 6 0 10-4 8-8-6-18-4-22-8z" fill="#3d2a12"/>
+        <circle cx="36" cy="40" r="3" fill="#2f6f4e"/>
+        <circle cx="48" cy="46" r="2.4" fill="#1d4d32"/>
+        <path d="M18 30c-2 2 0 6 4 5" fill="#1c140c"/>
+      `);
+    }
+
+    function drawKeys() {
+      return wrap("Car keys", `
+        <ellipse cx="40" cy="72" rx="14" ry="3.6" fill="rgba(20,40,50,0.16)"/>
+        <circle cx="30" cy="30" r="10" fill="#c0c6cc" stroke="#5d6670" stroke-width="3"/>
+        <circle cx="30" cy="30" r="4" fill="#eef2f5"/>
+        <path d="M38 34l22 16-4 6-6-4-3 4-5-6-4 3z" fill="#9aa3ab"/>
+        <rect x="48" y="44" width="8" height="3" rx="1" fill="#5d6670"/>
+      `);
+    }
+
+    function drawPhone() {
+      return wrap("Phone", `
+        <ellipse cx="40" cy="72" rx="12" ry="3.4" fill="rgba(20,40,50,0.16)"/>
+        <rect x="26" y="12" width="28" height="52" rx="6" fill="#1b2430"/>
+        <rect x="29" y="18" width="22" height="38" rx="2" fill="#3d5a80"/>
+        <circle cx="40" cy="59" r="2" fill="#9aa3ab"/>
+        <rect x="36" y="15" width="8" height="2" rx="1" fill="#5d6670"/>
+      `);
+    }
+
+    function drawRemote() {
+      return wrap("Remote", `
+        <ellipse cx="40" cy="72" rx="12" ry="3.4" fill="rgba(20,40,50,0.16)"/>
+        <rect x="28" y="10" width="24" height="56" rx="7" fill="#2a3140"/>
+        <circle cx="40" cy="22" r="5" fill="#ff3d6e"/>
+        <rect x="33" y="32" width="6" height="6" rx="1.4" fill="#6b4eff"/>
+        <rect x="41" y="32" width="6" height="6" rx="1.4" fill="#14c8d4"/>
+        <rect x="33" y="42" width="14" height="4" rx="1" fill="#5d6670"/>
+        <rect x="33" y="49" width="14" height="4" rx="1" fill="#5d6670"/>
+      `);
+    }
+
+    const app = document.getElementById("app");
+    const fridgeEl = document.getElementById("fridge");
+    const boxesEl = document.getElementById("boxes");
+    const tossEl = document.getElementById("toss");
+    const ghostEl = document.getElementById("ghost");
+    const scoreEl = document.getElementById("score");
+    const timerEl = document.getElementById("timer");
+    const comboEl = document.getElementById("combo");
+    const busFill = document.getElementById("bus-fill");
+    const busIcon = document.getElementById("bus-icon");
+
+    const state = {
+      screen: "title",
+      score: 0,
+      combo: 0,
+      filled: 0,
+      packedGood: 0,
+      packedOops: 0,
+      tossedBad: 0,
+      selected: null,
+      fridge: [],
+      boxes: [],
+      startedAt: 0,
+      raf: 0,
+    };
+
+    let drag = null;
+    let seq = 0;
+
+    function nextId() {
+      seq += 1;
+      return "i" + seq;
+    }
+
+    function pickKind() {
+      const total = WEIGHTS.reduce((sum, row) => sum + row[1], 0);
+      let roll = Math.random() * total;
+      for (const [kind, weight] of WEIGHTS) {
+        roll -= weight;
+        if (roll <= 0) return kind;
+      }
+      return "good";
+    }
+
+    function spawnItem(avoidId, kindHint) {
+      const kind = kindHint || pickKind();
+      const pool = BY_KIND[kind].filter((id) => id !== avoidId);
+      const typeId = pool[Math.floor(Math.random() * pool.length)] || BY_KIND[kind][0];
+      return { id: nextId(), typeId };
+    }
+
+    function seedFridge() {
+      const items = Array.from({ length: 16 }, () => spawnItem());
+      const count = (kind) => items.filter((entry) => itemMeta(entry).kind === kind).length;
+      if (count("good") < 4) items[0] = spawnItem(undefined, "good");
+      if (count("good") < 5) items[1] = spawnItem(undefined, "good");
+      if (count("spoiled") + count("trap") < 3) {
+        items[2] = spawnItem(undefined, "spoiled");
+        items[3] = spawnItem(undefined, "trap");
+      }
+      return items;
+    }
+
+    function itemMeta(entry) {
+      return CATALOG[entry.typeId];
+    }
+
+    function markupFor(entry) {
+      const meta = itemMeta(entry);
+      return meta.draw();
+    }
+
+    function loadBest() {
+      const raw = localStorage.getItem(BEST_KEY);
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function saveBest(score) {
+      const best = Math.max(loadBest(), score);
+      localStorage.setItem(BEST_KEY, String(best));
+      return best;
+    }
+
+    function showScreen(name) {
+      state.screen = name;
+      for (const screen of document.querySelectorAll(".screen")) {
+        screen.classList.toggle("active", screen.id === name);
+      }
+    }
+
+    function showTitleBest() {
+      const best = loadBest();
+      const chip = document.getElementById("title-best");
+      if (best > 0) {
+        chip.textContent = "Best " + best;
+        chip.classList.add("show");
+      }
+    }
+
+    function formatTime(ms) {
+      const total = Math.max(0, Math.ceil(ms / 1000));
+      const minutes = Math.floor(total / 60);
+      const seconds = String(total % 60).padStart(2, "0");
+      return minutes + ":" + seconds;
+    }
+
+    function renderHud(remaining) {
+      scoreEl.textContent = String(state.score);
+      timerEl.textContent = formatTime(remaining);
+      const comboOn = state.combo >= 2;
+      comboEl.classList.toggle("on", comboOn);
+      comboEl.querySelector("b").textContent = "x" + Math.max(1, state.combo);
+      const ratio = Math.max(0, Math.min(1, remaining / ROUND_MS));
+      busFill.style.transform = "scaleX(" + ratio + ")";
+      busIcon.style.left = (100 - ratio * 100) + "%";
+      app.classList.toggle("hurry", remaining <= 15000);
+    }
+
+    function renderFridge() {
+      fridgeEl.replaceChildren();
+      for (const entry of state.fridge) {
+        const meta = itemMeta(entry);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "item";
+        btn.dataset.id = entry.id;
+        btn.dataset.kind = meta.kind;
+        btn.dataset.type = entry.typeId;
+        btn.setAttribute("aria-label", meta.name);
+        btn.innerHTML = markupFor(entry);
+        if (state.selected === entry.id) btn.classList.add("selected");
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.appendChild(btn);
+        fridgeEl.appendChild(slot);
+      }
+    }
+
+    function renderBoxes() {
+      boxesEl.replaceChildren();
+      state.boxes.forEach((box, index) => {
+        const el = document.createElement("div");
+        el.className = "box";
+        el.dataset.box = String(index);
+        el.dataset.kid = box.kid;
+        el.innerHTML = `<div class="kid">${box.kid}</div><div class="slots"></div>`;
+        const grid = el.querySelector(".slots");
+        for (let i = 0; i < CAPACITY; i += 1) {
+          const pocket = document.createElement("div");
+          pocket.className = "pocket";
+          const held = box.slots[i];
+          if (held) pocket.innerHTML = markupFor(held);
+          grid.appendChild(pocket);
+        }
+        boxesEl.appendChild(el);
+      });
+    }
+
+    function floatText(x, y, text, tone) {
+      const node = document.createElement("div");
+      node.className = "float " + tone;
+      node.textContent = text;
+      node.style.left = x + "px";
+      node.style.top = y + "px";
+      app.appendChild(node);
+      setTimeout(() => node.remove(), 720);
+    }
+
+    function buzz(ok) {
+      if (navigator.vibrate) navigator.vibrate(ok ? 12 : 40);
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!buzz.ctx) buzz.ctx = new Ctx();
+      const ctx = buzz.ctx;
+      if (ctx.state === "suspended") ctx.resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = ok ? "triangle" : "sawtooth";
+      osc.frequency.value = ok ? 620 : 140;
+      gain.gain.value = 0.05;
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    }
+
+    function addScore(amount, comboable) {
+      if (comboable) {
+        state.combo += 1;
+        const mult = state.combo >= 2 ? state.combo : 1;
+        state.score += amount * mult;
+        return amount * mult;
+      }
+      state.score += amount;
+      return amount;
+    }
+
+    function breakCombo() {
+      state.combo = 0;
+    }
+
+    function findFridge(id) {
+      return state.fridge.find((entry) => entry.id === id);
+    }
+
+    function restock(id) {
+      const index = state.fridge.findIndex((entry) => entry.id === id);
+      if (index < 0) return;
+      const old = state.fridge[index].typeId;
+      state.fridge[index] = spawnItem(old);
+    }
+
+    function placeInBox(entry, boxIndex, clientX, clientY) {
+      const box = state.boxes[boxIndex];
+      if (!box || box.slots.length >= CAPACITY) return;
+      const meta = itemMeta(entry);
+      const rect = app.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      if (meta.kind === "spoiled") {
+        state.score -= 200;
+        state.packedOops += 1;
+        breakCombo();
+        app.classList.remove("shake");
+        void app.offsetWidth;
+        app.classList.add("shake");
+        floatText(x, y, "−200 yuck", "bad");
+        buzz(false);
+      } else if (meta.kind === "trap") {
+        state.score -= 250;
+        state.packedOops += 1;
+        breakCombo();
+        app.classList.remove("shake");
+        void app.offsetWidth;
+        app.classList.add("shake");
+        floatText(x, y, "−250 not food", "bad");
+        buzz(false);
+      } else if (meta.kind === "treat") {
+        const gained = addScore(35, false);
+        box.slots.push(entry);
+        state.packedGood += 1;
+        floatText(x, y, "+" + gained, "good");
+        buzz(true);
+      } else {
+        const gained = addScore(100, true);
+        box.slots.push(entry);
+        state.packedGood += 1;
+        floatText(x, y, "+" + gained, "good");
+        buzz(true);
+      }
+
+      restock(entry.id);
+      state.selected = null;
+      renderFridge();
+      renderBoxes();
+
+      if (meta.kind !== "spoiled" && meta.kind !== "trap" && box.slots.length >= CAPACITY) {
+        state.filled += 1;
+        state.score += 300;
+        floatText(x, y - 28, "+300 packed!", "bonus");
+        const kid = box.kid;
+        const node = boxesEl.querySelector(`[data-box="${boxIndex}"]`);
+        if (node) node.classList.add("slam");
+        window.setTimeout(() => {
+          if (state.screen !== "play") return;
+          if (state.boxes[boxIndex] && state.boxes[boxIndex].slots.length >= CAPACITY) {
+            state.boxes[boxIndex] = { kid, slots: [] };
+            renderBoxes();
+          }
+        }, 420);
+      }
+
+      renderHud(ROUND_MS - (performance.now() - state.startedAt));
+    }
+
+    function tossItem(entry, clientX, clientY) {
+      const meta = itemMeta(entry);
+      const rect = app.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      if (meta.kind === "spoiled" || meta.kind === "trap") {
+        const gained = addScore(75, true);
+        state.tossedBad += 1;
+        floatText(x, y, "+" + gained + " tossed", "bonus");
+        buzz(true);
+      } else {
+        state.score -= 50;
+        breakCombo();
+        floatText(x, y, "−50 waste", "bad");
+        buzz(false);
+      }
+      restock(entry.id);
+      state.selected = null;
+      renderFridge();
+      renderHud(ROUND_MS - (performance.now() - state.startedAt));
+    }
+
+    function targetFromPoint(x, y) {
+      const hit = document.elementFromPoint(x, y);
+      if (!hit) return null;
+      const box = hit.closest("[data-box]");
+      if (box) return { kind: "box", index: Number(box.dataset.box) };
+      if (hit.closest("#toss")) return { kind: "toss" };
+      return null;
+    }
+
+    function startRound() {
+      cancelAnimationFrame(state.raf);
+      state.score = 0;
+      state.combo = 0;
+      state.filled = 0;
+      state.packedGood = 0;
+      state.packedOops = 0;
+      state.tossedBad = 0;
+      state.selected = null;
+      state.fridge = seedFridge();
+      state.boxes = KIDS.map((kid) => ({ kid, slots: [] }));
+      state.startedAt = performance.now();
+      showScreen("play");
+      renderFridge();
+      renderBoxes();
+      renderHud(ROUND_MS);
+      tick();
+    }
+
+    function finishRound() {
+      cancelAnimationFrame(state.raf);
+      state.selected = null;
+      ghostEl.classList.remove("show");
+      const best = saveBest(state.score);
+      document.getElementById("end-score").textContent = String(state.score);
+      document.getElementById("stat-boxes").textContent = String(state.filled);
+      document.getElementById("stat-good").textContent = String(state.packedGood);
+      document.getElementById("stat-oops").textContent = String(state.packedOops);
+      document.getElementById("stat-toss").textContent = String(state.tossedBad);
+      document.getElementById("stat-best").textContent = String(best);
+      document.getElementById("new-best").classList.toggle("show", state.score >= best && state.score > 0);
+      const title = state.filled >= 4 ? "Lunch hero!" : state.packedOops > 3 ? "Bus still left." : "Bus is here!";
+      document.getElementById("end-title").textContent = title;
+      showScreen("end");
+    }
+
+    function tick() {
+      const remaining = ROUND_MS - (performance.now() - state.startedAt);
+      renderHud(remaining);
+      if (remaining <= 0) {
+        finishRound();
+        return;
+      }
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function selectItem(id) {
+      state.selected = id;
+      renderFridge();
+    }
+
+    fridgeEl.addEventListener("pointerdown", (event) => {
+      const btn = event.target.closest(".item");
+      if (!btn || state.screen !== "play") return;
+      event.preventDefault();
+      btn.setPointerCapture(event.pointerId);
+      drag = {
+        id: btn.dataset.id,
+        startX: event.clientX,
+        startY: event.clientY,
+        dragging: false,
+        pointerId: event.pointerId,
+      };
+      selectItem(btn.dataset.id);
+    });
+
+    window.addEventListener("pointermove", (event) => {
+      if (!drag) return;
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+      if (!drag.dragging && dx * dx + dy * dy > 64) {
+        drag.dragging = true;
+        const entry = findFridge(drag.id);
+        if (entry) {
+          ghostEl.innerHTML = markupFor(entry);
+          ghostEl.classList.add("show");
+        }
+      }
+      if (drag.dragging) {
+        ghostEl.style.left = event.clientX + "px";
+        ghostEl.style.top = event.clientY + "px";
+        const over = targetFromPoint(event.clientX, event.clientY);
+        tossEl.classList.toggle("hot", over && over.kind === "toss");
+        for (const box of boxesEl.querySelectorAll(".box")) {
+          box.classList.toggle("hot", over && over.kind === "box" && String(over.index) === box.dataset.box);
+        }
+      }
+    });
+
+    window.addEventListener("pointerup", (event) => {
+      if (!drag) return;
+      const current = drag;
+      drag = null;
+      ghostEl.classList.remove("show");
+      tossEl.classList.remove("hot");
+      for (const box of boxesEl.querySelectorAll(".box")) box.classList.remove("hot");
+      const entry = findFridge(current.id);
+      if (!entry) return;
+      if (current.dragging) {
+        const over = targetFromPoint(event.clientX, event.clientY);
+        if (over && over.kind === "box") placeInBox(entry, over.index, event.clientX, event.clientY);
+        else if (over && over.kind === "toss") tossItem(entry, event.clientX, event.clientY);
+        else {
+          state.selected = null;
+          renderFridge();
+        }
+      }
+    });
+
+    boxesEl.addEventListener("pointerup", (event) => {
+      if (drag) return;
+      const box = event.target.closest("[data-box]");
+      if (!box || !state.selected) return;
+      const entry = findFridge(state.selected);
+      if (entry) placeInBox(entry, Number(box.dataset.box), event.clientX, event.clientY);
+    });
+
+    tossEl.addEventListener("pointerup", (event) => {
+      if (drag) return;
+      if (!state.selected) return;
+      const entry = findFridge(state.selected);
+      if (entry) tossItem(entry, event.clientX, event.clientY);
+    });
+
+    document.getElementById("play-btn").addEventListener("click", startRound);
+    document.getElementById("again-btn").addEventListener("click", startRound);
+
+    showTitleBest();
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>

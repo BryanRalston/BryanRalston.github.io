@@ -1,0 +1,18 @@
+{
+  "name": "Fridge Raid",
+  "short_name": "Fridge Raid",
+  "description": "Pack lunchboxes before the bus. Fresh food scores. Spoiled food and junk cost you.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14c8d4",
+  "theme_color": "#ff3d6e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
