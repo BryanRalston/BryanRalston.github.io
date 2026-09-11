@@ -356,6 +356,18 @@
       box-shadow: 0 1px 0 rgba(20, 40, 50, 0.08);
     }
     .pip.bonus { outline-style: dotted; }
+    .crave {
+      font-size: 0.66rem;
+      font-weight: 800;
+      text-align: center;
+      background: #fff6d8;
+      border-radius: 999px;
+      padding: 0.08rem 0.28rem;
+      margin: 0 0 0.14rem;
+      line-height: 1.15;
+    }
+    .crave.hit { background: #d8ffe0; }
+    .box.yum { animation: sparkle 0.6s ease; }
     .need-row {
       display: flex;
       flex-wrap: wrap;
@@ -501,6 +513,55 @@
     @keyframes float {
       to { transform: translateY(-46px); opacity: 0; }
     }
+    @keyframes sparkle {
+      30% { filter: brightness(1.18); box-shadow: 0 0 0 6px rgba(255, 210, 63, 0.35), 0 4px 0 rgba(10, 80, 90, 0.14); }
+      100% { filter: none; }
+    }
+    .fridge.slide .item { animation: slide 0.45s ease; }
+    @keyframes slide {
+      0% { transform: translateX(-10px); }
+      40% { transform: translateX(8px); }
+      100% { transform: translateX(0); }
+    }
+    #event-banner {
+      position: absolute;
+      left: 50%;
+      top: 36%;
+      transform: translate(-50%, -50%) scale(0.92);
+      z-index: 26;
+      min-width: 12rem;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 16px;
+      padding: 0.55rem 0.9rem 0.6rem;
+      box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+    }
+    #event-banner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #event-banner strong { display: block; font-family: Nunito, sans-serif; font-size: 1.15rem; }
+    #event-banner span { font-size: 0.82rem; font-weight: 700; color: #4a6670; }
+    .star-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.7rem;
+      margin: 0.15rem 0 0.55rem;
+    }
+    .star-slot { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+    .star-slot small { font-size: 0.68rem; font-weight: 800; color: #4a6670; text-transform: uppercase; letter-spacing: 0.03em; }
+    .star {
+      font-size: 1.7rem;
+      line-height: 1;
+      color: #d5dde2;
+      text-shadow: 0 2px 0 rgba(20, 40, 50, 0.08);
+    }
+    .star.on { color: #ffd23f; text-shadow: 0 2px 0 #e0a800; }
+    .best-stars { font-size: 1rem; letter-spacing: 0.08em; color: #e0a800; }
   </style>
 </head>
 <body>
@@ -530,7 +591,7 @@
         <ellipse cx="88" cy="168" rx="10" ry="7" fill="#8b5a2b"/>
       </svg>
       <h1 class="wordmark">FRIDGE<br><span>RAID</span></h1>
-      <p class="howto">Pack a balanced lunch before the bus. Start with Scout — more kids unlock later. Fruit, veg, and protein seal a box. Treats are extra. Toss spoiled leftovers and junk.</p>
+      <p class="howto">Pack a balanced lunch before the bus. Start with Scout — more kids unlock later. Hit each kid's craving for yum bonus. Fruit, veg, and protein seal a box. Treats are extra. Toss spoiled leftovers and junk.</p>
       <p id="title-best" class="best-chip"></p>
       <div class="title-actions">
         <button type="button" class="play-btn" id="play-btn">Play campaign</button>
@@ -575,6 +636,7 @@
       <div class="intro-card">
         <p class="intro-kicker" id="intro-kicker">Level 1</p>
         <h2 id="intro-title">Scout's first lunch</h2>
+        <p class="best-stars" id="intro-stars" hidden></p>
         <div class="kid-row" id="intro-kids"></div>
         <div class="need-row" id="intro-need"></div>
         <p id="intro-blurb">Seal Scout's box with fruit + protein. Veg is extra credit if you pack it first.</p>
@@ -586,6 +648,7 @@
       <div class="report">
         <h2 id="end-title">Bus is here!</h2>
         <p class="big-score" id="end-score">0</p>
+        <div class="star-row" id="star-row" hidden></div>
         <p id="new-best" class="new-best">New personal best</p>
         <p class="end-note" id="end-note"></p>
         <ul>
@@ -603,6 +666,10 @@
         </div>
       </div>
     </section>
+    <div id="event-banner" aria-live="polite">
+      <strong id="event-title">Fresh delivery!</strong>
+      <span id="event-sub">Good food just hit the shelves</span>
+    </div>
     <div id="ghost"></div>
   </div>
 
@@ -610,6 +677,12 @@
     const CAPACITY = 4;
     const BEST_KEY = "fridge-raid-best";
     const CLEARED_KEY = "fridge-raid-cleared";
+    const STAR_KEY = "fridge-raid-stars";
+    const KID_CRAVING_BIAS = {
+      Scout: ["fruit", "apple", "sandwich", "protein"],
+      Pip: ["berries", "juice", "treat", "veg"],
+      Nori: ["roll", "grain", "carrot", "veg"],
+    };
     const GROUP_META = {
       fruit: { label: "Fruit", icon: "🍎" },
       veg: { label: "Veg", icon: "🥕" },
@@ -631,6 +704,9 @@
         weights: [["good", 64], ["treat", 16], ["spoiled", 14], ["trap", 6]],
         minGood: 7,
         minBad: 2,
+        starTimeMs: 25000,
+        starScore: 400,
+        events: [],
       },
       {
         id: "l2",
@@ -645,6 +721,9 @@
         weights: [["good", 50], ["treat", 14], ["spoiled", 24], ["trap", 12]],
         minGood: 6,
         minBad: 3,
+        starTimeMs: 20000,
+        starScore: 700,
+        events: [{ type: "delivery", atMs: 1600 }],
       },
       {
         id: "l3",
@@ -659,6 +738,12 @@
         weights: [["good", 42], ["treat", 12], ["spoiled", 30], ["trap", 16]],
         minGood: 6,
         minBad: 4,
+        starTimeMs: 18000,
+        starScore: 1000,
+        events: [
+          { type: "delivery", atMs: 2000 },
+          { type: "slide", atMs: 38000 },
+        ],
       },
       {
         id: "rush",
@@ -675,6 +760,12 @@
         minBad: 4,
         endless: true,
         risingSpoil: true,
+        starTimeMs: 0,
+        starScore: 1200,
+        events: [
+          { type: "slide", atMs: 2500 },
+          { type: "delivery", atMs: 42000 },
+        ],
       },
     ];
 
@@ -1023,6 +1114,11 @@
       closing: false,
       endNext: "next",
       endAgain: "retry",
+      cravings: {},
+      events: [],
+      eventLog: [],
+      yumHits: 0,
+      lastStars: [false, false, false],
     };
 
     let drag = null;
@@ -1105,6 +1201,7 @@
         if (level.minBad > 1) items[15] = spawnItem(undefined, "trap");
       }
       ensureNeededGroups(items);
+      ensureCravingOnShelf(items);
       return items;
     }
 
@@ -1164,6 +1261,217 @@
       state.screen = name;
       for (const screen of document.querySelectorAll(".screen")) {
         screen.classList.toggle("active", screen.id === name);
+      }
+    }
+
+    function cravingFromGroup(group) {
+      const meta = GROUP_META[group];
+      return { kind: "group", group, typeId: "", label: meta.label, icon: meta.icon };
+    }
+
+    function cravingFromItem(typeId) {
+      const meta = CATALOG[typeId];
+      const groups = foodGroupsOf(meta);
+      const group = groups[0] || "treat";
+      return {
+        kind: "item",
+        group,
+        typeId,
+        label: meta.name,
+        icon: (GROUP_META[group] || GROUP_META.treat).icon,
+      };
+    }
+
+    function matchesCraving(entry, craving) {
+      if (!entry || !craving) return false;
+      if (craving.kind === "item") return entry.typeId === craving.typeId;
+      return foodGroupsOf(itemMeta(entry)).includes(craving.group);
+    }
+
+    function rollCraving(kid, level, used) {
+      const taken = used || new Set();
+      const bias = KID_CRAVING_BIAS[kid] || [];
+      const groupPool = level.need.filter((group) => !taken.has("g:" + group));
+      const itemPool = Object.keys(CATALOG).filter((id) => {
+        const meta = CATALOG[id];
+        if (meta.kind !== "good" && meta.kind !== "treat") return false;
+        if (taken.has("i:" + id)) return false;
+        const groups = foodGroupsOf(meta);
+        return groups.some((group) => level.need.includes(group) || (group === "treat" && level.number > 1));
+      });
+      const biasHit = bias.find((key) => {
+        if (GROUP_META[key] && (groupPool.includes(key) || level.need.includes(key))) return true;
+        if (CATALOG[key] && itemPool.includes(key)) return true;
+        return false;
+      });
+      const preferItem = Math.random() < 0.4 && itemPool.length > 0;
+      if (biasHit && CATALOG[biasHit] && (preferItem || !GROUP_META[biasHit])) {
+        return cravingFromItem(biasHit);
+      }
+      if (biasHit && GROUP_META[biasHit] && !preferItem) return cravingFromGroup(biasHit);
+      if (preferItem) {
+        return cravingFromItem(itemPool[Math.floor(Math.random() * itemPool.length)]);
+      }
+      const group = groupPool[0] || level.need[Math.floor(Math.random() * level.need.length)] || "fruit";
+      return cravingFromGroup(group);
+    }
+
+    function assignCravings() {
+      const level = currentLevel();
+      const used = new Set();
+      state.cravings = {};
+      for (const kid of level.kids) {
+        const craving = rollCraving(kid, level, used);
+        state.cravings[kid] = craving;
+        used.add(craving.kind === "item" ? "i:" + craving.typeId : "g:" + craving.group);
+      }
+    }
+
+    function rerollKidCraving(kid) {
+      const used = new Set();
+      for (const [name, craving] of Object.entries(state.cravings)) {
+        if (name === kid || !craving) continue;
+        used.add(craving.kind === "item" ? "i:" + craving.typeId : "g:" + craving.group);
+      }
+      state.cravings[kid] = rollCraving(kid, currentLevel(), used);
+    }
+
+    function ensureCravingOnShelf(items) {
+      for (const craving of Object.values(state.cravings)) {
+        if (!craving) continue;
+        const has = items.some((entry) => matchesCraving(entry, craving));
+        if (has) continue;
+        let idx = items.findIndex((entry) => {
+          const kind = itemMeta(entry).kind;
+          return kind === "spoiled" || kind === "trap" || kind === "treat";
+        });
+        if (idx < 0) idx = items.length - 1;
+        items[idx] = craving.kind === "item"
+          ? { id: nextId(), typeId: craving.typeId }
+          : spawnItem(undefined, craving.group === "treat" ? "treat" : "good", craving.group);
+      }
+    }
+
+    function cravingChip(kid, hit) {
+      const craving = state.cravings[kid];
+      if (!craving) return "";
+      return `<div class="crave${hit ? " hit" : ""}" data-crave="${craving.kind === "item" ? craving.typeId : craving.group}">😋 ${craving.icon} ${craving.label}</div>`;
+    }
+
+    function loadStars() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STAR_KEY) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function saveStars(levelId, count) {
+      const all = loadStars();
+      all[levelId] = Math.max(Number(all[levelId]) || 0, count);
+      localStorage.setItem(STAR_KEY, JSON.stringify(all));
+      return all[levelId];
+    }
+
+    function starMarkup(count) {
+      return "★★★".slice(0, count) + "☆☆☆".slice(count, 3);
+    }
+
+    function computeStars(won) {
+      const level = currentLevel();
+      const sealed = level.endless
+        ? state.filled >= level.kids.length
+        : level.kids.every((name) => state.fedKids.has(name));
+      const a = Boolean(won && sealed);
+      const b = state.packedOops === 0;
+      const remain = Math.max(0, remainingMs());
+      const levelScore = state.score - state.scoreAtLevelStart;
+      const c = level.endless
+        ? levelScore >= (level.starScore || 0)
+        : remain >= (level.starTimeMs || 0) || levelScore >= (level.starScore || 0);
+      return [a, b, c];
+    }
+
+    function renderStarRow(stars) {
+      const labels = ["Sealed", "Clean", "Hustle"];
+      const row = document.getElementById("star-row");
+      row.hidden = false;
+      row.innerHTML = stars.map((on, index) => (
+        `<div class="star-slot"><span class="star${on ? " on" : ""}" data-star="${index}" data-on="${on ? "1" : "0"}">★</span><small>${labels[index]}</small></div>`
+      )).join("");
+    }
+
+    function showEventBanner(type, title, sub) {
+      const banner = document.getElementById("event-banner");
+      document.getElementById("event-title").textContent = title;
+      document.getElementById("event-sub").textContent = sub;
+      banner.dataset.event = type;
+      banner.classList.add("show");
+      window.clearTimeout(showEventBanner.timer);
+      showEventBanner.timer = window.setTimeout(() => banner.classList.remove("show"), 1000);
+    }
+
+    function deliverFresh() {
+      const level = currentLevel();
+      const picks = [];
+      state.fridge.forEach((entry, index) => {
+        const kind = itemMeta(entry).kind;
+        if (kind === "spoiled" || kind === "trap") picks.push(index);
+      });
+      if (picks.length < 4) {
+        for (let i = 0; i < state.fridge.length && picks.length < 5; i += 1) {
+          if (!picks.includes(i)) picks.push(i);
+        }
+      }
+      const replace = picks.slice(0, 5);
+      replace.forEach((index, i) => {
+        const group = level.need[i % level.need.length];
+        state.fridge[index] = spawnItem(undefined, "good", group);
+      });
+      ensureNeededGroups(state.fridge);
+      ensureCravingOnShelf(state.fridge);
+    }
+
+    function slideShelves() {
+      const items = state.fridge.slice();
+      for (let i = items.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const hold = items[i];
+        items[i] = items[j];
+        items[j] = hold;
+      }
+      state.fridge = items;
+      fridgeEl.classList.remove("slide");
+      void fridgeEl.offsetWidth;
+      fridgeEl.classList.add("slide");
+      window.setTimeout(() => fridgeEl.classList.remove("slide"), 480);
+    }
+
+    function fireFridgeEvent(type) {
+      switch (type) {
+        case "delivery":
+          showEventBanner("delivery", "Fresh delivery!", "Good food just hit the shelves");
+          deliverFresh();
+          break;
+        case "slide":
+          showEventBanner("slide", "Shelf slide!", "Everything shuffled");
+          slideShelves();
+          break;
+        default:
+          return;
+      }
+      state.eventLog.push(type);
+      renderFridge();
+    }
+
+    function tickEvents() {
+      if (state.screen !== "play" || state.closing) return;
+      const elapsed = performance.now() - state.startedAt;
+      for (const event of state.events) {
+        if (event.fired || elapsed < event.atMs) continue;
+        event.fired = true;
+        fireFridgeEvent(event.type);
       }
     }
 
@@ -1290,7 +1598,8 @@
         el.dataset.box = String(index);
         el.dataset.kid = box.kid;
         if (boxMeetsNeed(box)) el.classList.add("ready");
-        el.innerHTML = `<div class="kid">${box.kid}</div><div class="pips">${pipMarkup(box)}</div><div class="slots"></div>`;
+        if (box.cravingHit) el.classList.add("yum");
+        el.innerHTML = `<div class="kid">${box.kid}</div>${cravingChip(box.kid, box.cravingHit)}<div class="pips">${pipMarkup(box)}</div><div class="slots"></div>`;
         const grid = el.querySelector(".slots");
         for (let i = 0; i < CAPACITY; i += 1) {
           const pocket = document.createElement("div");
@@ -1363,6 +1672,7 @@
       const old = state.fridge[index].typeId;
       state.fridge[index] = spawnItem(old);
       ensureNeededGroups(state.fridge);
+      ensureCravingOnShelf(state.fridge);
     }
 
     function findReplaceable(box) {
@@ -1416,8 +1726,9 @@
       const node = boxesEl.querySelector(`[data-box="${boxIndex}"]`);
       if (node) node.classList.add("slam", "ready");
       window.setTimeout(() => {
-        if (state.screen !== "play" || state.closing) return;
-        state.boxes[boxIndex] = { kid, slots: [] };
+        if (state.screen !== "play") return;
+        rerollKidCraving(kid);
+        state.boxes[boxIndex] = { kid, slots: [], cravingHit: false };
         renderBoxes();
         if (!level.endless && level.kids.every((name) => state.fedKids.has(name))) {
           finishLevel(true);
@@ -1475,6 +1786,12 @@
           buzz(true);
         }
         restock(entry.id);
+        if (!box.cravingHit && matchesCraving(entry, state.cravings[box.kid])) {
+          box.cravingHit = true;
+          state.yumHits += 1;
+          const yum = addScore(80, false);
+          floatText(x, y - 22, "YUM +" + yum, "bonus");
+        }
       }
 
       state.selected = null;
@@ -1525,8 +1842,20 @@
       document.getElementById("intro-title").textContent = level.name;
       document.getElementById("intro-blurb").textContent = level.blurb;
       document.getElementById("intro-kids").innerHTML = level.kids
-        .map((kid) => `<span class="kid-chip" data-kid="${kid}">${kid}</span>`)
+        .map((kid) => {
+          const craving = state.cravings[kid];
+          const extra = craving ? ` · 😋 ${craving.icon}` : "";
+          return `<span class="kid-chip" data-kid="${kid}">${kid}${extra}</span>`;
+        })
         .join("");
+      const best = Number(loadStars()[level.id]) || 0;
+      const starEl = document.getElementById("intro-stars");
+      if (best > 0) {
+        starEl.hidden = false;
+        starEl.textContent = "Best " + starMarkup(best);
+      } else {
+        starEl.hidden = true;
+      }
       document.getElementById("intro-need").innerHTML =
         level.need
           .map((group) => `<span class="need-pill">${GROUP_META[group].icon} ${GROUP_META[group].label}</span>`)
@@ -1537,6 +1866,7 @@
     }
 
     function showIntro() {
+      assignCravings();
       fillIntro();
       showScreen("intro");
     }
@@ -1565,8 +1895,13 @@
       state.fedKids = new Set();
       state.selected = null;
       state.closing = false;
+      state.yumHits = 0;
+      state.eventLog = [];
+      state.events = (level.events || []).map((event) => ({ type: event.type, atMs: event.atMs, fired: false }));
+      document.getElementById("event-banner").classList.remove("show");
+      if (!level.kids.every((kid) => state.cravings[kid])) assignCravings();
       state.fridge = seedFridge();
-      state.boxes = level.kids.map((kid) => ({ kid, slots: [] }));
+      state.boxes = level.kids.map((kid) => ({ kid, slots: [], cravingHit: false }));
       state.startedAt = performance.now();
       boxesEl.dataset.count = String(level.kids.length);
       showScreen("play");
@@ -1621,6 +1956,11 @@
       } else {
         note = "Spoiled leftovers kept coming. Nice raid.";
       }
+      const stars = computeStars(won);
+      state.lastStars = stars;
+      const starCount = stars.filter(Boolean).length;
+      if (won || starCount > 0) saveStars(level.id, starCount);
+      renderStarRow(stars);
       const best = saveBest(state.score);
       document.getElementById("end-score").textContent = state.score.toLocaleString();
       document.getElementById("stat-boxes").textContent = String(state.filled);
@@ -1656,11 +1996,13 @@
         return;
       }
       state.score = state.scoreAtLevelStart;
+      state.cravings = {};
       startLevel();
     }
 
     function tick() {
       if (state.closing) return;
+      tickEvents();
       const remaining = remainingMs();
       renderHud(remaining);
       if (remaining <= 0) {
@@ -1792,6 +2134,13 @@
           need: currentLevel().need,
           kids: currentLevel().kids,
           filled: state.filled,
+          yumHits: state.yumHits,
+          cravings: Object.fromEntries(
+            Object.entries(state.cravings).map(([kid, craving]) => [kid, craving])
+          ),
+          events: state.events.map((event) => ({ type: event.type, atMs: event.atMs, fired: event.fired })),
+          eventLog: state.eventLog.slice(),
+          stars: state.lastStars.slice(),
           fridge: state.fridge.map((entry) => ({
             id: entry.id,
             typeId: entry.typeId,
@@ -1803,6 +2152,8 @@
             groups: Array.from(groupsInBox(box)),
             count: box.slots.length,
             ready: boxMeetsNeed(box),
+            craving: state.cravings[box.kid] || null,
+            cravingHit: Boolean(box.cravingHit),
           })),
         };
       },

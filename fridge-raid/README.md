@@ -17,6 +17,29 @@ Tap or drag fridge items into a kid lunchbox, or into **TOSS**. A box seals only
 
 Beat a campaign level by feeding every kid on that stop at least one sealed lunch. Leftover time becomes a bonus, then **Next level**. After L3, free-play **Bus rush** unlocks on the title screen.
 
+## Cravings
+
+Each kid wants something different every run (a food group, or a specific snack). A yellow **😋** chip sits on their lunchbox. Pack that craving for a **YUM** bonus and a sparkle. After a seal, their next craving rerolls.
+
+## Fridge events
+
+L2+ throws short, telegraphed moments (banner ~1s):
+
+- **Fresh delivery** — good food bursts onto shelves (never removes your last needed groups)
+- **Shelf slide** — the same items shuffle places
+
+L2 gets one event. L3 and Bus rush get two. L1 stays quiet so you can learn the lunch rule.
+
+## Stars
+
+A 3-star clear on the success screen:
+
+1. **Sealed** — every kid on that stop got a balanced lunch
+2. **Clean** — zero spoiled/junk packed this level
+3. **Hustle** — time left above the level bar, or you scored past it
+
+Best stars per level persist in localStorage.
+
 ## Food groups
 
 - **Fruit:** apple, grapes, banana, strawberries
@@ -32,6 +55,7 @@ Beat a campaign level by feeding every kid on that stop at least one sealed lunc
 - Treat: +35
 - Seal a balanced lunch: +250 (Bus rush multiplies this)
 - L1 veg extra credit on seal: +75
+- Craving YUM: +80
 - Time leftover after a campaign clear: +12 per second
 - Toss spoiled or junk: +75
 - Pack spoiled: −200, shake, combo dies
