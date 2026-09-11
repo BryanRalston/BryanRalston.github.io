@@ -1,5 +1,31 @@
-const CACHE = "fridge-raid-v6";
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
+const CACHE = "fridge-raid-v7";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./assets/fridge.png",
+  "./assets/apple.png",
+  "./assets/banana.png",
+  "./assets/berries.png",
+  "./assets/carrot.png",
+  "./assets/cheddar.png",
+  "./assets/chips.png",
+  "./assets/cookie.png",
+  "./assets/expired.png",
+  "./assets/grapes.png",
+  "./assets/juice.png",
+  "./assets/keys.png",
+  "./assets/milk.png",
+  "./assets/moldy.png",
+  "./assets/mystery.png",
+  "./assets/phone.png",
+  "./assets/remote.png",
+  "./assets/rotten.png",
+  "./assets/sandwich.png",
+  "./assets/slime.png",
+  "./assets/yogurt.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
