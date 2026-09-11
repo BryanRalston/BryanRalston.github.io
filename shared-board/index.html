@@ -151,11 +151,12 @@
       width: 100%;
     }
     textarea { min-height: 4.5rem; resize: vertical; }
-    input:focus, textarea:focus, select:focus, button:focus-visible {
+    input:focus, textarea:focus, select:focus, button:focus-visible, label.btn:focus-visible {
       outline: 2px solid var(--wood);
       outline-offset: 1px;
     }
-    button {
+    button,
+    label.btn {
       font-family: ui-sans-serif, system-ui, sans-serif;
       font-size: 0.95rem;
       font-weight: 650;
@@ -166,7 +167,9 @@
       background: var(--wood);
       color: var(--wood-ink);
     }
-    button:hover { filter: brightness(1.05); }
+    label.btn { display: inline-block; }
+    button:hover,
+    label.btn:hover { filter: brightness(1.05); }
     button:disabled {
       opacity: 0.45;
       cursor: not-allowed;
@@ -177,7 +180,8 @@
       color: var(--clay);
       padding: 0.35rem 0.45rem;
     }
-    button.secondary {
+    button.secondary,
+    label.btn.secondary {
       background: #ebe4d6;
       color: var(--ink);
     }
@@ -693,10 +697,10 @@
           <input type="text" id="album-caption" name="caption" placeholder="Who, where, when…" autocomplete="off" maxlength="200">
         </label>
         <div class="toolbar">
-          <button type="button" id="album-gallery">Choose from photos</button>
-          <button type="button" class="secondary" id="album-camera">Take photo</button>
+          <label class="btn" for="photo-gallery" id="album-gallery">Choose from photos</label>
+          <label class="btn secondary" for="photo-camera" id="album-camera">Take photo</label>
         </div>
-        <p class="hint">Choose from photos opens Gallery/Photos on phones.</p>
+        <p class="hint">If your phone still lists Files only, open My Files → Images once — or update Chrome. Choose from photos should offer Gallery/Photos.</p>
         <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here, or use Choose from photos / Take photo</div>
       </form>
       <p class="empty" id="album-empty">No album photos yet. Add a general photo after you have an item on the board, or start here. Use Encrypted photo pack to copy photos to another device.</p>
@@ -721,7 +725,7 @@
     <footer class="no-print">No server. Share update encrypts text and checkoffs into a link. Photos stay local on share links — Export JSON includes the photos map if you need a full copy. Reminders need this page (or installed app) open. Private/incognito windows often block saving.</footer>
   </div>
 
-  <input type="file" id="photo-gallery" class="visually-hidden" accept="image/*,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif">
+  <input type="file" id="photo-gallery" class="visually-hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/*">
   <input type="file" id="photo-camera" class="visually-hidden" accept="image/*" capture="environment">
 
   <dialog id="photo-dialog" aria-label="Photo">
@@ -1910,17 +1914,10 @@
         const photoBar = document.createElement("div");
         photoBar.className = "toolbar no-print";
         photoBar.style.marginTop = "0.45rem";
-        const galleryBtn = document.createElement("button");
-        galleryBtn.type = "button";
-        galleryBtn.className = "secondary";
-        galleryBtn.textContent = "Choose from photos";
-        galleryBtn.addEventListener("click", () => pickPhoto({ type: "item", item: item }, "gallery"));
-        const cameraBtn = document.createElement("button");
-        cameraBtn.type = "button";
-        cameraBtn.className = "secondary";
-        cameraBtn.textContent = "Take photo";
-        cameraBtn.addEventListener("click", () => pickPhoto({ type: "item", item: item }, "camera"));
-        photoBar.append(galleryBtn, cameraBtn);
+        photoBar.append(
+          makePhotoLabel("photo-gallery", "Choose from photos", "btn secondary", () => ({ type: "item", item: item })),
+          makePhotoLabel("photo-camera", "Take photo", "btn secondary", () => ({ type: "item", item: item }))
+        );
         const drop = document.createElement("div");
         drop.className = "dropzone item-drop no-print";
         drop.textContent = "Drop a photo here";
@@ -2146,22 +2143,8 @@
       applyPhotoFile(target, file);
     }
 
-    function onPhotoEmpty() {
-      state.photoTarget = null;
-      noteNoFileSelected("photo");
-    }
-
-    const photoGalleryPicker = bindFilePicker(
-      document.getElementById("photo-gallery"),
-      onPhotoPicked,
-      onPhotoEmpty
-    );
-
-    const photoCameraPicker = bindFilePicker(
-      document.getElementById("photo-camera"),
-      onPhotoPicked,
-      onPhotoEmpty
-    );
+    bindPhotoInput(document.getElementById("photo-gallery"));
+    bindPhotoInput(document.getElementById("photo-camera"));
 
     const importPicker = bindFilePicker(
       document.getElementById("import-file"),
@@ -2232,18 +2215,41 @@
       };
     }
 
-    function pickPhoto(target, source) {
+    function bindPhotoInput(input) {
+      input.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        if (!file) return;
+        onPhotoPicked(file);
+      });
+    }
+
+    function armPhotoTarget(target, event) {
       if (!state.dbReady) {
+        if (event) event.preventDefault();
         showStorageBanner("idb");
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
         return;
       }
       state.photoTarget = target;
-      if (source === "camera") {
-        photoCameraPicker();
-        return;
-      }
-      photoGalleryPicker();
+    }
+
+    function makePhotoLabel(inputId, text, className, targetFn) {
+      const label = document.createElement("label");
+      label.htmlFor = inputId;
+      label.className = className;
+      label.textContent = text;
+      bindPhotoLabel(label, targetFn);
+      return label;
+    }
+
+    function bindPhotoLabel(el, targetFn) {
+      el.addEventListener("pointerdown", (event) => {
+        armPhotoTarget(targetFn(), event);
+      });
+      el.addEventListener("click", (event) => {
+        if (!state.dbReady) event.preventDefault();
+      });
     }
 
     function albumPhotoTarget() {
@@ -2791,12 +2797,8 @@
     document.getElementById("album-form").addEventListener("submit", (event) => {
       event.preventDefault();
     });
-    document.getElementById("album-gallery").addEventListener("click", () => {
-      pickPhoto(albumPhotoTarget(), "gallery");
-    });
-    document.getElementById("album-camera").addEventListener("click", () => {
-      pickPhoto(albumPhotoTarget(), "camera");
-    });
+    bindPhotoLabel(document.getElementById("album-gallery"), albumPhotoTarget);
+    bindPhotoLabel(document.getElementById("album-camera"), albumPhotoTarget);
 
     bindImageDrop(document.getElementById("album-drop"), (file) => {
       const caption = document.getElementById("album-caption").value.trim();
