@@ -693,9 +693,11 @@
           <input type="text" id="album-caption" name="caption" placeholder="Who, where, when…" autocomplete="off" maxlength="200">
         </label>
         <div class="toolbar">
-          <button type="submit">Add album photo</button>
+          <button type="button" id="album-gallery">Choose from photos</button>
+          <button type="button" class="secondary" id="album-camera">Take photo</button>
         </div>
-        <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here, or use Add album photo</div>
+        <p class="hint">Choose from photos opens Gallery/Photos on phones.</p>
+        <div class="dropzone no-print" id="album-drop" tabindex="0">Drop a photo here, or use Choose from photos / Take photo</div>
       </form>
       <p class="empty" id="album-empty">No album photos yet. Add a general photo after you have an item on the board, or start here. Use Encrypted photo pack to copy photos to another device.</p>
       <div class="album-grid" id="album-grid"></div>
@@ -719,7 +721,8 @@
     <footer class="no-print">No server. Share update encrypts text and checkoffs into a link. Photos stay local on share links — Export JSON includes the photos map if you need a full copy. Reminders need this page (or installed app) open. Private/incognito windows often block saving.</footer>
   </div>
 
-  <input type="file" id="photo-file" class="visually-hidden" accept="image/*">
+  <input type="file" id="photo-gallery" class="visually-hidden" accept="image/*,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif">
+  <input type="file" id="photo-camera" class="visually-hidden" accept="image/*" capture="environment">
 
   <dialog id="photo-dialog" aria-label="Photo">
     <img id="photo-dialog-img" alt="">
@@ -1903,18 +1906,27 @@
 
         const actions = document.createElement("div");
         actions.className = "item-actions no-print";
-        const addPhoto = document.createElement("button");
-        addPhoto.type = "button";
-        addPhoto.className = "ghost";
-        addPhoto.textContent = "Add photo";
-        addPhoto.addEventListener("click", () => pickPhoto({ type: "item", item: item }));
+        const photoBar = document.createElement("div");
+        photoBar.className = "toolbar no-print";
+        photoBar.style.marginTop = "0.45rem";
+        const galleryBtn = document.createElement("button");
+        galleryBtn.type = "button";
+        galleryBtn.className = "secondary";
+        galleryBtn.textContent = "Choose from photos";
+        galleryBtn.addEventListener("click", () => pickPhoto({ type: "item", item: item }, "gallery"));
+        const cameraBtn = document.createElement("button");
+        cameraBtn.type = "button";
+        cameraBtn.className = "secondary";
+        cameraBtn.textContent = "Take photo";
+        cameraBtn.addEventListener("click", () => pickPhoto({ type: "item", item: item }, "camera"));
+        photoBar.append(galleryBtn, cameraBtn);
         const drop = document.createElement("div");
         drop.className = "dropzone item-drop no-print";
         drop.textContent = "Drop a photo here";
         bindImageDrop(drop, (file) => {
           applyPhotoFile({ type: "item", item: item }, file);
         });
-        body.append(drop);
+        body.append(photoBar, drop);
         const edit = document.createElement("button");
         edit.type = "button";
         edit.className = "ghost";
@@ -1934,7 +1946,7 @@
           saveAll();
           render();
         });
-        actions.append(addPhoto, edit, del);
+        actions.append(edit, del);
 
         li.append(check, body, actions);
         list.append(li);
@@ -2124,20 +2136,30 @@
       showNote("share-note", "No photo selected.", "info");
     }
 
-    const photoPicker = bindFilePicker(
-      document.getElementById("photo-file"),
-      (file) => {
-        const target = state.photoTarget;
-        state.photoTarget = null;
-        if (target && target.type === "album") {
-          document.getElementById("album-caption").value = "";
-        }
-        applyPhotoFile(target, file);
-      },
-      () => {
-        state.photoTarget = null;
-        noteNoFileSelected("photo");
+    function onPhotoPicked(file) {
+      const target = state.photoTarget;
+      state.photoTarget = null;
+      if (target && target.type === "album") {
+        document.getElementById("album-caption").value = "";
       }
+      applyPhotoFile(target, file);
+    }
+
+    function onPhotoEmpty() {
+      state.photoTarget = null;
+      noteNoFileSelected("photo");
+    }
+
+    const photoGalleryPicker = bindFilePicker(
+      document.getElementById("photo-gallery"),
+      onPhotoPicked,
+      onPhotoEmpty
+    );
+
+    const photoCameraPicker = bindFilePicker(
+      document.getElementById("photo-camera"),
+      onPhotoPicked,
+      onPhotoEmpty
     );
 
     const importPicker = bindFilePicker(
@@ -2209,14 +2231,25 @@
       };
     }
 
-    function pickPhoto(target) {
+    function pickPhoto(target, source) {
       if (!state.dbReady) {
         showStorageBanner("idb");
         showNote("share-note", "Photos cannot be saved on this device (IndexedDB blocked).", "err");
         return;
       }
       state.photoTarget = target;
-      photoPicker();
+      if (source === "camera") {
+        photoCameraPicker();
+        return;
+      }
+      photoGalleryPicker();
+    }
+
+    function albumPhotoTarget() {
+      return {
+        type: "album",
+        caption: document.getElementById("album-caption").value.trim()
+      };
     }
 
     async function removeItemPhoto(item, photoId) {
@@ -2759,8 +2792,12 @@
 
     document.getElementById("album-form").addEventListener("submit", (event) => {
       event.preventDefault();
-      const caption = document.getElementById("album-caption").value.trim();
-      pickPhoto({ type: "album", caption: caption });
+    });
+    document.getElementById("album-gallery").addEventListener("click", () => {
+      pickPhoto(albumPhotoTarget(), "gallery");
+    });
+    document.getElementById("album-camera").addEventListener("click", () => {
+      pickPhoto(albumPhotoTarget(), "camera");
     });
 
     bindImageDrop(document.getElementById("album-drop"), (file) => {
