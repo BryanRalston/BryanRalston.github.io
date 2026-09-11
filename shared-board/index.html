@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shared Board</title>
+  <meta name="description" content="General household board for items, notes, and checkoffs. No server. Encrypted share links.">
+  <meta name="theme-color" content="#8a4b1f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238a4b1f'/%3E%3Crect x='16' y='14' width='32' height='36' rx='3' fill='%23fffaf3'/%3E%3Cpath d='M22 26h20M22 34h20M22 42h12' stroke='%238a4b1f' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" type="image/svg+xml">
+  <style>
+    :root {
+      --paper: #f6f1e8;
+      --card: #fffaf3;
+      --ink: #1f1b16;
+      --muted: #6a6258;
+      --line: #e0d6c6;
+      --wood: #8a4b1f;
+      --wood-ink: #fffaf3;
+      --clay: #b4532a;
+      --danger: #8f1d1d;
+      --danger-bg: #f8e4e0;
+      --ok: #2f6f4e;
+      --ok-bg: #e4efe8;
+      --shadow: 0 1px 0 rgba(31, 27, 22, 0.06);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 42rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+    header h1 {
+      font-size: 1.85rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.25rem;
+    }
+    header p { margin: 0; color: var(--muted); font-size: 1rem; }
+    .badge {
+      display: inline-block;
+      margin-top: 0.7rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ok);
+      background: var(--ok-bg);
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+    }
+
+    #storage-fail,
+    #share-note,
+    #incoming-note {
+      display: none;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    #storage-fail {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--danger);
+      color: #fff;
+      padding: 0.9rem 1rem;
+      font-weight: 700;
+    }
+    #storage-fail.show { display: block; }
+    #storage-fail p { margin: 0; max-width: 42rem; margin-inline: auto; }
+    #share-note,
+    #incoming-note {
+      margin-top: 0.7rem;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      padding: 0.5rem 0.7rem;
+    }
+    #share-note.show,
+    #incoming-note.show { display: block; }
+    #share-note.ok,
+    #incoming-note.ok { color: var(--ok); background: var(--ok-bg); }
+    #share-note.err,
+    #incoming-note.err { color: var(--danger); background: var(--danger-bg); }
+    #share-note.info,
+    #incoming-note.info { color: var(--ink); background: #efe6d6; }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem 1rem 1.1rem;
+      margin-top: 1rem;
+    }
+    .panel h2 {
+      font-size: 1.15rem;
+      margin: 0 0 0.75rem;
+    }
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .stack { display: flex; flex-direction: column; gap: 0.5rem; }
+    label.field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 650;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    label.check {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      font: inherit;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 1rem;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      width: 100%;
+    }
+    textarea { min-height: 4.5rem; resize: vertical; }
+    input:focus, textarea:focus {
+      outline: 2px solid var(--wood);
+      outline-offset: 1px;
+    }
+    button {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 650;
+      border: 0;
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      background: var(--wood);
+      color: var(--wood-ink);
+    }
+    button:hover { filter: brightness(1.05); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: none;
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--clay);
+      padding: 0.35rem 0.45rem;
+    }
+    button.secondary {
+      background: #ebe4d6;
+      color: var(--ink);
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .list { list-style: none; margin: 0.75rem 0 0; padding: 0; }
+    .list li {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 0.55rem 0.7rem;
+      align-items: start;
+      padding: 0.7rem 0;
+      border-top: 1px solid var(--line);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    .list li.done .title { text-decoration: line-through; color: var(--muted); }
+    .title {
+      font-weight: 650;
+      word-break: break-word;
+    }
+    .notes {
+      margin: 0.2rem 0 0;
+      color: var(--muted);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .item-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.15rem;
+    }
+    .empty {
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+      margin: 0.4rem 0 0;
+    }
+    footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .print-only { display: none; }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media print {
+      #storage-fail, #share-note, #incoming-note, .no-print, footer { display: none !important; }
+      body { background: #fff; }
+      .wrap { padding: 0; max-width: none; }
+      .print-only { display: block; }
+      .panel { border: 0; box-shadow: none; padding: 0; margin: 0; }
+      .list li { border-top: 1px solid #bbb; }
+      header p, .badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="storage-fail" role="alert">
+    <p>Shared Board cannot save on this device. Browser storage is blocked (private mode or a storage setting). Items will not persist.</p>
+  </div>
+  <div class="wrap">
+    <header>
+      <h1>Shared Board</h1>
+      <p>Any household items, notes, and checkoffs. Plaintext stays on this device. Share an encrypted update with a household passphrase — no server.</p>
+      <span class="badge">No server · Encrypted share links</span>
+      <p id="share-note" role="status"></p>
+      <p id="incoming-note" role="status"></p>
+    </header>
+
+    <section class="panel no-print" aria-labelledby="pass-heading">
+      <h2 id="pass-heading">Household passphrase</h2>
+      <div class="stack">
+        <label class="field" for="passphrase">
+          Passphrase (12 or more characters)
+          <input type="password" id="passphrase" name="passphrase" minlength="12" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="check">
+          <input type="checkbox" id="remember-pass">
+          Remember passphrase on this device only
+        </label>
+        <div class="toolbar">
+          <button type="button" id="share-update">Share update</button>
+          <button type="button" class="secondary" id="apply-incoming" hidden>Open shared update</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel no-print" aria-labelledby="add-heading">
+      <h2 id="add-heading">Add item</h2>
+      <form id="item-form" class="stack">
+        <label class="field" for="item-title">
+          Item
+          <input type="text" id="item-title" name="title" placeholder="What needs doing" autocomplete="off" maxlength="200" required>
+        </label>
+        <label class="field" for="item-notes">
+          Notes (optional)
+          <textarea id="item-notes" name="notes" placeholder="Details, who, when…" maxlength="2000"></textarea>
+        </label>
+        <div class="row">
+          <button type="submit">Add</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="board-heading">
+      <div class="toolbar no-print" style="justify-content: space-between; margin-bottom: 0.35rem;">
+        <h2 id="board-heading" style="margin: 0;">Board</h2>
+        <label class="check">
+          <input type="checkbox" id="hide-done">
+          Hide done
+        </label>
+      </div>
+      <h2 class="print-only">Shared Board</h2>
+      <p class="empty" id="board-empty">Nothing on the board yet.</p>
+      <ul class="list" id="item-list"></ul>
+      <div class="toolbar no-print" style="margin-top: 0.9rem;">
+        <button type="button" class="secondary" id="print-btn">Print</button>
+        <button type="button" class="secondary" id="export-btn">Export JSON</button>
+        <button type="button" class="secondary" id="import-btn">Import JSON</button>
+        <input type="file" id="import-file" class="visually-hidden" accept="application/json,.json">
+      </div>
+    </section>
+
+    <footer class="no-print">No server. Share update encrypts the board into a link. The household passphrase is required and never leaves this device.</footer>
+  </div>
+  <script>
+    const ITEMS_KEY = "shared-board-items";
+    const PASS_KEY = "shared-board-passphrase";
+    const REMEMBER_KEY = "shared-board-remember";
+    const HIDE_KEY = "shared-board-hide-done";
+    const PBKDF2_ITERATIONS = 310000;
+    const te = new TextEncoder();
+    const td = new TextDecoder();
+
+    const state = {
+      ok: false,
+      items: [],
+      hideDone: false,
+      pendingShare: null
+    };
+
+    function newId() {
+      if (crypto.randomUUID) return crypto.randomUUID();
+      return "id-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function now() {
+      return Date.now();
+    }
+
+    function showNote(id, message, kind) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.className = kind + " show";
+    }
+
+    function clearNote(id) {
+      const el = document.getElementById(id);
+      el.textContent = "";
+      el.className = "";
+    }
+
+    function probeStorage() {
+      try {
+        const probe = "__shared_board_probe__";
+        localStorage.setItem(probe, "ok");
+        const readback = localStorage.getItem(probe);
+        localStorage.removeItem(probe);
+        if (readback !== "ok") throw new Error("storage readback failed");
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function failLoud(reason) {
+      state.ok = false;
+      const banner = document.getElementById("storage-fail");
+      banner.classList.add("show");
+      const extra = reason ? " (" + reason + ")" : "";
+      banner.querySelector("p").textContent =
+        "Shared Board cannot save on this device. Browser storage is blocked" + extra +
+        ". Items will not persist.";
+    }
+
+    function load() {
+      if (!probeStorage()) {
+        failLoud();
+        return;
+      }
+      try {
+        const raw = localStorage.getItem(ITEMS_KEY);
+        if (raw) {
+          const data = JSON.parse(raw);
+          state.items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
+        } else {
+          state.items = [];
+        }
+        state.hideDone = localStorage.getItem(HIDE_KEY) === "1";
+        const remember = localStorage.getItem(REMEMBER_KEY) === "1";
+        document.getElementById("remember-pass").checked = remember;
+        if (remember) {
+          const saved = localStorage.getItem(PASS_KEY) || "";
+          document.getElementById("passphrase").value = saved;
+        }
+        document.getElementById("hide-done").checked = state.hideDone;
+        state.ok = true;
+      } catch (err) {
+        failLoud(err && err.message ? err.message : "unreadable store");
+      }
+    }
+
+    function saveItems() {
+      if (!state.ok) {
+        failLoud("save refused");
+        return false;
+      }
+      try {
+        localStorage.setItem(ITEMS_KEY, JSON.stringify(state.items));
+        return true;
+      } catch (err) {
+        failLoud(err && err.name ? err.name : "write failed");
+        return false;
+      }
+    }
+
+    function persistPassphrasePreference() {
+      if (!state.ok) return;
+      const remember = document.getElementById("remember-pass").checked;
+      const pass = document.getElementById("passphrase").value;
+      try {
+        if (remember) {
+          localStorage.setItem(REMEMBER_KEY, "1");
+          localStorage.setItem(PASS_KEY, pass);
+        } else {
+          localStorage.setItem(REMEMBER_KEY, "0");
+          localStorage.removeItem(PASS_KEY);
+        }
+      } catch (err) {
+        failLoud(err && err.name ? err.name : "write failed");
+      }
+    }
+
+    function activeItems() {
+      return state.items.filter((item) => !item.deleted);
+    }
+
+    function visibleItems() {
+      const items = activeItems();
+      if (!state.hideDone) return items;
+      return items.filter((item) => !item.done);
+    }
+
+    function sortItems(items) {
+      return items.slice().sort((a, b) => {
+        if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+        return (b.updated || 0) - (a.updated || 0);
+      });
+    }
+
+    function mergeItems(localItems, remoteItems) {
+      const map = new Map();
+      localItems.forEach((item) => {
+        if (item && item.id) map.set(item.id, item);
+      });
+      remoteItems.forEach((item) => {
+        if (!item || !item.id) return;
+        const existing = map.get(item.id);
+        if (!existing || (item.updated || 0) > (existing.updated || 0)) {
+          map.set(item.id, item);
+        }
+      });
+      return Array.from(map.values());
+    }
+
+    function normalizeItem(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      const id = typeof raw.id === "string" && raw.id ? raw.id : null;
+      if (!id) return null;
+      return {
+        id: id,
+        title: typeof raw.title === "string" ? raw.title : "",
+        notes: typeof raw.notes === "string" ? raw.notes : "",
+        done: !!raw.done,
+        deleted: !!raw.deleted,
+        updated: typeof raw.updated === "number" ? raw.updated : now()
+      };
+    }
+
+    function bytesToBase64Url(bytes) {
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+
+    function base64UrlToBytes(token) {
+      let b64 = token.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = b64.length % 4;
+      if (pad) b64 += "=".repeat(4 - pad);
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    async function deriveKey(passphrase, salt) {
+      const baseKey = await crypto.subtle.importKey(
+        "raw",
+        te.encode(passphrase),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: salt,
+          iterations: PBKDF2_ITERATIONS,
+          hash: "SHA-256"
+        },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptBoard(passphrase, items) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveKey(passphrase, salt);
+      const plaintext = te.encode(JSON.stringify({ items: items }));
+      const ciphertext = new Uint8Array(
+        await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, plaintext)
+      );
+      return "e1." + bytesToBase64Url(salt) + "." + bytesToBase64Url(iv) + "." + bytesToBase64Url(ciphertext);
+    }
+
+    async function decryptBoard(passphrase, packed) {
+      const parts = packed.split(".");
+      if (parts.length !== 4 || parts[0] !== "e1") {
+        throw new Error("Unrecognized share format");
+      }
+      const salt = base64UrlToBytes(parts[1]);
+      const iv = base64UrlToBytes(parts[2]);
+      const ciphertext = base64UrlToBytes(parts[3]);
+      const key = await deriveKey(passphrase, salt);
+      const plain = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        ciphertext
+      );
+      const data = JSON.parse(td.decode(plain));
+      const list = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
+      return list.map(normalizeItem).filter(Boolean);
+    }
+
+    function currentPassphrase() {
+      return document.getElementById("passphrase").value;
+    }
+
+    function passphraseOk() {
+      return currentPassphrase().length >= 12;
+    }
+
+    function parseIncomingHash() {
+      const hash = location.hash || "";
+      if (!hash.startsWith("#u=")) return null;
+      const packed = decodeURIComponent(hash.slice(3));
+      if (!packed) return null;
+      return packed;
+    }
+
+    function clearHash() {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+
+    function render() {
+      const list = document.getElementById("item-list");
+      const empty = document.getElementById("board-empty");
+      const shown = sortItems(visibleItems());
+      list.innerHTML = "";
+      empty.hidden = shown.length > 0;
+
+      shown.forEach((item) => {
+        const li = document.createElement("li");
+        if (item.done) li.classList.add("done");
+
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.checked = !!item.done;
+        check.setAttribute("aria-label", "Done: " + item.title);
+        check.addEventListener("change", () => {
+          item.done = check.checked;
+          item.updated = now();
+          saveItems();
+          render();
+        });
+
+        const body = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = item.title || "(untitled)";
+        body.append(title);
+        if (item.notes) {
+          const notes = document.createElement("p");
+          notes.className = "notes";
+          notes.textContent = item.notes;
+          body.append(notes);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "item-actions no-print";
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "ghost";
+        edit.textContent = "Edit notes";
+        edit.addEventListener("click", () => editNotes(item));
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "ghost";
+        del.textContent = "Delete";
+        del.addEventListener("click", () => {
+          item.deleted = true;
+          item.updated = now();
+          saveItems();
+          render();
+        });
+        actions.append(edit, del);
+
+        li.append(check, body, actions);
+        list.append(li);
+      });
+    }
+
+    function editNotes(item) {
+      const next = prompt("Notes", item.notes || "");
+      if (next === null) return;
+      item.notes = next;
+      item.updated = now();
+      saveItems();
+      render();
+    }
+
+    async function shareUpdate() {
+      clearNote("share-note");
+      if (!passphraseOk()) {
+        showNote("share-note", "Enter a household passphrase of at least 12 characters before sharing.", "err");
+        document.getElementById("passphrase").focus();
+        return;
+      }
+      persistPassphrasePreference();
+      let packed;
+      try {
+        packed = await encryptBoard(currentPassphrase(), state.items);
+      } catch (err) {
+        showNote("share-note", "Could not encrypt this board.", "err");
+        return;
+      }
+      const url = location.origin + location.pathname + "#u=" + packed;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "Shared Board",
+            text: "Encrypted household board update",
+            url: url
+          });
+          showNote("share-note", "Share sheet opened. The link is encrypted; the passphrase is not in it.", "ok");
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(url);
+          showNote("share-note", "Encrypted link copied. Send it, then share the passphrase separately.", "ok");
+          return;
+        } catch (err) {
+          /* fall through */
+        }
+      }
+      prompt("Copy this encrypted Shared Board link:", url);
+    }
+
+    async function applyIncoming(packed) {
+      if (!passphraseOk()) {
+        showNote("incoming-note", "Enter the household passphrase (12+ characters) to open this shared update.", "info");
+        document.getElementById("apply-incoming").hidden = false;
+        document.getElementById("passphrase").focus();
+        return false;
+      }
+      try {
+        const remote = await decryptBoard(currentPassphrase(), packed);
+        state.items = mergeItems(state.items, remote);
+        saveItems();
+        persistPassphrasePreference();
+        clearHash();
+        state.pendingShare = null;
+        document.getElementById("apply-incoming").hidden = true;
+        showNote("incoming-note", "Shared update merged onto this board.", "ok");
+        render();
+        return true;
+      } catch (err) {
+        showNote("incoming-note", "Could not decrypt that link. Check the household passphrase.", "err");
+        document.getElementById("apply-incoming").hidden = false;
+        return false;
+      }
+    }
+
+    function handleIncomingHash() {
+      const packed = parseIncomingHash();
+      if (!packed) return;
+      state.pendingShare = packed;
+      document.getElementById("apply-incoming").hidden = false;
+      if (passphraseOk()) {
+        applyIncoming(packed);
+      } else {
+        showNote("incoming-note", "This link is an encrypted board update. Enter the household passphrase to merge it.", "info");
+      }
+    }
+
+    function exportJson() {
+      const payload = {
+        v: 1,
+        exported: new Date().toISOString(),
+        items: state.items
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "shared-board.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJsonText(text) {
+      const data = JSON.parse(text);
+      const list = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+      if (!list) throw new Error("No items array");
+      const remote = list.map(normalizeItem).filter(Boolean);
+      state.items = mergeItems(state.items, remote);
+      saveItems();
+      render();
+      showNote("share-note", "Imported JSON and merged by item id.", "ok");
+    }
+
+    document.getElementById("item-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const title = document.getElementById("item-title").value.trim();
+      const notes = document.getElementById("item-notes").value.trim();
+      if (!title) return;
+      state.items.push({
+        id: newId(),
+        title: title,
+        notes: notes,
+        done: false,
+        deleted: false,
+        updated: now()
+      });
+      saveItems();
+      event.target.reset();
+      document.getElementById("item-title").focus();
+      render();
+    });
+
+    document.getElementById("hide-done").addEventListener("change", (event) => {
+      state.hideDone = event.target.checked;
+      if (state.ok) {
+        try {
+          localStorage.setItem(HIDE_KEY, state.hideDone ? "1" : "0");
+        } catch (err) {
+          failLoud(err && err.name ? err.name : "write failed");
+        }
+      }
+      render();
+    });
+
+    document.getElementById("remember-pass").addEventListener("change", () => {
+      persistPassphrasePreference();
+    });
+    document.getElementById("passphrase").addEventListener("change", () => {
+      persistPassphrasePreference();
+    });
+
+    document.getElementById("share-update").addEventListener("click", () => {
+      shareUpdate();
+    });
+    document.getElementById("apply-incoming").addEventListener("click", () => {
+      if (state.pendingShare) applyIncoming(state.pendingShare);
+    });
+    document.getElementById("print-btn").addEventListener("click", () => window.print());
+    document.getElementById("export-btn").addEventListener("click", () => exportJson());
+    document.getElementById("import-btn").addEventListener("click", () => {
+      document.getElementById("import-file").click();
+    });
+    document.getElementById("import-file").addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          importJsonText(String(reader.result || ""));
+        } catch (err) {
+          showNote("share-note", "Could not import that JSON file.", "err");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    load();
+    render();
+    handleIncomingHash();
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch((err) => {
+        console.warn("Service worker not registered", err);
+      });
+    }
+  </script>
+</body>
+</html>
