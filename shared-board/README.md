@@ -16,4 +16,4 @@ The board starts empty. There are no sample families.
 - Install as app is a shortcut to this same local page. It does not add an account or background sync.
 - The page cannot force Samsung (or other Android choosers) to list Gallery. Choose from photos uses a real `accept="image/*"` file input as the tap target so Chrome can offer the Android Photo Picker; if the OS still shows Files, open My Files → Images.
 
-Cache name: `shared-board-v10`.
+Cache name: `shared-board-v11`.
