@@ -1,6 +1,6 @@
 # Fridge Raid
 
-Campaign lunchbox arcade: pack a balanced lunch before the bus. Start with Scout, unlock more kids, then ride **Bus rush**. Play at [bryanralston.github.io/fridge-raid](https://bryanralston.github.io/fridge-raid/). No signup.
+Campaign lunchbox arcade: pack a balanced lunch before the bus. Start with Scout, unlock more kids, earn **Fridge Magnets**, then ride **Bus rush**. Play at [bryanralston.github.io/fridge-raid](https://bryanralston.github.io/fridge-raid/). No signup.
 
 ## How to play
 
@@ -8,12 +8,14 @@ Tap or drag fridge items into a kid lunchbox, or into **TOSS**. A box seals only
 
 ## Levels
 
+Difficulty climbs after the teach stop. Timer tightens, leftovers climb, and fridge events show up more often.
+
 | Level | Kids | Seal rule | Timer | Fridge |
 | --- | --- | --- | --- | --- |
-| L1 Scout's first lunch | Scout | Fruit + protein. Veg is extra credit if packed before the seal. | 1:10 | Fewer spoiled / traps |
-| L2 Two hungry | Scout + Pip | Each box needs fruit + veg + protein | 1:20 | More leftovers |
-| L3 Full house | Scout + Pip + Nori | Fruit + veg + protein + grain. Sandwich covers protein **and** grain. | 1:30 | More chaos |
-| Bus rush | All three | Same full rule. Rising spoiled rate and a score multiplier that climbs with each sealed lunch. | 1:30 | Gets messier |
+| L1 Scout's first lunch | Scout | Fruit + protein. Veg extra if packed first. | 1:20 | Teach: few spoiled / traps |
+| L2 Two hungry | Scout + Pip | Fruit + veg + protein | 1:05 | More leftovers, more events |
+| L3 Full house | Scout + Pip + Nori | Fruit + veg + protein + grain. Sandwich covers protein **and** grain. | 0:55 | Full plate, shelf fog, fast slides |
+| Bus rush | All three | Same full rule. Leftovers rise every 20s. Score mult climbs with each seal. | 1:30 | Gets messier |
 
 Beat a campaign level by feeding every kid on that stop at least one sealed lunch. Leftover time becomes a bonus, then **Next level**. After L3, free-play **Bus rush** unlocks on the title screen.
 
@@ -27,8 +29,11 @@ L2+ throws short, telegraphed moments (banner ~1s):
 
 - **Fresh delivery** — good food bursts onto shelves (never removes your last needed groups)
 - **Shelf slide** — the same items shuffle places
+- **Fast slide** — a quicker shuffle (L3+ / Bus rush)
+- **Shelf fog** — items dim for ~2 seconds (L3+ / Bus rush)
+- **Leftovers rising** — Bus rush only, every 20 seconds
 
-L2 gets one event. L3 and Bus rush get two. L1 stays quiet so you can learn the lunch rule.
+L1 stays quiet so you can learn the lunch rule.
 
 ## Stars
 
@@ -39,6 +44,12 @@ A 3-star clear on the success screen:
 3. **Hustle** — time left above the level bar, or you scored past it
 
 Best stars per level persist in localStorage.
+
+## Ranks and Fridge Magnets
+
+Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch Hero → Bus Hero**.
+
+Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. Open **Prize case** on the title screen. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
 
 ## Art
 
@@ -58,8 +69,10 @@ If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge ba
 - Fresh food: +100, builds combo (caps at x6)
 - Treat: +35
 - Seal a balanced lunch: +250 (Bus rush multiplies this)
+- Perfect plate (all needs, zero treats): +120
 - L1 veg extra credit on seal: +75
 - Craving YUM: +80
+- No-yuck bonus if you packed zero spoiled/junk: +150
 - Time leftover after a campaign clear: +12 per second
 - Toss spoiled or junk: +75
 - Pack spoiled: −200, shake, combo dies
