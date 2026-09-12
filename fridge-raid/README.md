@@ -42,7 +42,7 @@ Best stars per level persist in localStorage.
 
 ## Art
 
-If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Sprites are centered with `object-fit: contain` on rounded mint tiles so studio backgrounds stay readable at lunchbox size.
+If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Item sprites are transparent cutouts (`object-fit: contain`) overlaid on the fridge shelves. The play fridge uses `object-fit: contain` in a 3:4 box so the open door stays in frame.
 
 ## Food groups
 
