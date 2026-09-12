@@ -396,10 +396,12 @@
       padding: 0;
       gap: 0.22rem;
     }
-    .fridge-stage.photo .shelf:nth-child(1) { top: 13.4%; height: 17.0%; }
-    .fridge-stage.photo .shelf:nth-child(2) { top: 30.6%; height: 14.0%; }
-    .fridge-stage.photo .shelf:nth-child(3) { top: 45.0%; height: 15.4%; }
-    .fridge-stage.photo .shelf:nth-child(4) { top: 60.6%; height: 8.4%; }
+    /* Sit bottoms on fridge.png glass lips (~31.4 / 45.6 / 61.8 / 74.4). Soft overlap into the painted edge. */
+    .fridge-stage.photo .shelf:nth-child(1) { top: 12.8%; height: 18.6%; }
+    .fridge-stage.photo .shelf:nth-child(2) { top: 32.8%; height: 12.8%; }
+    .fridge-stage.photo .shelf:nth-child(3) { top: 49.0%; height: 12.8%; }
+    .fridge-stage.photo .shelf:nth-child(4) { top: 62.0%; height: 12.4%; }
+    .fridge-stage.photo .shelf:nth-child(5) { top: 78.2%; height: 7.6%; }
 
     .slot {
       position: relative;
@@ -441,7 +443,7 @@
     .item.has-sprite img {
       object-fit: contain;
       object-position: center bottom;
-      transform: scale(var(--sprite-scale, 1.28));
+      transform: translateY(var(--sprite-sit, 18%)) scale(var(--sprite-scale, 1.28));
       transform-origin: center bottom;
       filter: drop-shadow(0 4px 5px rgba(20, 40, 50, 0.2));
     }
@@ -490,7 +492,7 @@
     }
     .item[data-kind="spoiled"].has-sprite img,
     .item[data-kind="trap"].has-sprite img {
-      transform: scale(var(--sprite-scale, 1.28)) rotate(-5deg);
+      transform: translateY(var(--sprite-sit, 18%)) scale(var(--sprite-scale, 1.28)) rotate(-5deg);
     }
     .item[data-kind="spoiled"].selected svg,
     .item[data-kind="spoiled"].selected img,
@@ -1346,7 +1348,7 @@
   <script>
     const CAPACITY = 4;
     const SHELF_COLS = 3;
-    const SHELF_ROWS = 4;
+    const SHELF_ROWS = 5;
     const FRIDGE_SLOTS = SHELF_COLS * SHELF_ROWS;
     const BEST_KEY = "fridge-raid-best";
     const CLEARED_KEY = "fridge-raid-cleared";
@@ -1526,6 +1528,32 @@
       slime: 1.18,
       yogurt: 1.3,
     };
+    const SPRITE_SIT = {
+      apple: "28%",
+      banana: "31%",
+      berries: "30%",
+      broccoli: "23%",
+      carrot: "15%",
+      cheddar: "30%",
+      chips: "13%",
+      cookie: "29%",
+      cucumber: "21%",
+      expired: "12%",
+      grapes: "27%",
+      juice: "16%",
+      keys: "26%",
+      milk: "20%",
+      moldy: "30%",
+      mystery: "16%",
+      phone: "16%",
+      remote: "14%",
+      roll: "28%",
+      rotten: "31%",
+      sandwich: "23%",
+      slime: "25%",
+      yogurt: "17%",
+    };
+    const DEFAULT_SPRITE_SIT = "18%";
     const ITEM_ICON = {
       apple: "🍎",
       grapes: "🍇",
@@ -2085,8 +2113,13 @@
       return scale || DEFAULT_SPRITE_SCALE;
     }
 
+    function spriteSitFor(typeId) {
+      return SPRITE_SIT[typeId] || DEFAULT_SPRITE_SIT;
+    }
+
     function applySpriteScale(el, typeId) {
       el.style.setProperty("--sprite-scale", String(spriteScaleFor(typeId)));
+      el.style.setProperty("--sprite-sit", spriteSitFor(typeId));
     }
 
     function markupFor(entry) {
