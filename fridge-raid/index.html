@@ -336,9 +336,9 @@
       flex: 1 1 0;
       min-height: 0;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       align-items: end;
-      gap: 0.2rem;
+      gap: 0.28rem;
       border-bottom: 2px solid rgba(255,255,255,0.55);
       box-shadow: none;
       padding: 0 0.15rem 0.08rem;
@@ -350,12 +350,12 @@
       border: 0;
       box-shadow: none;
       padding: 0;
-      gap: 0.15rem;
+      gap: 0.22rem;
     }
-    .fridge-stage.photo .shelf:nth-child(1) { top: 14.2%; height: 15.4%; }
-    .fridge-stage.photo .shelf:nth-child(2) { top: 31.2%; height: 15%; }
-    .fridge-stage.photo .shelf:nth-child(3) { top: 47.2%; height: 13.2%; }
-    .fridge-stage.photo .shelf:nth-child(4) { top: 70%; height: 16%; }
+    .fridge-stage.photo .shelf:nth-child(1) { top: 13.4%; height: 17.2%; }
+    .fridge-stage.photo .shelf:nth-child(2) { top: 30.4%; height: 16.4%; }
+    .fridge-stage.photo .shelf:nth-child(3) { top: 46.4%; height: 15%; }
+    .fridge-stage.photo .shelf:nth-child(4) { top: 68.6%; height: 18%; }
 
     .slot {
       position: relative;
@@ -368,10 +368,10 @@
       height: 100%;
     }
     .item {
-      width: 78%;
+      width: 100%;
       height: auto;
-      max-width: 5.6rem;
-      max-height: 92%;
+      max-width: 8.6rem;
+      max-height: 112%;
       aspect-ratio: 1;
       background: transparent;
       padding: 0;
@@ -397,7 +397,7 @@
     .item.has-sprite img {
       object-fit: contain;
       object-position: center bottom;
-      transform: scale(var(--sprite-scale, 0.96));
+      transform: scale(var(--sprite-scale, 1.28));
       transform-origin: center bottom;
       filter: drop-shadow(0 4px 5px rgba(20, 40, 50, 0.2));
     }
@@ -529,11 +529,12 @@
     }
     .slots {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.12rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.22rem;
     }
     .pocket {
       aspect-ratio: 1;
+      min-height: 2.7rem;
       border-radius: 7px;
       background: rgba(255,255,255,0.42);
       display: grid;
@@ -541,15 +542,17 @@
       position: relative;
       overflow: visible;
     }
-    .pocket svg, .pocket img { width: 92%; height: 92%; object-fit: contain; object-position: center bottom; display: block; }
+    .pocket svg, .pocket img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; }
     .pocket.has-sprite { background: transparent; }
     .pocket.has-sprite img {
       position: absolute;
-      inset: 4%;
-      width: 92%;
-      height: 92%;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       object-position: center bottom;
+      transform: scale(var(--sprite-scale, 1.28));
+      transform-origin: center bottom;
       filter: drop-shadow(0 2px 3px rgba(20, 40, 50, 0.18));
     }
     .box[data-kid="Scout"] { background: rgba(217, 244, 255, 0.82); }
@@ -572,8 +575,8 @@
 
     #ghost {
       position: fixed;
-      width: 72px;
-      height: 72px;
+      width: 108px;
+      height: 108px;
       pointer-events: none;
       z-index: 40;
       display: none;
@@ -582,6 +585,7 @@
     }
     #ghost.show { display: block; }
     #ghost svg, #ghost img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+    #ghost img { transform: scale(var(--sprite-scale, 1.28)); transform-origin: center; }
 
     #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
     .big-score {
@@ -703,6 +707,15 @@
       right: 0;
     }
 
+    @media (max-width: 859px) {
+      .item {
+        width: 100%;
+        max-width: 8.6rem;
+        max-height: 118%;
+      }
+      .pocket { min-height: 3rem; }
+    }
+
     @media (min-width: 860px) {
       #play.screen.active {
         padding-left: 1.1rem;
@@ -719,11 +732,11 @@
         width: auto;
         height: 100%;
         aspect-ratio: 864 / 1152;
-        max-width: calc(100% - 17.4rem);
+        max-width: calc(100% - 18.8rem);
       }
       #play .dock {
-        flex: 0 0 16.2rem;
-        width: 16.2rem;
+        flex: 0 0 17.6rem;
+        width: 17.6rem;
         margin-top: 0;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
@@ -739,7 +752,8 @@
         align-self: stretch;
       }
       #play .box { align-self: stretch; }
-      .item { max-width: 6.4rem; }
+      .item { max-width: 10.8rem; max-height: 118%; }
+      #play .pocket { min-height: 3.4rem; }
     }
   </style>
 </head>
@@ -862,6 +876,9 @@
 
   <script>
     const CAPACITY = 4;
+    const SHELF_COLS = 3;
+    const SHELF_ROWS = 4;
+    const FRIDGE_SLOTS = SHELF_COLS * SHELF_ROWS;
     const BEST_KEY = "fridge-raid-best";
     const CLEARED_KEY = "fridge-raid-cleared";
     const STAR_KEY = "fridge-raid-stars";
@@ -986,27 +1003,31 @@
     const BY_GROUP = { fruit: [], veg: [], protein: [], grain: [], treat: [] };
     const ASSET_READY = {};
     const SPRITE_SCALE = {
-      apple: 0.98,
-      banana: 1.12,
-      berries: 1.1,
-      carrot: 1.08,
-      cheddar: 0.9,
-      chips: 0.86,
-      cookie: 0.94,
-      expired: 0.82,
-      grapes: 1.12,
-      juice: 0.9,
-      keys: 0.9,
-      milk: 0.82,
-      moldy: 0.9,
-      mystery: 0.84,
-      phone: 0.86,
-      remote: 0.86,
-      rotten: 1.08,
-      sandwich: 0.94,
-      slime: 0.84,
-      yogurt: 0.96,
+      apple: 1.32,
+      banana: 1.48,
+      berries: 1.42,
+      broccoli: 1.36,
+      carrot: 1.4,
+      cheddar: 1.24,
+      chips: 1.2,
+      cookie: 1.28,
+      cucumber: 1.38,
+      expired: 1.16,
+      grapes: 1.48,
+      juice: 1.24,
+      keys: 1.22,
+      milk: 1.16,
+      moldy: 1.24,
+      mystery: 1.18,
+      phone: 1.2,
+      remote: 1.2,
+      roll: 1.36,
+      rotten: 1.4,
+      sandwich: 1.28,
+      slime: 1.18,
+      yogurt: 1.3,
     };
+    const DEFAULT_SPRITE_SCALE = 1.28;
     for (const [id, item] of Object.entries(CATALOG)) {
       BY_KIND[item.kind].push(id);
       for (const group of foodGroupsOf(item)) {
@@ -1397,7 +1418,7 @@
 
     function seedFridge() {
       const level = currentLevel();
-      const items = Array.from({ length: 16 }, () => spawnItem());
+      const items = Array.from({ length: FRIDGE_SLOTS }, () => spawnItem());
       const count = (kind) => items.filter((entry) => itemMeta(entry).kind === kind).length;
       if (count("good") < level.minGood) {
         for (let i = 0; i < level.minGood - count("good"); i += 1) {
@@ -1406,8 +1427,8 @@
       }
       const bad = count("spoiled") + count("trap");
       if (bad < level.minBad) {
-        items[14] = spawnItem(undefined, "spoiled");
-        if (level.minBad > 1) items[15] = spawnItem(undefined, "trap");
+        items[FRIDGE_SLOTS - 2] = spawnItem(undefined, "spoiled");
+        if (level.minBad > 1) items[FRIDGE_SLOTS - 1] = spawnItem(undefined, "trap");
       }
       ensureNeededGroups(items);
       ensureCravingOnShelf(items);
@@ -1430,6 +1451,15 @@
 
     function itemMeta(entry) {
       return CATALOG[entry.typeId];
+    }
+
+    function spriteScaleFor(typeId) {
+      const scale = SPRITE_SCALE[typeId];
+      return scale || DEFAULT_SPRITE_SCALE;
+    }
+
+    function applySpriteScale(el, typeId) {
+      el.style.setProperty("--sprite-scale", String(spriteScaleFor(typeId)));
     }
 
     function markupFor(entry) {
@@ -1794,11 +1824,11 @@
 
     function renderFridge() {
       fridgeEl.replaceChildren();
-      for (let row = 0; row < 4; row += 1) {
+      for (let row = 0; row < SHELF_ROWS; row += 1) {
         const shelf = document.createElement("div");
         shelf.className = "shelf";
-        for (let col = 0; col < 4; col += 1) {
-          const entry = state.fridge[row * 4 + col];
+        for (let col = 0; col < SHELF_COLS; col += 1) {
+          const entry = state.fridge[row * SHELF_COLS + col];
           const slot = document.createElement("div");
           slot.className = "slot";
           if (entry) {
@@ -1814,8 +1844,7 @@
             btn.innerHTML = markupFor(entry);
             if (ASSET_READY[entry.typeId]) {
               btn.classList.add("has-sprite");
-              const scale = SPRITE_SCALE[entry.typeId];
-              if (scale) btn.style.setProperty("--sprite-scale", String(scale));
+              applySpriteScale(btn, entry.typeId);
             }
             if (state.selected === entry.id) btn.classList.add("selected");
             slot.appendChild(btn);
@@ -1873,7 +1902,10 @@
           const held = box.slots[i];
           if (held) {
             pocket.innerHTML = markupFor(held);
-            if (ASSET_READY[held.typeId]) pocket.classList.add("has-sprite");
+            if (ASSET_READY[held.typeId]) {
+              pocket.classList.add("has-sprite");
+              applySpriteScale(pocket, held.typeId);
+            }
           }
           grid.appendChild(pocket);
         }
@@ -2333,6 +2365,7 @@
         const entry = findFridge(drag.id);
         if (entry) {
           ghostEl.innerHTML = markupFor(entry);
+          if (ASSET_READY[entry.typeId]) applySpriteScale(ghostEl, entry.typeId);
           ghostEl.classList.add("show");
         }
       }
@@ -2423,6 +2456,8 @@
           stars: state.lastStars.slice(),
           assetsReady: Object.keys(ASSET_READY),
           fridgePhoto: Boolean(ASSET_READY.fridge),
+          shelfCols: SHELF_COLS,
+          fridgeSlots: FRIDGE_SLOTS,
           fridge: state.fridge.map((entry) => ({
             id: entry.id,
             typeId: entry.typeId,
