@@ -13,7 +13,7 @@ Difficulty climbs after the teach stop. Timer tightens, leftovers climb, and fri
 | Level | Kids | Seal rule | Timer | Fridge |
 | --- | --- | --- | --- | --- |
 | L1 Scout's first lunch | Scout | Fruit + protein. Veg extra if packed first. | 1:35 + pause-first teach | Soft leftovers, extra fruit/protein on the shelf |
-| L2 Two hungry | Scout + Pip | Fruit + veg + protein | 1:20 | More leftovers, more events |
+| L2 Two hungry | Scout + Pip | Fruit + veg + protein | 1:20 | More leftovers, shelves can interrupt |
 | L3 Full house | Scout + Pip + Nori | Fruit + veg + protein + grain. Sandwich covers protein **and** grain. | 0:55 | Full plate, shelf fog, fast slides |
 | Bus rush | All three | Same full rule. Leftovers rise every 20s. Score mult climbs with each seal. | 1:30 | Gets messier |
 
@@ -25,7 +25,7 @@ Each kid wants something different every run (a food group, or a specific snack)
 
 ## Fridge events
 
-L2+ throws short, telegraphed moments (banner ~1s):
+L2+ throws short, telegraphed moments. The L2 intro warns that **shelves can interrupt** before the first event. Fresh delivery, Shelf slide, Fast slide, and Shelf fog cover the fridge: the bus clock pauses, then a short **Ready!** beat, then play resumes. Leftovers rising stays a small notice.
 
 - **Fresh delivery** — good food bursts onto shelves (never removes your last needed groups)
 - **Shelf slide** — the same items shuffle places
@@ -33,7 +33,7 @@ L2+ throws short, telegraphed moments (banner ~1s):
 - **Shelf fog** — items dim for ~2 seconds (L3+ / Bus rush)
 - **Leftovers rising** — Bus rush only, every 20 seconds
 
-L1 stays quiet so you can learn the lunch rule.
+L1 stays quiet so you can learn the lunch rule. Per-box need pips stay large and high-contrast (empty pips keep a dark dashed ring and a group tint). Prize-case locked tiles and unlock captions stay ink-on-slate, not pale grey on white. Desktop play uses a wide stage so the fridge is not a phone-sized case on a 1280 canvas.
 
 ## Stars
 
@@ -49,7 +49,7 @@ Best stars per level persist in localStorage.
 
 Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch Hero → Bus Hero**.
 
-Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
+Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots (ink captions, dashed slate tiles) and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
 
 The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; a box that is one group short says **need protein** (not a bare almost). Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein. Packing only refills the empty shelf slot — the rest of the fridge stays put until a named event. A fail screen shows **this stop** points, who still needs what, and **Try again**.
 
