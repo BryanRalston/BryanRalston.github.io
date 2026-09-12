@@ -4,7 +4,7 @@ Campaign lunchbox arcade: pack a balanced lunch before the bus. Start with Scout
 
 ## How to play
 
-Tap or drag fridge items into a kid lunchbox, or into **TOSS**. A box seals only when its food-group pips are filled — not when four random slots are full. Treats are optional extras (pack them first). Spoiled leftovers and junk (keys, phone, remote) still wreck your score if they land in a box.
+Tap a fridge item, then tap a kid lunchbox (or **TOSS**). Drag works too. A box seals only when its food-group pips are filled — not when four random slots are full. First L1 pauses the bus and shows coach marks: tap food → tap box → fill every pip. Treats are optional extras (pack them first). Spoiled leftovers and junk (keys, phone, remote) still wreck your score if they land in a box. Items wear a short name/group badge; leftovers flash **TOSS**.
 
 ## Levels
 
@@ -12,7 +12,7 @@ Difficulty climbs after the teach stop. Timer tightens, leftovers climb, and fri
 
 | Level | Kids | Seal rule | Timer | Fridge |
 | --- | --- | --- | --- | --- |
-| L1 Scout's first lunch | Scout | Fruit + protein. Veg extra if packed first. | 1:20 | Teach: few spoiled / traps |
+| L1 Scout's first lunch | Scout | Fruit + protein. Veg extra if packed first. | 1:35 + pause-first teach | Soft leftovers, extra fruit/protein on the shelf |
 | L2 Two hungry | Scout + Pip | Fruit + veg + protein | 1:05 | More leftovers, more events |
 | L3 Full house | Scout + Pip + Nori | Fruit + veg + protein + grain. Sandwich covers protein **and** grain. | 0:55 | Full plate, shelf fog, fast slides |
 | Bus rush | All three | Same full rule. Leftovers rise every 20s. Score mult climbs with each seal. | 1:30 | Gets messier |
@@ -49,7 +49,9 @@ Best stars per level persist in localStorage.
 
 Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch Hero → Bus Hero**.
 
-Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. Open **Prize case** on the title screen. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
+Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
+
+The play HUD is one row (score, bus-timer, sealed count) plus a one-line guide. Per-box pips show **almost!** / **sealed!** so the seal rule stays visible.
 
 ## Art
 
