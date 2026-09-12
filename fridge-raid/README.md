@@ -4,7 +4,7 @@ Campaign lunchbox arcade: pack a balanced lunch before the bus. Start with Scout
 
 ## How to play
 
-Tap a fridge item, then tap a kid lunchbox (or **TOSS**). Drag works too. A box seals only when its food-group pips are filled — not when four random slots are full. First L1 pauses the bus and shows coach marks: tap food → tap box → fill every pip. Treats are optional extras (pack them first). Spoiled leftovers and junk (keys, phone, remote) still wreck your score if they land in a box. Items wear a short name/group badge; leftovers flash **TOSS**.
+Tap a fridge item, then tap a kid lunchbox (or **TOSS**). Drag works too. A box seals only when its food-group pips are filled — not when four random slots are full. First L1 pauses the bus and shows **one** coach bubble (tap food, then tap the box). After that, the pips are the teacher — no stacked guide strip or box-status tutorial. Treats are optional extras (pack them first). Spoiled leftovers and junk (keys, phone, remote) still wreck your score if they land in a box. Item names appear on select and in the held chip, not under every shelf sprite. Leftovers look wilted instead of wearing a **TOSS** stamp.
 
 ## Levels
 
@@ -21,7 +21,7 @@ Beat a campaign level by feeding every kid on that stop at least one sealed lunc
 
 ## Cravings
 
-Each kid wants something different every run (a food group, or a specific snack). A yellow **😋** chip sits on their lunchbox. Pack that craving for a **YUM** bonus and a sparkle. After a seal, their next craving rerolls.
+Each kid wants something different every run (a food group, or a specific snack). A yellow **😋** chip sits on their lunchbox. Group cravings read **any fruit** (any fruit yums). Item cravings read **Apple** (only that item yums). L1 stays on group cravings so grapes count as fruit. After a seal, their next craving rerolls.
 
 ## Fridge events
 
@@ -51,7 +51,7 @@ Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch H
 
 Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
 
-The play HUD is one row (score, bus-timer, sealed count) plus a one-line guide. Per-box pips show **almost!** / **sealed!** so the seal rule stays visible.
+The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; boxes only add **almost!** / **sealed!** Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein.
 
 ## Art
 
