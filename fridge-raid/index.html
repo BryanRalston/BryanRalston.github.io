@@ -138,7 +138,11 @@
     .title-actions { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; }
 
     .hero-fridge { width: min(42vw, 188px); height: auto; filter: drop-shadow(0 14px 16px rgba(8, 50, 60, 0.22)); }
-    .hero-fridge[hidden] { display: none !important; }
+    .hero-fridge[hidden],
+    #hero-fridge-svg[hidden],
+    #hero-fridge-svg.is-off {
+      display: none !important;
+    }
     #hero-fridge-img {
       width: min(42vw, 188px);
       max-height: 26vh;
@@ -325,7 +329,7 @@
     .fridge-stage.photo .shelf:nth-child(1) { top: 14.2%; height: 15.4%; }
     .fridge-stage.photo .shelf:nth-child(2) { top: 31.2%; height: 15%; }
     .fridge-stage.photo .shelf:nth-child(3) { top: 47.2%; height: 13.2%; }
-    .fridge-stage.photo .shelf:nth-child(4) { top: 63.4%; height: 18.2%; }
+    .fridge-stage.photo .shelf:nth-child(4) { top: 70%; height: 16%; }
 
     .slot {
       position: relative;
@@ -367,7 +371,7 @@
     .item.has-sprite img {
       object-fit: contain;
       object-position: center bottom;
-      transform: scale(var(--sprite-scale, 0.9));
+      transform: scale(var(--sprite-scale, 0.96));
       transform-origin: center bottom;
       filter: drop-shadow(0 4px 5px rgba(20, 40, 50, 0.2));
     }
@@ -690,8 +694,9 @@
         grid-row: 4;
         margin-top: 0;
         grid-template-columns: 1fr;
-        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-rows: auto auto;
         align-content: start;
+        align-self: start;
       }
       #play .toss { min-height: 4.4rem; }
       #play .boxes,
@@ -699,7 +704,9 @@
       #play .boxes[data-count="2"],
       #play .boxes[data-count="3"] {
         grid-template-columns: 1fr;
+        align-self: start;
       }
+      #play .box { align-self: start; }
       .item { max-width: 6.4rem; }
     }
   </style>
@@ -945,26 +952,26 @@
     const BY_GROUP = { fruit: [], veg: [], protein: [], grain: [], treat: [] };
     const ASSET_READY = {};
     const SPRITE_SCALE = {
-      apple: 0.94,
-      banana: 1.08,
-      berries: 1.06,
-      carrot: 1.06,
-      cheddar: 0.88,
-      chips: 0.84,
-      cookie: 0.9,
-      expired: 0.8,
-      grapes: 1.0,
-      juice: 0.84,
-      keys: 0.88,
-      milk: 0.8,
-      moldy: 0.88,
-      mystery: 0.82,
-      phone: 0.84,
-      remote: 0.84,
-      rotten: 1.0,
-      sandwich: 0.9,
-      slime: 0.82,
-      yogurt: 0.86,
+      apple: 0.98,
+      banana: 1.12,
+      berries: 1.1,
+      carrot: 1.08,
+      cheddar: 0.9,
+      chips: 0.86,
+      cookie: 0.94,
+      expired: 0.82,
+      grapes: 1.12,
+      juice: 0.9,
+      keys: 0.9,
+      milk: 0.82,
+      moldy: 0.9,
+      mystery: 0.84,
+      phone: 0.86,
+      remote: 0.86,
+      rotten: 1.08,
+      sandwich: 0.94,
+      slime: 0.84,
+      yogurt: 0.96,
     };
     for (const [id, item] of Object.entries(CATALOG)) {
       BY_KIND[item.kind].push(id);
@@ -1441,7 +1448,12 @@
         heroImg.src = "assets/fridge.png";
         heroImg.hidden = false;
       }
-      if (heroSvg) heroSvg.hidden = true;
+      if (heroSvg) {
+        heroSvg.hidden = true;
+        heroSvg.setAttribute("hidden", "");
+        heroSvg.classList.add("is-off");
+        heroSvg.style.display = "none";
+      }
     }
 
     function preloadAssets() {
