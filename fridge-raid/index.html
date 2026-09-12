@@ -603,6 +603,10 @@
       padding: 0.34rem 0.32rem 0.4rem;
       box-shadow: 0 2px 10px rgba(10, 80, 90, 0.1);
       min-width: 0;
+      width: 100%;
+      color: inherit;
+      text-align: center;
+      font-weight: 700;
     }
     .box.hot, .box.hint { outline: 3px solid var(--sun); transform: translateY(-2px); }
     .box.slam { animation: slam 0.45s ease; }
@@ -1040,7 +1044,12 @@
       .box { min-height: 7.6rem; padding: 0.46rem 0.4rem 0.5rem; }
       .pip { width: 1.62rem; height: 1.62rem; font-size: 0.86rem; }
       .box-status { font-size: 0.76rem; }
-      #coach { bottom: calc(9.2rem + env(safe-area-inset-bottom)); }
+      #coach {
+        bottom: auto;
+        top: calc(0.7rem + env(safe-area-inset-top) + 5.2rem);
+        width: min(22rem, calc(100% - 1.1rem));
+        padding: 0.4rem 0.65rem 0.42rem;
+      }
     }
 
     @media (min-width: 860px) {
@@ -2624,10 +2633,12 @@
       boxesEl.replaceChildren();
       boxesEl.dataset.count = String(state.boxes.length);
       state.boxes.forEach((box, index) => {
-        const el = document.createElement("div");
+        const el = document.createElement("button");
+        el.type = "button";
         el.className = "box";
         el.dataset.box = String(index);
         el.dataset.kid = box.kid;
+        el.setAttribute("aria-label", box.kid + " lunchbox. " + boxStatusText(box));
         const ready = boxMeetsNeed(box);
         const missing = missingNeeds(box);
         const almost = !ready && missing.length === 1;
