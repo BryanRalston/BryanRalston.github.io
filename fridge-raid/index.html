@@ -159,20 +159,10 @@
     .hero-fridge-wrap #hero-fridge-img {
       width: 100%;
     }
-    .magnet-stickers,
-    .play-magnets {
+    .magnet-stickers {
       position: absolute;
       pointer-events: none;
-    }
-    .magnet-stickers {
       inset: 10% 8% 12% 10%;
-    }
-    .play-magnets {
-      right: 5.5%;
-      top: 15%;
-      width: 24%;
-      height: 64%;
-      z-index: 2;
     }
     .magnet-sticker {
       position: absolute;
@@ -185,7 +175,6 @@
       filter: drop-shadow(0 2px 2px rgba(20, 40, 50, 0.28));
       transform: rotate(var(--tilt, -8deg));
     }
-    .play-magnets .magnet-sticker { font-size: clamp(0.85rem, 2.4vw, 1.15rem); }
     .rank-chip {
       display: inline-block;
       background: #fff6d8;
@@ -408,9 +397,9 @@
       gap: 0.22rem;
     }
     .fridge-stage.photo .shelf:nth-child(1) { top: 13.4%; height: 17.2%; }
-    .fridge-stage.photo .shelf:nth-child(2) { top: 30.4%; height: 16.4%; }
-    .fridge-stage.photo .shelf:nth-child(3) { top: 46.4%; height: 15%; }
-    .fridge-stage.photo .shelf:nth-child(4) { top: 68.6%; height: 18%; }
+    .fridge-stage.photo .shelf:nth-child(2) { top: 30.6%; height: 16.2%; }
+    .fridge-stage.photo .shelf:nth-child(3) { top: 47.0%; height: 14.4%; }
+    .fridge-stage.photo .shelf:nth-child(4) { top: 61.8%; height: 20.0%; }
 
     .slot {
       position: relative;
@@ -1267,7 +1256,6 @@
           <div class="fridge-frame" id="fridge-frame">
             <img id="fridge-art" class="fridge-art" alt="" hidden>
             <div class="fridge" id="fridge" aria-label="Fridge shelves"></div>
-            <div class="play-magnets" id="play-magnets" aria-hidden="true"></div>
           </div>
         </div>
         <div class="dock">
@@ -2405,10 +2393,8 @@
       const have = new Set(loadMagnets());
       const owned = MAGNETS.filter((magnet) => have.has(magnet.id));
       const title = document.getElementById("title-magnets");
-      const play = document.getElementById("play-magnets");
       const html = owned.map(magnetMarkup).join("");
       if (title) title.innerHTML = html;
-      if (play) play.innerHTML = html;
     }
 
     function magnetCountLabel() {

@@ -49,13 +49,13 @@ Best stars per level persist in localStorage.
 
 Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch Hero → Bus Hero**.
 
-Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots (ink captions, dashed slate tiles) and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
+Fridge Magnets are cosmetic stickers on the title fridge. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots (ink captions, dashed slate tiles) and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
 
 The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; a box that is one group short says **need protein** (not a bare almost). Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein. Packing only refills the empty shelf slot — the rest of the fridge stays put until a named event. A fail screen shows **this stop** points, who still needs what, and **Try again**.
 
 ## Art
 
-If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Item sprites are transparent cutouts (`object-fit: contain`) overlaid on the fridge shelves — three large tap targets per shelf. Lunchbox docks stay compact so the fridge keeps most of the play viewport; Scout, Pip, Nori, and TOSS stay on-screen together. The play fridge uses `object-fit: contain` in a 3:4 box so the open door stays in frame.
+If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Item sprites are transparent cutouts (`object-fit: contain`) overlaid on four glass shelves — three large tap targets per shelf. Lunchbox docks stay compact so the fridge keeps most of the play viewport; Scout, Pip, Nori, and TOSS stay on-screen together. The play fridge uses `object-fit: contain` in a 3:4 box so the open door stays in frame.
 
 ## Food groups
 
