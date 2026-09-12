@@ -55,7 +55,7 @@ The play HUD is one row (score, bus-timer, sealed count). The old need-guide str
 
 ## Art
 
-If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Item sprites are transparent cutouts (`object-fit: contain`) overlaid on the four glass lips plus the cavity floor — three tap targets per row. Lunchbox docks stay compact so the fridge keeps most of the play viewport; Scout, Pip, Nori, and TOSS stay on-screen together. The play fridge uses `object-fit: contain` in a 3:4 box so the open door stays in frame.
+If `fridge-raid/assets/` is present, the game uses `fridge.png` as the fridge backdrop and `{catalogId}.png` sprites (`apple.png`, `sandwich.png`, …). Missing PNGs keep the drawn fallback. Item sprites are transparent cutouts (`object-fit: contain`) overlaid on the four glass lips — three tap targets per row. Lunchbox docks stay compact so the fridge keeps most of the play viewport; Scout, Pip, Nori, and TOSS stay on-screen together. The play fridge uses `object-fit: contain` in a 3:4 box so the open door stays in frame.
 
 ## Food groups
 
