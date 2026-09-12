@@ -285,9 +285,9 @@
     .goal-stat b { color: var(--teal-deep); }
 
     .guide {
-      display: flex;
+      display: none;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 0.4rem;
       margin: 0 0 0.35rem;
       background: rgba(255,255,255,0.86);
@@ -295,13 +295,8 @@
       padding: 0.32rem 0.55rem;
       min-height: 2.05rem;
     }
-    .guide-need {
-      font-size: 0.8rem;
-      font-weight: 800;
-      line-height: 1.25;
-      color: #17323a;
-    }
-    .guide.teach .guide-need { color: #7a3d00; }
+    .guide.rush-only { display: flex; }
+    .guide-need { display: none; }
     .rush-mult {
       display: none;
       font-family: Nunito, sans-serif;
@@ -321,6 +316,7 @@
       align-items: stretch;
       justify-content: center;
       gap: 0.4rem;
+      overflow: hidden;
     }
     .fridge-stage {
       flex: 1 1 0;
@@ -478,31 +474,6 @@
       animation: coach-bounce 0.9s ease infinite;
       z-index: 7;
     }
-    .item-badge {
-      position: absolute;
-      left: 50%;
-      bottom: -0.18rem;
-      transform: translateX(-50%);
-      z-index: 3;
-      background: #fff;
-      color: #17323a;
-      border-radius: 999px;
-      padding: 0.04rem 0.32rem;
-      font-size: 0.55rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      line-height: 1.2;
-      white-space: nowrap;
-      box-shadow: 0 1px 0 rgba(20, 40, 50, 0.12);
-      pointer-events: none;
-    }
-    .item-badge.fruit { background: #ffe1e1; }
-    .item-badge.veg { background: #e4ffe3; }
-    .item-badge.protein { background: #fff3c6; }
-    .item-badge.grain { background: #f3e2c4; }
-    .item-badge.treat { background: #f3e8ff; }
-    .item-badge.multi { background: #d9f4ff; }
-    .item-badge.yuck { background: var(--pink); color: #fff; }
     .item-name {
       position: absolute;
       left: 50%;
@@ -518,26 +489,25 @@
       white-space: nowrap;
       pointer-events: none;
     }
-    .item[data-kind="spoiled"],
-    .item[data-kind="trap"] {
-      filter: saturate(0.72) contrast(1.08);
+    .item[data-kind="spoiled"] svg,
+    .item[data-kind="spoiled"] img {
+      filter: saturate(0.28) hue-rotate(52deg) brightness(0.86) contrast(0.92) drop-shadow(0 4px 5px rgba(20, 40, 50, 0.2));
+      opacity: 0.88;
     }
-    .item[data-kind="spoiled"]::before,
-    .item[data-kind="trap"]::before {
-      content: "TOSS";
-      position: absolute;
-      top: -0.12rem;
-      right: -0.08rem;
-      z-index: 4;
-      background: var(--pink);
-      color: #fff;
-      font-size: 0.52rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      border-radius: 999px;
-      padding: 0.08rem 0.28rem;
-      box-shadow: 0 2px 0 #c41548;
-      pointer-events: none;
+    .item[data-kind="trap"] svg,
+    .item[data-kind="trap"] img {
+      filter: saturate(0.2) contrast(1.12) brightness(0.78) drop-shadow(0 4px 5px rgba(20, 40, 50, 0.2));
+      opacity: 0.86;
+    }
+    .item[data-kind="spoiled"].has-sprite img,
+    .item[data-kind="trap"].has-sprite img {
+      transform: scale(var(--sprite-scale, 1.28)) rotate(-5deg);
+    }
+    .item[data-kind="spoiled"].selected svg,
+    .item[data-kind="spoiled"].selected img,
+    .item[data-kind="trap"].selected svg,
+    .item[data-kind="trap"].selected img {
+      opacity: 1;
     }
 
     .dock {
@@ -549,24 +519,33 @@
       align-items: stretch;
       position: relative;
       z-index: 3;
+      min-height: 0;
+      max-height: 46%;
     }
     .pack-col {
       display: flex;
       flex-direction: column;
       gap: 0.28rem;
       min-width: 0;
+      min-height: 0;
+      position: relative;
     }
     .held {
       display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(100% + 0.22rem);
+      z-index: 8;
       align-items: center;
       justify-content: center;
       gap: 0.35rem;
-      min-height: 2.05rem;
+      min-height: 1.85rem;
       background: #14202b;
       color: #fff;
       border-radius: 12px;
-      padding: 0.28rem 0.5rem;
-      font-size: 0.82rem;
+      padding: 0.22rem 0.5rem;
+      font-size: 0.78rem;
       font-weight: 800;
       box-shadow: 0 0 0 3px #ffd23f;
     }
@@ -584,7 +563,8 @@
       gap: 0.15rem;
       font-size: 0.8rem;
       letter-spacing: 0.06em;
-      min-height: 5.6rem;
+      min-height: 0;
+      height: 100%;
     }
     .toss.hot, .toss.hint { transform: scale(1.05); filter: brightness(1.12); }
     .toss.hint { box-shadow: 0 0 0 4px #ffd23f, 0 3px 10px rgba(42, 28, 150, 0.28); }
@@ -638,14 +618,22 @@
       transform: scale(1.08);
     }
     .pip.bonus { outline-style: dotted; }
+    .pip[data-group="protein"] {
+      font-family: Nunito, Fredoka, sans-serif;
+      font-weight: 900;
+      font-size: 0.72rem;
+      letter-spacing: -0.02em;
+      background: #fff3c6;
+    }
+    .pip[data-group="protein"].filled { background: #ffe58a; }
     .box-status {
       font-size: 0.68rem;
       font-weight: 800;
       text-align: center;
       margin: 0.04rem 0 0.16rem;
       color: #4a6670;
-      min-height: 0.9rem;
     }
+    .box-status:empty { display: none; }
     .box.almost .box-status { color: #b86a00; }
     .box.ready .box-status { color: #0d8a3e; }
     .crave {
@@ -762,7 +750,7 @@
     #toast {
       position: absolute;
       left: 50%;
-      top: calc(0.7rem + env(safe-area-inset-top) + 5.15rem);
+      top: calc(0.7rem + env(safe-area-inset-top) + 3.2rem);
       transform: translateX(-50%) translateY(-8px);
       z-index: 28;
       min-width: 11rem;
@@ -851,6 +839,14 @@
     .new-best.show { display: block; }
     .end-actions { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
     .end-note { color: #4a6670; font-weight: 700; font-size: 0.95rem; }
+    #end[data-outcome="fail"] .big-score { color: #4a6670; }
+    #end[data-outcome="fail"] .end-note.missing {
+      color: #7a3d00;
+      background: #fff6d8;
+      border-radius: 12px;
+      padding: 0.45rem 0.7rem;
+    }
+    #end-score-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
     .bonus-list {
       list-style: none;
       margin: 0 0 0.55rem;
@@ -1021,6 +1017,7 @@
       margin: 0 auto;
       left: 0;
       right: 0;
+      overflow: hidden;
     }
 
     @media (max-width: 859px) {
@@ -1031,25 +1028,47 @@
       }
       .pocket { min-height: 3.35rem; }
       .dock {
-        grid-template-columns: 5.4rem 1fr;
-        gap: 0.5rem;
-        min-height: 8rem;
+        grid-template-columns: 4.4rem 1fr;
+        gap: 0.4rem;
+        min-height: 0;
+        max-height: 42%;
       }
       .toss {
-        min-height: 8rem;
-        font-size: 0.92rem;
+        min-height: 0;
+        font-size: 0.78rem;
       }
-      .toss svg { width: 42px; height: 42px; }
+      .toss svg { width: 32px; height: 32px; }
       .boxes[data-count="1"] { grid-template-columns: 1fr; }
-      .box { min-height: 7.6rem; padding: 0.46rem 0.4rem 0.5rem; }
+      .boxes[data-count="2"] { grid-template-columns: 1fr 1fr; }
+      .box { min-height: 0; padding: 0.32rem 0.26rem 0.34rem; }
+      #play[data-kids="1"] .box { min-height: 0; padding: 0.4rem 0.34rem 0.42rem; }
+      #play[data-kids="1"] .pocket { min-height: 3.1rem; }
+      #play[data-kids="2"] .pocket,
+      #play[data-kids="3"] .pocket { min-height: 2.15rem; }
+      #play[data-kids="2"] .kid,
+      #play[data-kids="3"] .kid { font-size: 0.64rem; margin-bottom: 0.08rem; }
+      #play[data-kids="2"] .crave,
+      #play[data-kids="3"] .crave { font-size: 0.58rem; margin-bottom: 0.08rem; }
+      #play[data-kids="2"] .pip,
+      #play[data-kids="3"] .pip { width: 1.28rem; height: 1.28rem; font-size: 0.7rem; }
       .pip { width: 1.62rem; height: 1.62rem; font-size: 0.86rem; }
-      .box-status { font-size: 0.76rem; }
+      .box-status { font-size: 0.7rem; }
+      .pip[data-group="protein"] { font-size: 0.78rem; }
+      #play[data-kids="2"] .pip[data-group="protein"],
+      #play[data-kids="3"] .pip[data-group="protein"] { font-size: 0.64rem; }
       #coach {
         bottom: auto;
-        top: calc(0.7rem + env(safe-area-inset-top) + 5.2rem);
+        top: calc(0.7rem + env(safe-area-inset-top) + 3.15rem);
         width: min(22rem, calc(100% - 1.1rem));
         padding: 0.4rem 0.65rem 0.42rem;
       }
+    }
+
+    @media (max-width: 859px) and (max-height: 740px) {
+      .dock { max-height: 38%; margin-top: 0.22rem; }
+      #play[data-kids="2"] .pocket,
+      #play[data-kids="3"] .pocket { min-height: 1.85rem; }
+      .toss svg { width: 28px; height: 28px; }
     }
 
     @media (min-width: 860px) {
@@ -1074,12 +1093,17 @@
         flex: 0 0 17.6rem;
         width: 17.6rem;
         margin-top: 0;
+        max-height: none;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
         align-content: center;
         align-self: center;
       }
-      #play .toss { min-height: 4.8rem; }
+      #play .toss { min-height: 4.8rem; height: auto; }
+      #play .held {
+        position: static;
+        bottom: auto;
+      }
       #play .pack-col { min-height: 0; }
       #coach {
         left: auto;
@@ -1144,7 +1168,7 @@
       </div>
     </section>
 
-    <section id="play" class="screen" data-screen="play">
+    <section id="play" class="screen" data-screen="play" data-kids="1">
       <div id="hud">
         <div class="stat"><span id="level-chip">L1</span><b id="score">0</b></div>
         <div class="clock" id="clock">
@@ -1161,7 +1185,7 @@
       </div>
       <div class="combo" id="combo"><span>Combo</span><b>x1</b></div>
       <div class="guide" id="guide">
-        <div class="guide-need" id="mission-need">Tap food, then tap the box. Fill 🍎 + 🧀 to seal.</div>
+        <div class="guide-need" id="mission-need"></div>
         <div class="rush-mult" id="rush-mult">x1</div>
       </div>
       <div class="play-main">
@@ -1203,6 +1227,7 @@
     <section id="end" class="screen" data-screen="end">
       <div class="report">
         <h2 id="end-title">Bus is here!</h2>
+        <p id="end-score-label" class="end-note" hidden></p>
         <p class="big-score" id="end-score">0</p>
         <div class="star-row" id="star-row" hidden></div>
         <p id="new-best" class="new-best">New personal best</p>
@@ -1246,8 +1271,8 @@
       <span id="toast-sub">Leftovers gone</span>
     </div>
     <div id="coach" hidden>
-      <strong id="coach-title">Tap a lunch food</strong>
-      <span id="coach-sub">Fruit or protein — then tap Scout's box</span>
+      <strong id="coach-title">Tap food, then tap Scout's box</strong>
+      <span id="coach-sub">Empty pips show what's still needed</span>
     </div>
     <div id="fx" aria-hidden="true"></div>
     <div id="ghost"></div>
@@ -1264,6 +1289,7 @@
     const MAGNET_KEY = "fridge-raid-magnets";
     const RUSH_BEST_KEY = "fridge-raid-rush-best";
     const TEACH_KEY = "fridge-raid-taught";
+    const SWAP_HINT_KEY = "fridge-raid-swap-hint";
     const RANKS = [
       { id: "rookie", name: "Rookie", minStars: 0 },
       { id: "packer", name: "Packer", minStars: 3 },
@@ -1290,7 +1316,7 @@
     const GROUP_META = {
       fruit: { label: "Fruit", icon: "🍎" },
       veg: { label: "Veg", icon: "🥕" },
-      protein: { label: "Protein", icon: "🧀" },
+      protein: { label: "Protein", icon: "🥛" },
       grain: { label: "Grain", icon: "🍞" },
       treat: { label: "Treat", icon: "🍪" },
     };
@@ -1317,11 +1343,11 @@
         number: 2,
         name: "Two hungry",
         kicker: "Level 2",
-        blurb: "Harder now. Scout and Pip each need fruit + veg + protein. More leftovers, a tighter bus, and the shelves start acting up.",
+        blurb: "Harder now. Scout and Pip each need fruit + veg + protein. You have 1:20. More leftovers, and the shelves start acting up.",
         kids: ["Scout", "Pip"],
         need: ["fruit", "veg", "protein"],
         bonus: [],
-        durationMs: 65000,
+        durationMs: 80000,
         weights: [["good", 42], ["treat", 12], ["spoiled", 30], ["trap", 16]],
         minGood: 5,
         minBad: 4,
@@ -1434,6 +1460,23 @@
       sandwich: 1.28,
       slime: 1.18,
       yogurt: 1.3,
+    };
+    const ITEM_ICON = {
+      apple: "🍎",
+      grapes: "🍇",
+      banana: "🍌",
+      berries: "🍓",
+      carrot: "🥕",
+      broccoli: "🥦",
+      cucumber: "🥒",
+      cheddar: "🧀",
+      yogurt: "🥛",
+      milk: "🥛",
+      sandwich: "🥪",
+      roll: "🍞",
+      cookie: "🍪",
+      chips: "🍟",
+      juice: "🧃",
     };
     const DEFAULT_SPRITE_SCALE = 1.28;
     for (const [id, item] of Object.entries(CATALOG)) {
@@ -1808,12 +1851,16 @@
       return currentLevel().id === "l1" && !loadTaught();
     }
 
+    function isTeaching() {
+      return state.teachStep === "pick" || state.teachStep === "drop";
+    }
+
     function advanceTeach(action) {
       if (state.teachStep === "done") return;
       if (state.teachStep === "pick") {
-        state.teachStep = action === "select" ? "drop" : "pips";
+        state.teachStep = action === "select" ? "drop" : "done";
       } else if (state.teachStep === "drop" && (action === "packed" || action === "tossed")) {
-        state.teachStep = "pips";
+        state.teachStep = "done";
       }
       renderMission();
     }
@@ -2030,8 +2077,15 @@
         group,
         typeId,
         label: meta.name,
-        icon: (GROUP_META[group] || GROUP_META.treat).icon,
+        icon: ITEM_ICON[typeId] || meta.name,
       };
+    }
+
+    function cravingCaption(craving) {
+      if (!craving) return "";
+      if (craving.kind === "item") return craving.label;
+      const meta = GROUP_META[craving.group];
+      return "any " + (meta ? meta.label.toLowerCase() : craving.group);
     }
 
     function matchesCraving(entry, craving) {
@@ -2056,7 +2110,7 @@
         if (CATALOG[key] && itemPool.includes(key)) return true;
         return false;
       });
-      const preferItem = Math.random() < 0.4 && itemPool.length > 0;
+      const preferItem = level.id !== "l1" && Math.random() < 0.4 && itemPool.length > 0;
       if (biasHit && CATALOG[biasHit] && (preferItem || !GROUP_META[biasHit])) {
         return cravingFromItem(biasHit);
       }
@@ -2107,7 +2161,8 @@
     function cravingChip(kid, hit) {
       const craving = state.cravings[kid];
       if (!craving) return "";
-      return `<div class="crave${hit ? " hit" : ""}" data-crave="${craving.kind === "item" ? craving.typeId : craving.group}">😋 ${craving.icon} ${craving.label}</div>`;
+      const key = craving.kind === "item" ? craving.typeId : craving.group;
+      return `<div class="crave${hit ? " hit" : ""}" data-crave="${key}">😋 ${cravingCaption(craving)}</div>`;
     }
 
     function loadStars() {
@@ -2436,9 +2491,15 @@
       comboEl.classList.toggle("on", comboOn);
       comboEl.querySelector("b").textContent = "x" + comboMult();
       const rush = document.getElementById("rush-mult");
+      const guide = document.getElementById("guide");
       const mult = rushMult();
-      rush.classList.toggle("on", level.risingSpoil && mult > 1);
+      const rushOn = Boolean(level.risingSpoil && mult > 1 && !isTeaching());
+      rush.classList.toggle("on", rushOn);
       rush.textContent = "x" + mult;
+      if (guide) {
+        guide.classList.toggle("rush-only", rushOn);
+        guide.hidden = !rushOn;
+      }
       const ratio = Math.max(0, Math.min(1, remaining / level.durationMs));
       busFill.style.transform = "scaleX(" + ratio + ")";
       busIcon.style.left = (100 - ratio * 100) + "%";
@@ -2495,29 +2556,24 @@
       const coach = document.getElementById("coach");
       const guide = document.getElementById("guide");
       if (!coach) return;
-      const teaching = state.screen === "play" && state.teachStep !== "done";
+      const teaching = state.screen === "play" && isTeaching();
       coach.hidden = !teaching;
-      if (guide) guide.classList.toggle("teach", teaching);
+      if (guide) {
+        guide.classList.toggle("teach", false);
+        if (teaching) guide.classList.remove("rush-only");
+      }
       if (!teaching) return;
       const title = document.getElementById("coach-title");
       const sub = document.getElementById("coach-sub");
       switch (state.teachStep) {
         case "pick":
-          title.textContent = "1. Tap a lunch food";
-          sub.textContent = "Fruit or protein — look for the badge";
-          break;
         case "drop":
-          title.textContent = "2. Tap Scout's box";
-          sub.textContent = "Or tap TOSS if it says leftovers / junk";
-          break;
-        case "pips":
-          title.textContent = "Fill every pip to seal";
-          sub.textContent = "Need " + needPhrase() + ". Slots full ≠ sealed.";
+          title.textContent = "Tap food, then tap Scout's box";
+          sub.textContent = "Empty pips show what's still needed";
           break;
         default: {
           const _never = state.teachStep;
           coach.hidden = true;
-          if (guide) guide.classList.remove("teach");
           return _never;
         }
       }
@@ -2534,13 +2590,8 @@
     }
 
     function renderMission() {
-      const level = currentLevel();
-      let text = "Fill " + needPhrase() + " to seal";
-      if (level.bonus && level.bonus.length) text += " · veg extra";
-      if (state.teachStep === "pick") text = "Tap a lunch food, then tap the box";
-      else if (state.teachStep === "drop") text = "Now tap the lunchbox — or TOSS leftovers";
-      else if (state.teachStep === "pips") text = "Fill every pip to seal. Need " + needPhrase();
-      document.getElementById("mission-need").textContent = text;
+      const mission = document.getElementById("mission-need");
+      if (mission) mission.textContent = "";
       renderCoach();
     }
 
@@ -2563,10 +2614,8 @@
             btn.dataset.type = entry.typeId;
             btn.dataset.groups = foodGroupsOf(meta).join(" ");
             btn.setAttribute("aria-label", meta.name);
-            const badge = itemBadge(meta);
             const selected = state.selected === entry.id;
             btn.innerHTML = markupFor(entry)
-              + `<span class="item-badge ${badge.cls}">${badge.text}</span>`
               + (selected ? `<span class="item-name">${meta.name}</span>` : "");
             if (ASSET_READY[entry.typeId]) {
               btn.classList.add("has-sprite");
@@ -2607,12 +2656,15 @@
     function boxStatusText(box) {
       if (boxMeetsNeed(box)) return "sealed!";
       const missing = missingNeeds(box);
-      const filled = currentLevel().need.length - missing.length;
-      if (filled === 0) {
-        return "need " + missing.map((group) => GROUP_META[group].label.toLowerCase()).join(" + ");
+      if (missing.length === 1 && missing.length < currentLevel().need.length) {
+        return "need " + GROUP_META[missing[0]].label.toLowerCase();
       }
-      if (missing.length === 1) return "almost!";
-      return "almost! need " + missing.map((group) => GROUP_META[group].label.toLowerCase()).join(" + ");
+      return "";
+    }
+
+    function pipGlyph(group) {
+      if (group === "protein") return "P";
+      return GROUP_META[group].icon;
     }
 
     function pipMarkup(box) {
@@ -2620,11 +2672,11 @@
       const have = groupsInBox(box);
       const required = level.need.map((group) => {
         const meta = GROUP_META[group];
-        return `<span class="pip${have.has(group) ? " filled" : ""}" data-group="${group}" title="${meta.label}">${meta.icon}</span>`;
+        return `<span class="pip${have.has(group) ? " filled" : ""}" data-group="${group}" title="${meta.label}">${pipGlyph(group)}</span>`;
       }).join("");
       const extra = (level.bonus || []).map((group) => {
         const meta = GROUP_META[group];
-        return `<span class="pip bonus${have.has(group) ? " filled" : ""}" data-group="${group}" title="${meta.label} extra">${meta.icon}</span>`;
+        return `<span class="pip bonus${have.has(group) ? " filled" : ""}" data-group="${group}" title="${meta.label} extra">${pipGlyph(group)}</span>`;
       }).join("");
       return required + extra;
     }
@@ -2768,9 +2820,24 @@
       const index = state.fridge.findIndex((entry) => entry.id === id);
       if (index < 0) return;
       const old = state.fridge[index].typeId;
+      const others = state.fridge.filter((_, slot) => slot !== index);
+      const missingNeed = currentLevel().need.find((group) => (
+        !others.some((entry) => foodGroupsOf(itemMeta(entry)).includes(group))
+      ));
+      if (missingNeed) {
+        state.fridge[index] = spawnItem(old, "good", missingNeed);
+        return;
+      }
+      const missingCrave = Object.values(state.cravings).find((craving) => (
+        craving && !others.some((entry) => matchesCraving(entry, craving))
+      ));
+      if (missingCrave) {
+        state.fridge[index] = missingCrave.kind === "item"
+          ? { id: nextId(), typeId: missingCrave.typeId }
+          : spawnItem(old, missingCrave.group === "treat" ? "treat" : "good", missingCrave.group);
+        return;
+      }
       state.fridge[index] = spawnItem(old);
-      ensureNeededGroups(state.fridge);
-      ensureCravingOnShelf(state.fridge);
     }
 
     function findReplaceable(box) {
@@ -2835,9 +2902,9 @@
       burst(x, y, "seal");
       blip("seal");
       pulseApp("good");
+      if (level.id === "l1") markTaught();
       if (state.teachStep !== "done") {
         state.teachStep = "done";
-        markTaught();
         renderCoach();
         renderMission();
       }
@@ -2984,7 +3051,7 @@
       document.getElementById("intro-kids").innerHTML = level.kids
         .map((kid) => {
           const craving = state.cravings[kid];
-          const extra = craving ? ` · 😋 ${craving.icon}` : "";
+          const extra = craving ? ` · 😋 ${cravingCaption(craving)}` : "";
           return `<span class="kid-chip" data-kid="${kid}">${kid}${extra}</span>`;
         })
         .join("");
@@ -3056,6 +3123,7 @@
       state.fridge = seedFridge();
       state.boxes = level.kids.map((kid) => ({ kid, slots: [], cravingHit: false }));
       boxesEl.dataset.count = String(level.kids.length);
+      document.getElementById("play").dataset.kids = String(level.kids.length);
       showScreen("play");
       applyFridgePhoto();
       renderFridge();
@@ -3096,6 +3164,25 @@
       state.endAgain = "retry";
     }
 
+    function failReason(level) {
+      const parts = [];
+      for (const box of state.boxes) {
+        if (state.fedKids.has(box.kid)) continue;
+        const missing = missingNeeds(box);
+        if (!missing.length) {
+          parts.push(box.kid + " still needs a sealed lunch");
+          continue;
+        }
+        if (missing.length === level.need.length && box.slots.length === 0) {
+          parts.push(box.kid + " still needs a lunch");
+          continue;
+        }
+        parts.push(box.kid + " needs " + missing.map((group) => GROUP_META[group].label.toLowerCase()).join(" + "));
+      }
+      if (!parts.length) return "Feed every kid a balanced lunch before the bus.";
+      return parts.join(". ") + ".";
+    }
+
     function finishLevel(won) {
       if (state.closing && state.screen === "end") return;
       state.closing = true;
@@ -3107,6 +3194,8 @@
       banner.hidden = true;
       window.clearTimeout(showEventBanner.timer);
       const level = currentLevel();
+      const thisStop = state.score - state.scoreAtLevelStart;
+      const prevBest = loadBest();
       let note = "";
       if (won && !level.endless) {
         const timeBonus = Math.ceil(Math.max(0, remainingMs()) / 1000) * 12;
@@ -3115,7 +3204,7 @@
         saveCleared(level.number);
         note = timeBonus > 0 ? "" : "Packed just in time.";
       } else if (!won && !level.endless) {
-        note = "Feed every kid a balanced lunch before the bus.";
+        note = failReason(level);
       } else {
         note = "Leftovers climbed every 20 seconds. Nice raid.";
       }
@@ -3130,25 +3219,34 @@
       state.lastStars = stars;
       const starCount = stars.filter(Boolean).length;
       if (won || starCount > 0) saveStars(level.id, starCount);
-      state.newMagnets = syncMagnets();
+      state.newMagnets = won || level.endless ? syncMagnets() : [];
       renderStarRow(stars);
       renderEndExtras();
-      const best = saveBest(state.score);
-      document.getElementById("end-score").textContent = state.score.toLocaleString();
+      const best = (won || level.endless) ? saveBest(state.score) : prevBest;
+      const scoreLabel = document.getElementById("end-score-label");
+      document.getElementById("end-score").textContent = won || level.endless
+        ? state.score.toLocaleString()
+        : Math.max(0, thisStop).toLocaleString();
+      if (scoreLabel) {
+        scoreLabel.hidden = Boolean(won || level.endless);
+        scoreLabel.textContent = won || level.endless ? "" : "This stop";
+      }
       document.getElementById("stat-boxes").textContent = String(state.filled);
       document.getElementById("stat-kids").textContent = state.fedKids.size + "/" + level.kids.length;
       document.getElementById("stat-good").textContent = String(state.packedGood);
       document.getElementById("stat-oops").textContent = String(state.packedOops);
       document.getElementById("stat-toss").textContent = String(state.tossedBad);
       document.getElementById("stat-best").textContent = String(best);
-      document.getElementById("new-best").classList.toggle("show", state.score >= best && state.score > 0);
+      document.getElementById("new-best").classList.toggle("show", Boolean(won && state.score > prevBest));
       const noteEl = document.getElementById("end-note");
       noteEl.textContent = note;
       noteEl.hidden = !note;
+      noteEl.classList.toggle("missing", Boolean(!won && !level.endless && note));
       const title = won
         ? (level.endless ? "Bus is here!" : level.name + " packed!")
-        : (state.packedOops > 3 ? "Bus still left." : "Bus is here!");
+        : "Bus left — try again";
       document.getElementById("end-title").textContent = title;
+      document.getElementById("end").dataset.outcome = won || level.endless ? "win" : "fail";
       configureEndButtons(won);
       renderMagnetStickers();
       showScreen("end");
@@ -3218,12 +3316,17 @@
     }
 
     function selectItem(id) {
+      const swapping = Boolean(state.selected && state.selected !== id);
       startClock();
       state.selected = id;
       if (state.teachStep === "pick") advanceTeach("select");
       renderFridge();
       renderBoxes();
       renderMission();
+      if (swapping && localStorage.getItem(SWAP_HINT_KEY) !== "1") {
+        localStorage.setItem(SWAP_HINT_KEY, "1");
+        showToast("Swap", "Tap a box or TOSS — or tap food again to swap", "good", 2400);
+      }
     }
 
     fridgeEl.addEventListener("click", (event) => {
@@ -3340,6 +3443,11 @@
       levels: LEVELS,
       magnets: MAGNETS,
       ranks: RANKS,
+      cravingCaption,
+      matchesCraving,
+      pipGlyph,
+      failReason,
+      boxStatusText,
       getState() {
         const level = currentLevel();
         const weights = currentWeights();
@@ -3352,6 +3460,7 @@
           score: state.score,
           fed: Array.from(state.fedKids),
           need: level.need,
+          needPhrase: needPhrase(),
           kids: level.kids,
           durationMs: level.durationMs,
           filled: state.filled,
@@ -3380,8 +3489,12 @@
           fridgeSlots: FRIDGE_SLOTS,
           clockStarted: state.clockStarted,
           teachStep: state.teachStep,
+          teaching: isTeaching(),
           taught: loadTaught(),
           selected: state.selected,
+          cravingCaptions: Object.fromEntries(
+            Object.entries(state.cravings).map(([kid, craving]) => [kid, cravingCaption(craving)])
+          ),
           fridge: state.fridge.map((entry) => ({
             id: entry.id,
             typeId: entry.typeId,
