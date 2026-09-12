@@ -13,7 +13,7 @@ Difficulty climbs after the teach stop. Timer tightens, leftovers climb, and fri
 | Level | Kids | Seal rule | Timer | Fridge |
 | --- | --- | --- | --- | --- |
 | L1 Scout's first lunch | Scout | Fruit + protein. Veg extra if packed first. | 1:35 + pause-first teach | Soft leftovers, extra fruit/protein on the shelf |
-| L2 Two hungry | Scout + Pip | Fruit + veg + protein | 1:05 | More leftovers, more events |
+| L2 Two hungry | Scout + Pip | Fruit + veg + protein | 1:20 | More leftovers, more events |
 | L3 Full house | Scout + Pip + Nori | Fruit + veg + protein + grain. Sandwich covers protein **and** grain. | 0:55 | Full plate, shelf fog, fast slides |
 | Bus rush | All three | Same full rule. Leftovers rise every 20s. Score mult climbs with each seal. | 1:30 | Gets messier |
 
@@ -51,7 +51,7 @@ Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch H
 
 Fridge Magnets are cosmetic stickers on the title fridge and play-door. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
 
-The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; boxes only add **almost!** / **sealed!** Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein.
+The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; a box that is one group short says **need protein** (not a bare almost). Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein. Packing only refills the empty shelf slot — the rest of the fridge stays put until a named event. A fail screen shows **this stop** points, who still needs what, and **Try again**.
 
 ## Art
 
