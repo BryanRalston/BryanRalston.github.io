@@ -2493,10 +2493,13 @@
       const rush = document.getElementById("rush-mult");
       const guide = document.getElementById("guide");
       const mult = rushMult();
-      const rushOn = level.risingSpoil && mult > 1;
+      const rushOn = Boolean(level.risingSpoil && mult > 1 && !isTeaching());
       rush.classList.toggle("on", rushOn);
       rush.textContent = "x" + mult;
-      if (guide) guide.classList.toggle("rush-only", rushOn && !isTeaching());
+      if (guide) {
+        guide.classList.toggle("rush-only", rushOn);
+        guide.hidden = !rushOn;
+      }
       const ratio = Math.max(0, Math.min(1, remaining / level.durationMs));
       busFill.style.transform = "scaleX(" + ratio + ")";
       busIcon.style.left = (100 - ratio * 100) + "%";
