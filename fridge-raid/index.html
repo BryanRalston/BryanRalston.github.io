@@ -82,7 +82,8 @@
       padding-bottom: max(2.4rem, calc(1.4rem + env(safe-area-inset-bottom)));
     }
     #title > * { flex: 0 0 auto; }
-    #intro, #end { max-width: 32rem; margin: 0 auto; width: 100%; }
+    #intro, #end, #prizes { max-width: 32rem; margin: 0 auto; width: 100%; }
+    #prizes { overflow-x: hidden; overflow-y: auto; touch-action: pan-y; }
     @media (max-height: 720px) {
       #title { gap: 0.5rem; }
       .wordmark { font-size: clamp(2.1rem, 10vw, 2.8rem); }
@@ -137,6 +138,51 @@
     .ghost-btn[hidden], .next-btn[hidden], .again-btn[hidden] { display: none; }
     .title-actions { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; }
 
+    .hero-fridge-wrap {
+      position: relative;
+      width: min(42vw, 188px);
+      flex: 0 0 auto;
+    }
+    .hero-fridge-wrap .hero-fridge,
+    .hero-fridge-wrap #hero-fridge-img {
+      width: 100%;
+    }
+    .magnet-stickers,
+    .play-magnets {
+      position: absolute;
+      pointer-events: none;
+    }
+    .magnet-stickers {
+      inset: 10% 8% 12% 10%;
+    }
+    .play-magnets {
+      right: 5.5%;
+      top: 15%;
+      width: 24%;
+      height: 64%;
+      z-index: 2;
+    }
+    .magnet-sticker {
+      position: absolute;
+      font-size: 1.45rem;
+      line-height: 1;
+      background: #fff;
+      border-radius: 999px;
+      padding: 0.12rem;
+      box-shadow: 0 2px 0 rgba(20, 40, 50, 0.18);
+      filter: drop-shadow(0 2px 2px rgba(20, 40, 50, 0.28));
+      transform: rotate(var(--tilt, -8deg));
+    }
+    .play-magnets .magnet-sticker { font-size: clamp(0.85rem, 2.4vw, 1.15rem); }
+    .rank-chip {
+      display: inline-block;
+      background: #fff6d8;
+      color: #7a4a00;
+      border-radius: 999px;
+      padding: 0.22rem 0.7rem;
+      font-weight: 800;
+      font-size: 0.88rem;
+    }
     .hero-fridge { width: min(42vw, 188px); height: auto; filter: drop-shadow(0 14px 16px rgba(8, 50, 60, 0.22)); }
     .hero-fridge[hidden],
     #hero-fridge-svg[hidden],
@@ -336,9 +382,9 @@
       flex: 1 1 0;
       min-height: 0;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       align-items: end;
-      gap: 0.2rem;
+      gap: 0.28rem;
       border-bottom: 2px solid rgba(255,255,255,0.55);
       box-shadow: none;
       padding: 0 0.15rem 0.08rem;
@@ -350,12 +396,12 @@
       border: 0;
       box-shadow: none;
       padding: 0;
-      gap: 0.15rem;
+      gap: 0.22rem;
     }
-    .fridge-stage.photo .shelf:nth-child(1) { top: 14.2%; height: 15.4%; }
-    .fridge-stage.photo .shelf:nth-child(2) { top: 31.2%; height: 15%; }
-    .fridge-stage.photo .shelf:nth-child(3) { top: 47.2%; height: 13.2%; }
-    .fridge-stage.photo .shelf:nth-child(4) { top: 70%; height: 16%; }
+    .fridge-stage.photo .shelf:nth-child(1) { top: 13.4%; height: 17.2%; }
+    .fridge-stage.photo .shelf:nth-child(2) { top: 30.4%; height: 16.4%; }
+    .fridge-stage.photo .shelf:nth-child(3) { top: 46.4%; height: 15%; }
+    .fridge-stage.photo .shelf:nth-child(4) { top: 68.6%; height: 18%; }
 
     .slot {
       position: relative;
@@ -368,10 +414,10 @@
       height: 100%;
     }
     .item {
-      width: 78%;
+      width: 100%;
       height: auto;
-      max-width: 5.6rem;
-      max-height: 92%;
+      max-width: 8.6rem;
+      max-height: 112%;
       aspect-ratio: 1;
       background: transparent;
       padding: 0;
@@ -397,7 +443,7 @@
     .item.has-sprite img {
       object-fit: contain;
       object-position: center bottom;
-      transform: scale(var(--sprite-scale, 0.96));
+      transform: scale(var(--sprite-scale, 1.28));
       transform-origin: center bottom;
       filter: drop-shadow(0 4px 5px rgba(20, 40, 50, 0.2));
     }
@@ -529,11 +575,12 @@
     }
     .slots {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.12rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.22rem;
     }
     .pocket {
       aspect-ratio: 1;
+      min-height: 2.7rem;
       border-radius: 7px;
       background: rgba(255,255,255,0.42);
       display: grid;
@@ -541,15 +588,17 @@
       position: relative;
       overflow: visible;
     }
-    .pocket svg, .pocket img { width: 92%; height: 92%; object-fit: contain; object-position: center bottom; display: block; }
+    .pocket svg, .pocket img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; }
     .pocket.has-sprite { background: transparent; }
     .pocket.has-sprite img {
       position: absolute;
-      inset: 4%;
-      width: 92%;
-      height: 92%;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       object-position: center bottom;
+      transform: scale(var(--sprite-scale, 1.28));
+      transform-origin: center bottom;
       filter: drop-shadow(0 2px 3px rgba(20, 40, 50, 0.18));
     }
     .box[data-kid="Scout"] { background: rgba(217, 244, 255, 0.82); }
@@ -572,8 +621,8 @@
 
     #ghost {
       position: fixed;
-      width: 72px;
-      height: 72px;
+      width: 108px;
+      height: 108px;
       pointer-events: none;
       z-index: 40;
       display: none;
@@ -582,25 +631,34 @@
     }
     #ghost.show { display: block; }
     #ghost svg, #ghost img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+    #ghost img { transform: scale(var(--sprite-scale, 1.28)); transform-origin: center; }
 
-    #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
+    #end {
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      gap: 0.65rem;
+      overflow-x: hidden;
+      overflow-y: auto;
+      touch-action: pan-y;
+    }
     .big-score {
       font-family: Nunito, sans-serif;
-      font-size: 3rem;
+      font-size: 2.6rem;
       line-height: 1;
       color: var(--pink);
-      margin: 0.25rem 0 0.4rem;
+      margin: 0.1rem 0 0.2rem;
     }
     .report ul {
       list-style: none;
-      margin: 0 0 0.9rem;
+      margin: 0 0 0.55rem;
       padding: 0;
       text-align: left;
     }
     .report li {
       display: flex;
       justify-content: space-between;
-      padding: 0.28rem 0;
+      padding: 0.16rem 0;
       border-top: 2px dashed #e4eef2;
       font-weight: 600;
     }
@@ -608,14 +666,68 @@
     .new-best.show { display: block; }
     .end-actions { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
     .end-note { color: #4a6670; font-weight: 700; font-size: 0.95rem; }
+    .bonus-list {
+      list-style: none;
+      margin: 0 0 0.55rem;
+      padding: 0;
+      text-align: left;
+    }
+    .bonus-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.12rem 0;
+      font-weight: 700;
+      color: #0d8a3e;
+      font-size: 0.9rem;
+    }
+    .end-magnets {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.35rem;
+      margin: 0.2rem 0 0.45rem;
+    }
+    .magnet-pill {
+      background: #fff6d8;
+      border-radius: 999px;
+      padding: 0.18rem 0.55rem;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+    .prize-card h2 { margin: 0.1rem 0 0.35rem; }
+    .prize-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.45rem;
+      margin: 0.7rem 0 0.55rem;
+    }
+    .prize-slot {
+      background: #f4fbff;
+      border-radius: 14px;
+      padding: 0.5rem 0.4rem 0.55rem;
+      text-align: center;
+      min-width: 0;
+    }
+    .prize-slot.locked {
+      opacity: 0.42;
+      filter: grayscale(1);
+    }
+    .prize-emoji { font-size: 1.7rem; line-height: 1; }
+    .prize-slot strong { display: block; font-size: 0.86rem; margin: 0.18rem 0 0.08rem; }
+    .prize-slot small { display: block; font-size: 0.68rem; font-weight: 700; color: #4a6670; line-height: 1.25; }
 
-    #intro, #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
-    .intro-card, .report {
+    #intro, #prizes { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
+    .intro-card, .report, .prize-card {
       background: #fff;
       border-radius: 22px;
-      padding: 1.1rem 1.2rem 1.2rem;
+      padding: 0.85rem 1rem 1rem;
       width: min(22rem, 100%);
       box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
+    }
+    .report {
+      max-height: 100%;
+      overflow-y: auto;
     }
     .intro-kicker {
       font-size: 0.78rem;
@@ -650,9 +762,19 @@
       100% { filter: none; }
     }
     .fridge.slide .item { animation: slide 0.45s ease; }
+    .fridge.slide-fast .item { animation: slide-fast 0.26s ease; }
+    .fridge.fog .item {
+      filter: brightness(0.3) saturate(0.35);
+      opacity: 0.36;
+    }
     @keyframes slide {
       0% { transform: translateX(-10px); }
       40% { transform: translateX(8px); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes slide-fast {
+      0% { transform: translateX(-16px); }
+      50% { transform: translateX(12px); }
       100% { transform: translateX(0); }
     }
     #event-banner {
@@ -682,7 +804,7 @@
       display: flex;
       justify-content: center;
       gap: 0.7rem;
-      margin: 0.15rem 0 0.55rem;
+      margin: 0.08rem 0 0.28rem;
     }
     .star-slot { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
     .star-slot small { font-size: 0.68rem; font-weight: 800; color: #4a6670; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -703,6 +825,15 @@
       right: 0;
     }
 
+    @media (max-width: 859px) {
+      .item {
+        width: 100%;
+        max-width: 8.6rem;
+        max-height: 118%;
+      }
+      .pocket { min-height: 3rem; }
+    }
+
     @media (min-width: 860px) {
       #play.screen.active {
         padding-left: 1.1rem;
@@ -719,11 +850,11 @@
         width: auto;
         height: 100%;
         aspect-ratio: 864 / 1152;
-        max-width: calc(100% - 17.4rem);
+        max-width: calc(100% - 18.8rem);
       }
       #play .dock {
-        flex: 0 0 16.2rem;
-        width: 16.2rem;
+        flex: 0 0 17.6rem;
+        width: 17.6rem;
         margin-top: 0;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
@@ -739,13 +870,15 @@
         align-self: stretch;
       }
       #play .box { align-self: stretch; }
-      .item { max-width: 6.4rem; }
+      .item { max-width: 10.8rem; max-height: 118%; }
+      #play .pocket { min-height: 3.4rem; }
     }
   </style>
 </head>
 <body>
   <div id="app">
     <section id="title" class="screen active" data-screen="title">
+      <div class="hero-fridge-wrap" id="hero-fridge-wrap">
       <img id="hero-fridge-img" class="hero-fridge" alt="" hidden>
       <svg id="hero-fridge-svg" class="hero-fridge" viewBox="0 0 200 220" aria-hidden="true">
         <defs>
@@ -770,11 +903,15 @@
         <rect x="56" y="118" width="28" height="18" rx="4" fill="#7ad36a"/>
         <ellipse cx="88" cy="168" rx="10" ry="7" fill="#8b5a2b"/>
       </svg>
+      <div class="magnet-stickers" id="title-magnets" aria-hidden="true"></div>
+      </div>
       <h1 class="wordmark">FRIDGE<br><span>RAID</span></h1>
-      <p class="howto">Pack a balanced lunch before the bus. Start with Scout — more kids unlock later. Hit each kid's craving for yum bonus. Fruit, veg, and protein seal a box. Treats are extra. Toss spoiled leftovers and junk.</p>
+      <p class="howto">Pack a balanced lunch before the bus. Start with Scout — more kids unlock later. Hit each kid's craving for yum bonus. Fruit, veg, and protein seal a box. Treats are extra. Toss spoiled leftovers and junk. Earn fridge magnets as you star-clear levels.</p>
+      <p id="title-rank" class="rank-chip">Rookie</p>
       <p id="title-best" class="best-chip"></p>
       <div class="title-actions">
         <button type="button" class="play-btn" id="play-btn">Play campaign</button>
+        <button type="button" class="ghost-btn" id="prizes-btn">Prize case</button>
         <button type="button" class="ghost-btn" id="rush-title-btn" hidden>Bus rush</button>
       </div>
     </section>
@@ -804,6 +941,7 @@
           <div class="fridge-frame" id="fridge-frame">
             <img id="fridge-art" class="fridge-art" alt="" hidden>
             <div class="fridge" id="fridge" aria-label="Fridge shelves"></div>
+            <div class="play-magnets" id="play-magnets" aria-hidden="true"></div>
           </div>
         </div>
         <div class="dock">
@@ -838,6 +976,9 @@
         <div class="star-row" id="star-row" hidden></div>
         <p id="new-best" class="new-best">New personal best</p>
         <p class="end-note" id="end-note"></p>
+        <ul class="bonus-list" id="end-bonuses" hidden></ul>
+        <div class="end-magnets" id="end-magnets" hidden></div>
+        <p class="end-note" id="end-tease"></p>
         <ul>
           <li><span>Lunchboxes sealed</span><b id="stat-boxes">0</b></li>
           <li><span>Kids fed this stop</span><b id="stat-kids">0</b></li>
@@ -853,6 +994,17 @@
         </div>
       </div>
     </section>
+    <section id="prizes" class="screen" data-screen="prizes">
+      <div class="prize-card">
+        <p class="intro-kicker">Collection</p>
+        <h2>Prize case</h2>
+        <p class="rank-chip" id="prize-rank">Rookie</p>
+        <p class="end-note" id="prize-progress">0 stars</p>
+        <div class="prize-grid" id="prize-grid"></div>
+        <p class="end-note" id="prize-tease">Clear a lunch to earn your first magnet.</p>
+        <button type="button" class="ghost-btn" id="prizes-back">Back</button>
+      </div>
+    </section>
     <div id="event-banner" aria-live="polite" hidden>
       <strong id="event-title">Fresh delivery!</strong>
       <span id="event-sub">Good food just hit the shelves</span>
@@ -862,9 +1014,32 @@
 
   <script>
     const CAPACITY = 4;
+    const SHELF_COLS = 3;
+    const SHELF_ROWS = 4;
+    const FRIDGE_SLOTS = SHELF_COLS * SHELF_ROWS;
     const BEST_KEY = "fridge-raid-best";
     const CLEARED_KEY = "fridge-raid-cleared";
     const STAR_KEY = "fridge-raid-stars";
+    const MAGNET_KEY = "fridge-raid-magnets";
+    const RUSH_BEST_KEY = "fridge-raid-rush-best";
+    const RANKS = [
+      { id: "rookie", name: "Rookie", minStars: 0 },
+      { id: "packer", name: "Packer", minStars: 3 },
+      { id: "lunch-hero", name: "Lunch Hero", minStars: 6 },
+      { id: "bus-hero", name: "Bus Hero", minStars: 9 },
+    ];
+    const MAGNETS = [
+      { id: "apple", name: "Apple pal", emoji: "🍎", hint: "Earn your first star", unlock: { type: "stars", count: 1 }, x: "18%", y: "16%", tilt: "-12deg" },
+      { id: "banana", name: "Banana wink", emoji: "🍌", hint: "Collect 3 stars", unlock: { type: "stars", count: 3 }, x: "62%", y: "22%", tilt: "10deg" },
+      { id: "scout", name: "Scout's star", emoji: "⭐", hint: "3-star Scout's first lunch", unlock: { type: "perfect", levelId: "l1" }, x: "38%", y: "8%", tilt: "-4deg" },
+      { id: "carrot", name: "Crunch club", emoji: "🥕", hint: "Clear Two hungry", unlock: { type: "clear", levelId: "l2" }, x: "12%", y: "48%", tilt: "8deg" },
+      { id: "cheese", name: "Cheddar champ", emoji: "🧀", hint: "Collect 5 stars", unlock: { type: "stars", count: 5 }, x: "70%", y: "52%", tilt: "-9deg" },
+      { id: "pip", name: "Pip's heart", emoji: "💗", hint: "3-star Two hungry", unlock: { type: "perfect", levelId: "l2" }, x: "28%", y: "70%", tilt: "6deg" },
+      { id: "bus", name: "Yellow bus", emoji: "🚌", hint: "Clear Full house", unlock: { type: "clear", levelId: "l3" }, x: "58%", y: "74%", tilt: "-7deg" },
+      { id: "nori", name: "Nori roll", emoji: "🍙", hint: "3-star Full house", unlock: { type: "perfect", levelId: "l3" }, x: "44%", y: "40%", tilt: "12deg" },
+      { id: "hero", name: "Lunch hero", emoji: "🦸", hint: "Collect 7 stars", unlock: { type: "stars", count: 7 }, x: "8%", y: "28%", tilt: "-14deg" },
+      { id: "rush", name: "Bus hero", emoji: "🏆", hint: "3-star Bus rush or score 2000+", unlock: { type: "rush" }, x: "78%", y: "34%", tilt: "7deg" },
+    ];
     const KID_CRAVING_BIAS = {
       Scout: ["fruit", "apple", "sandwich", "protein"],
       Pip: ["berries", "juice", "treat", "veg"],
@@ -883,14 +1058,14 @@
         number: 1,
         name: "Scout's first lunch",
         kicker: "Level 1",
-        blurb: "Seal Scout with fruit + protein. Veg is extra credit if you pack it first. Treats optional. Toss spoiled leftovers and junk.",
+        blurb: "Teach stop. Seal Scout with fruit + protein. Veg is extra credit if you pack it first. Lots of time, not much yuck.",
         kids: ["Scout"],
         need: ["fruit", "protein"],
         bonus: ["veg"],
-        durationMs: 70000,
-        weights: [["good", 64], ["treat", 16], ["spoiled", 14], ["trap", 6]],
-        minGood: 7,
-        minBad: 2,
+        durationMs: 80000,
+        weights: [["good", 76], ["treat", 14], ["spoiled", 7], ["trap", 3]],
+        minGood: 9,
+        minBad: 1,
         starTimeMs: 25000,
         starScore: 400,
         events: [],
@@ -900,36 +1075,42 @@
         number: 2,
         name: "Two hungry",
         kicker: "Level 2",
-        blurb: "Scout and Pip each need fruit + veg + protein. A little more spoiled stuff is hiding in here.",
+        blurb: "Harder now. Scout and Pip each need fruit + veg + protein. More leftovers, a tighter bus, and the shelves start acting up.",
         kids: ["Scout", "Pip"],
         need: ["fruit", "veg", "protein"],
         bonus: [],
-        durationMs: 80000,
-        weights: [["good", 50], ["treat", 14], ["spoiled", 24], ["trap", 12]],
-        minGood: 6,
-        minBad: 3,
-        starTimeMs: 20000,
+        durationMs: 65000,
+        weights: [["good", 42], ["treat", 12], ["spoiled", 30], ["trap", 16]],
+        minGood: 5,
+        minBad: 4,
+        starTimeMs: 16000,
         starScore: 700,
-        events: [{ type: "delivery", atMs: 1600 }],
+        events: [
+          { type: "delivery", atMs: 5000 },
+          { type: "slide", atMs: 22000 },
+          { type: "delivery", atMs: 45000 },
+        ],
       },
       {
         id: "l3",
         number: 3,
         name: "Full house",
         kicker: "Level 3",
-        blurb: "All three kids. Fruit + veg + protein + grain. A sandwich covers protein and grain in one bite.",
+        blurb: "All three kids. Full plate: fruit + veg + protein + grain. Watch for shelf fog and faster slides.",
         kids: ["Scout", "Pip", "Nori"],
         need: ["fruit", "veg", "protein", "grain"],
         bonus: [],
-        durationMs: 90000,
-        weights: [["good", 42], ["treat", 12], ["spoiled", 30], ["trap", 16]],
-        minGood: 6,
-        minBad: 4,
-        starTimeMs: 18000,
+        durationMs: 55000,
+        weights: [["good", 32], ["treat", 10], ["spoiled", 36], ["trap", 22]],
+        minGood: 4,
+        minBad: 5,
+        starTimeMs: 12000,
         starScore: 1000,
         events: [
-          { type: "delivery", atMs: 2000 },
-          { type: "slide", atMs: 38000 },
+          { type: "fog", atMs: 4000 },
+          { type: "slideFast", atMs: 16000 },
+          { type: "delivery", atMs: 30000 },
+          { type: "fog", atMs: 44000 },
         ],
       },
       {
@@ -937,21 +1118,23 @@
         number: 4,
         name: "Bus rush",
         kicker: "Free play",
-        blurb: "Full house rules, rising leftovers, and a score multiplier that climbs with every sealed lunch. Ride until the bus.",
+        blurb: "Full house rules. Leftovers climb every 20 seconds. Score multiplier climbs with every sealed lunch. Ride until the bus.",
         kids: ["Scout", "Pip", "Nori"],
         need: ["fruit", "veg", "protein", "grain"],
         bonus: [],
         durationMs: 90000,
-        weights: [["good", 40], ["treat", 12], ["spoiled", 32], ["trap", 16]],
-        minGood: 5,
-        minBad: 4,
+        weights: [["good", 36], ["treat", 10], ["spoiled", 34], ["trap", 20]],
+        minGood: 4,
+        minBad: 5,
         endless: true,
         risingSpoil: true,
         starTimeMs: 0,
-        starScore: 1200,
+        starScore: 1500,
         events: [
-          { type: "slide", atMs: 2500 },
-          { type: "delivery", atMs: 42000 },
+          { type: "slideFast", atMs: 6000 },
+          { type: "fog", atMs: 18000 },
+          { type: "delivery", atMs: 32000 },
+          { type: "slideFast", atMs: 50000 },
         ],
       },
     ];
@@ -986,27 +1169,31 @@
     const BY_GROUP = { fruit: [], veg: [], protein: [], grain: [], treat: [] };
     const ASSET_READY = {};
     const SPRITE_SCALE = {
-      apple: 0.98,
-      banana: 1.12,
-      berries: 1.1,
-      carrot: 1.08,
-      cheddar: 0.9,
-      chips: 0.86,
-      cookie: 0.94,
-      expired: 0.82,
-      grapes: 1.12,
-      juice: 0.9,
-      keys: 0.9,
-      milk: 0.82,
-      moldy: 0.9,
-      mystery: 0.84,
-      phone: 0.86,
-      remote: 0.86,
-      rotten: 1.08,
-      sandwich: 0.94,
-      slime: 0.84,
-      yogurt: 0.96,
+      apple: 1.32,
+      banana: 1.48,
+      berries: 1.42,
+      broccoli: 1.36,
+      carrot: 1.4,
+      cheddar: 1.24,
+      chips: 1.2,
+      cookie: 1.28,
+      cucumber: 1.38,
+      expired: 1.16,
+      grapes: 1.48,
+      juice: 1.24,
+      keys: 1.22,
+      milk: 1.16,
+      moldy: 1.24,
+      mystery: 1.18,
+      phone: 1.2,
+      remote: 1.2,
+      roll: 1.36,
+      rotten: 1.4,
+      sandwich: 1.28,
+      slime: 1.18,
+      yogurt: 1.3,
     };
+    const DEFAULT_SPRITE_SCALE = 1.28;
     for (const [id, item] of Object.entries(CATALOG)) {
       BY_KIND[item.kind].push(id);
       for (const group of foodGroupsOf(item)) {
@@ -1327,6 +1514,13 @@
       events: [],
       eventLog: [],
       yumHits: 0,
+      yumBonus: 0,
+      perfectPlates: 0,
+      perfectBonus: 0,
+      noYuckBonus: 0,
+      timeBonus: 0,
+      spoilStep: 0,
+      newMagnets: [],
       lastStars: [false, false, false],
     };
 
@@ -1346,16 +1540,20 @@
       return currentLevel().durationMs - (performance.now() - state.startedAt);
     }
 
+    function spoilSteps() {
+      if (!currentLevel().risingSpoil || state.screen !== "play") return 0;
+      return Math.floor(Math.max(0, performance.now() - state.startedAt) / 20000);
+    }
+
     function currentWeights() {
       const level = currentLevel();
       const weights = level.weights.map((row) => [row[0], row[1]]);
       if (!level.risingSpoil || state.screen !== "play") return weights;
-      const spent = Math.max(0, Math.min(1, 1 - remainingMs() / level.durationMs));
-      const bump = Math.round(spent * 22);
+      const bump = spoilSteps() * 10;
       for (const row of weights) {
         if (row[0] === "spoiled") row[1] += bump;
         if (row[0] === "trap") row[1] += Math.round(bump * 0.45);
-        if (row[0] === "good") row[1] = Math.max(16, row[1] - bump);
+        if (row[0] === "good") row[1] = Math.max(14, row[1] - bump);
       }
       return weights;
     }
@@ -1397,7 +1595,7 @@
 
     function seedFridge() {
       const level = currentLevel();
-      const items = Array.from({ length: 16 }, () => spawnItem());
+      const items = Array.from({ length: FRIDGE_SLOTS }, () => spawnItem());
       const count = (kind) => items.filter((entry) => itemMeta(entry).kind === kind).length;
       if (count("good") < level.minGood) {
         for (let i = 0; i < level.minGood - count("good"); i += 1) {
@@ -1406,8 +1604,8 @@
       }
       const bad = count("spoiled") + count("trap");
       if (bad < level.minBad) {
-        items[14] = spawnItem(undefined, "spoiled");
-        if (level.minBad > 1) items[15] = spawnItem(undefined, "trap");
+        items[FRIDGE_SLOTS - 2] = spawnItem(undefined, "spoiled");
+        if (level.minBad > 1) items[FRIDGE_SLOTS - 1] = spawnItem(undefined, "trap");
       }
       ensureNeededGroups(items);
       ensureCravingOnShelf(items);
@@ -1430,6 +1628,15 @@
 
     function itemMeta(entry) {
       return CATALOG[entry.typeId];
+    }
+
+    function spriteScaleFor(typeId) {
+      const scale = SPRITE_SCALE[typeId];
+      return scale || DEFAULT_SPRITE_SCALE;
+    }
+
+    function applySpriteScale(el, typeId) {
+      el.style.setProperty("--sprite-scale", String(spriteScaleFor(typeId)));
     }
 
     function markupFor(entry) {
@@ -1635,6 +1842,117 @@
       return "★★★".slice(0, count) + "☆☆☆".slice(count, 3);
     }
 
+    function careerStars() {
+      return Object.values(loadStars()).reduce((sum, count) => sum + (Number(count) || 0), 0);
+    }
+
+    function loadRushBest() {
+      const value = Number(localStorage.getItem(RUSH_BEST_KEY));
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function saveRushBest(score) {
+      const best = Math.max(loadRushBest(), score);
+      localStorage.setItem(RUSH_BEST_KEY, String(best));
+      return best;
+    }
+
+    function loadMagnets() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(MAGNET_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveMagnets(ids) {
+      localStorage.setItem(MAGNET_KEY, JSON.stringify(ids));
+    }
+
+    function magnetUnlocked(magnet, starsMap, rushBest) {
+      const stars = Object.values(starsMap).reduce((sum, count) => sum + (Number(count) || 0), 0);
+      switch (magnet.unlock.type) {
+        case "stars":
+          return stars >= magnet.unlock.count;
+        case "clear":
+          return (Number(starsMap[magnet.unlock.levelId]) || 0) >= 1;
+        case "perfect":
+          return (Number(starsMap[magnet.unlock.levelId]) || 0) >= 3;
+        case "rush":
+          return (Number(starsMap.rush) || 0) >= 3 || rushBest >= 2000;
+        default: {
+          const _never = magnet.unlock;
+          return false;
+        }
+      }
+    }
+
+    function syncMagnets() {
+      const have = new Set(loadMagnets());
+      const starsMap = loadStars();
+      const rushBest = loadRushBest();
+      const freshly = [];
+      for (const magnet of MAGNETS) {
+        if (have.has(magnet.id)) continue;
+        if (!magnetUnlocked(magnet, starsMap, rushBest)) continue;
+        have.add(magnet.id);
+        freshly.push(magnet);
+      }
+      saveMagnets(Array.from(have));
+      return freshly;
+    }
+
+    function nextMagnetTease() {
+      const have = new Set(loadMagnets());
+      return MAGNETS.find((magnet) => !have.has(magnet.id)) || null;
+    }
+
+    function currentRank() {
+      const stars = careerStars();
+      const rushBest = loadRushBest();
+      const rushStars = Number(loadStars().rush) || 0;
+      if (stars >= 9 || rushBest >= 2000 || rushStars >= 3) return RANKS[3];
+      if (stars >= 6) return RANKS[2];
+      if (stars >= 3) return RANKS[1];
+      return RANKS[0];
+    }
+
+    function magnetMarkup(magnet) {
+      return `<span class="magnet-sticker" data-magnet="${magnet.id}" style="left:${magnet.x};top:${magnet.y};--tilt:${magnet.tilt}">${magnet.emoji}</span>`;
+    }
+
+    function renderMagnetStickers() {
+      const have = new Set(loadMagnets());
+      const owned = MAGNETS.filter((magnet) => have.has(magnet.id));
+      const title = document.getElementById("title-magnets");
+      const play = document.getElementById("play-magnets");
+      const html = owned.map(magnetMarkup).join("");
+      if (title) title.innerHTML = html;
+      if (play) play.innerHTML = html;
+    }
+
+    function renderPrizeCase() {
+      const have = new Set(loadMagnets());
+      const rank = currentRank();
+      const stars = careerStars();
+      document.getElementById("prize-rank").textContent = rank.name;
+      document.getElementById("prize-progress").textContent = stars + " career stars · " + have.size + "/" + MAGNETS.length + " magnets";
+      document.getElementById("prize-grid").innerHTML = MAGNETS.map((magnet) => {
+        const on = have.has(magnet.id);
+        return `<div class="prize-slot${on ? "" : " locked"}" data-magnet="${magnet.id}" data-owned="${on ? "1" : "0"}"><div class="prize-emoji">${on ? magnet.emoji : "🔒"}</div><strong>${magnet.name}</strong><small>${on ? "Unlocked" : magnet.hint}</small></div>`;
+      }).join("");
+      const tease = nextMagnetTease();
+      document.getElementById("prize-tease").textContent = tease
+        ? "Next: " + tease.name + " — " + tease.hint
+        : "Prize case complete. You cleaned out the fridge.";
+    }
+
+    function showPrizeCase() {
+      renderPrizeCase();
+      showScreen("prizes");
+    }
+
     function computeStars(won) {
       const level = currentLevel();
       const sealed = level.endless
@@ -1694,7 +2012,7 @@
       ensureCravingOnShelf(state.fridge);
     }
 
-    function slideShelves() {
+    function slideShelves(fast) {
       const items = state.fridge.slice();
       for (let i = items.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1703,10 +2021,16 @@
         items[j] = hold;
       }
       state.fridge = items;
-      fridgeEl.classList.remove("slide");
+      fridgeEl.classList.remove("slide", "slide-fast");
       void fridgeEl.offsetWidth;
-      fridgeEl.classList.add("slide");
-      window.setTimeout(() => fridgeEl.classList.remove("slide"), 480);
+      fridgeEl.classList.add(fast ? "slide-fast" : "slide");
+      window.setTimeout(() => fridgeEl.classList.remove("slide", "slide-fast"), fast ? 280 : 480);
+    }
+
+    function fogShelves() {
+      fridgeEl.classList.add("fog");
+      window.clearTimeout(fogShelves.timer);
+      fogShelves.timer = window.setTimeout(() => fridgeEl.classList.remove("fog"), 2000);
     }
 
     function fireFridgeEvent(type) {
@@ -1717,13 +2041,24 @@
           break;
         case "slide":
           showEventBanner("slide", "Shelf slide!", "Everything shuffled");
-          slideShelves();
+          slideShelves(false);
+          break;
+        case "slideFast":
+          showEventBanner("slideFast", "Fast slide!", "Shelves whipped around");
+          slideShelves(true);
+          break;
+        case "fog":
+          showEventBanner("fog", "Shelf fog!", "Items dim for a couple seconds");
+          fogShelves();
+          break;
+        case "spoil":
+          showEventBanner("spoil", "Leftovers rising!", "More spoiled stuff is piling up");
           break;
         default:
           return;
       }
       state.eventLog.push(type);
-      renderFridge();
+      if (type !== "fog" && type !== "spoil") renderFridge();
     }
 
     function tickEvents() {
@@ -1733,6 +2068,11 @@
         if (event.fired || elapsed < event.atMs) continue;
         event.fired = true;
         fireFridgeEvent(event.type);
+      }
+      const step = spoilSteps();
+      if (step > state.spoilStep) {
+        state.spoilStep = step;
+        if (step > 0) fireFridgeEvent("spoil");
       }
     }
 
@@ -1752,7 +2092,12 @@
         chip.textContent = "Best " + best;
         chip.classList.add("show");
       }
+      const rank = currentRank();
+      const rankEl = document.getElementById("title-rank");
+      rankEl.textContent = rank.name + " · " + careerStars() + "★";
+      rankEl.dataset.rank = rank.id;
       document.getElementById("rush-title-btn").hidden = loadCleared() < 3;
+      renderMagnetStickers();
     }
 
     function formatTime(ms) {
@@ -1794,11 +2139,11 @@
 
     function renderFridge() {
       fridgeEl.replaceChildren();
-      for (let row = 0; row < 4; row += 1) {
+      for (let row = 0; row < SHELF_ROWS; row += 1) {
         const shelf = document.createElement("div");
         shelf.className = "shelf";
-        for (let col = 0; col < 4; col += 1) {
-          const entry = state.fridge[row * 4 + col];
+        for (let col = 0; col < SHELF_COLS; col += 1) {
+          const entry = state.fridge[row * SHELF_COLS + col];
           const slot = document.createElement("div");
           slot.className = "slot";
           if (entry) {
@@ -1814,8 +2159,7 @@
             btn.innerHTML = markupFor(entry);
             if (ASSET_READY[entry.typeId]) {
               btn.classList.add("has-sprite");
-              const scale = SPRITE_SCALE[entry.typeId];
-              if (scale) btn.style.setProperty("--sprite-scale", String(scale));
+              applySpriteScale(btn, entry.typeId);
             }
             if (state.selected === entry.id) btn.classList.add("selected");
             slot.appendChild(btn);
@@ -1873,7 +2217,10 @@
           const held = box.slots[i];
           if (held) {
             pocket.innerHTML = markupFor(held);
-            if (ASSET_READY[held.typeId]) pocket.classList.add("has-sprite");
+            if (ASSET_READY[held.typeId]) {
+              pocket.classList.add("has-sprite");
+              applySpriteScale(pocket, held.typeId);
+            }
           }
           grid.appendChild(pocket);
         }
@@ -1975,6 +2322,10 @@
       return "swapped";
     }
 
+    function boxHasTreat(box) {
+      return box.slots.some((entry) => itemMeta(entry).kind === "treat");
+    }
+
     function sealBox(box, boxIndex, x, y) {
       const level = currentLevel();
       const have = groupsInBox(box);
@@ -1982,6 +2333,13 @@
       if ((level.bonus || []).some((group) => have.has(group))) {
         bonus += 75;
         floatText(x, y - 18, "+75 extra veg", "good");
+      }
+      if (!boxHasTreat(box)) {
+        const perfect = 120 * rushMult();
+        bonus += perfect;
+        state.perfectPlates += 1;
+        state.perfectBonus += perfect;
+        floatText(x, y - 58, "Perfect plate +" + perfect, "bonus");
       }
       state.filled += 1;
       state.fedKids.add(box.kid);
@@ -2059,6 +2417,7 @@
           box.cravingHit = true;
           state.yumHits += 1;
           const yum = addScore(80, false);
+          state.yumBonus += yum;
           floatText(x, y - 22, "YUM +" + yum, "bonus");
         }
       }
@@ -2165,8 +2524,17 @@
       state.selected = null;
       state.closing = false;
       state.yumHits = 0;
+      state.yumBonus = 0;
+      state.perfectPlates = 0;
+      state.perfectBonus = 0;
+      state.noYuckBonus = 0;
+      state.timeBonus = 0;
+      state.spoilStep = 0;
+      state.newMagnets = [];
       state.eventLog = [];
       state.events = (level.events || []).map((event) => ({ type: event.type, atMs: event.atMs, fired: false }));
+      fridgeEl.classList.remove("fog", "slide", "slide-fast");
+      renderMagnetStickers();
       document.getElementById("event-banner").classList.remove("show");
       document.getElementById("event-banner").hidden = true;
       if (!level.kids.every((kid) => state.cravings[kid])) assignCravings();
@@ -2227,19 +2595,29 @@
       let note = "";
       if (won && !level.endless) {
         const timeBonus = Math.ceil(Math.max(0, remainingMs()) / 1000) * 12;
+        state.timeBonus = timeBonus;
         state.score += timeBonus;
         saveCleared(level.number);
-        note = timeBonus > 0 ? "Time bonus +" + timeBonus : "Packed just in time.";
+        note = timeBonus > 0 ? "" : "Packed just in time.";
       } else if (!won && !level.endless) {
         note = "Feed every kid a balanced lunch before the bus.";
       } else {
-        note = "Spoiled leftovers kept coming. Nice raid.";
+        note = "Leftovers climbed every 20 seconds. Nice raid.";
       }
+      if ((won || level.endless) && state.packedOops === 0) {
+        const clean = 150 * rushMult();
+        state.noYuckBonus = clean;
+        state.score += clean;
+        floatText(window.innerWidth / 2, 140, "No-yuck +" + clean, "bonus");
+      }
+      if (level.endless) saveRushBest(state.score - state.scoreAtLevelStart);
       const stars = computeStars(won);
       state.lastStars = stars;
       const starCount = stars.filter(Boolean).length;
       if (won || starCount > 0) saveStars(level.id, starCount);
+      state.newMagnets = syncMagnets();
       renderStarRow(stars);
+      renderEndExtras();
       const best = saveBest(state.score);
       document.getElementById("end-score").textContent = state.score.toLocaleString();
       document.getElementById("stat-boxes").textContent = String(state.filled);
@@ -2249,13 +2627,44 @@
       document.getElementById("stat-toss").textContent = String(state.tossedBad);
       document.getElementById("stat-best").textContent = String(best);
       document.getElementById("new-best").classList.toggle("show", state.score >= best && state.score > 0);
-      document.getElementById("end-note").textContent = note;
+      const noteEl = document.getElementById("end-note");
+      noteEl.textContent = note;
+      noteEl.hidden = !note;
       const title = won
         ? (level.endless ? "Bus is here!" : level.name + " packed!")
         : (state.packedOops > 3 ? "Bus still left." : "Bus is here!");
       document.getElementById("end-title").textContent = title;
       configureEndButtons(won);
+      renderMagnetStickers();
       showScreen("end");
+    }
+
+    function renderEndExtras() {
+      const bonuses = [];
+      if (state.yumBonus) bonuses.push(["Craving YUM", state.yumBonus]);
+      if (state.perfectBonus) bonuses.push(["Perfect plate", state.perfectBonus]);
+      if (state.noYuckBonus) bonuses.push(["No-yuck", state.noYuckBonus]);
+      if (state.timeBonus) bonuses.push(["Time leftover", state.timeBonus]);
+      const list = document.getElementById("end-bonuses");
+      list.hidden = bonuses.length === 0;
+      list.innerHTML = bonuses
+        .map((row) => `<li><span>${row[0]}</span><b>+${row[1]}</b></li>`)
+        .join("");
+      const prizeRow = document.getElementById("end-magnets");
+      if (state.newMagnets.length) {
+        prizeRow.hidden = false;
+        prizeRow.innerHTML = state.newMagnets
+          .map((magnet) => `<span class="magnet-pill" data-magnet="${magnet.id}">${magnet.emoji} ${magnet.name}</span>`)
+          .join("");
+      } else {
+        prizeRow.hidden = true;
+        prizeRow.innerHTML = "";
+      }
+      const tease = nextMagnetTease();
+      const rank = currentRank();
+      document.getElementById("end-tease").textContent = tease
+        ? rank.name + " · Next unlock: " + tease.name + " — " + tease.hint
+        : rank.name + " · Prize case complete!";
     }
 
     function goNext() {
@@ -2333,6 +2742,7 @@
         const entry = findFridge(drag.id);
         if (entry) {
           ghostEl.innerHTML = markupFor(entry);
+          if (ASSET_READY[entry.typeId]) applySpriteScale(ghostEl, entry.typeId);
           ghostEl.classList.add("show");
         }
       }
@@ -2388,6 +2798,11 @@
     tossEl.addEventListener("click", deliverSelected);
 
     document.getElementById("play-btn").addEventListener("click", startCampaign);
+    document.getElementById("prizes-btn").addEventListener("click", showPrizeCase);
+    document.getElementById("prizes-back").addEventListener("click", () => {
+      showTitleBest();
+      showScreen("title");
+    });
     document.getElementById("rush-title-btn").addEventListener("click", startRushFromTitle);
     document.getElementById("intro-go").addEventListener("click", startLevel);
     document.getElementById("next-btn").addEventListener("click", goNext);
@@ -2404,17 +2819,36 @@
 
     window.__fridgeRaid = {
       levels: LEVELS,
+      magnets: MAGNETS,
+      ranks: RANKS,
       getState() {
+        const level = currentLevel();
+        const weights = currentWeights();
+        const spoiled = (weights.find((row) => row[0] === "spoiled") || [0, 0])[1];
+        const trap = (weights.find((row) => row[0] === "trap") || [0, 0])[1];
         return {
           screen: state.screen,
-          levelId: currentLevel().id,
+          levelId: level.id,
           levelIndex: state.levelIndex,
           score: state.score,
           fed: Array.from(state.fedKids),
-          need: currentLevel().need,
-          kids: currentLevel().kids,
+          need: level.need,
+          kids: level.kids,
+          durationMs: level.durationMs,
           filled: state.filled,
           yumHits: state.yumHits,
+          yumBonus: state.yumBonus,
+          perfectPlates: state.perfectPlates,
+          perfectBonus: state.perfectBonus,
+          noYuckBonus: state.noYuckBonus,
+          timeBonus: state.timeBonus,
+          spoilStep: state.spoilStep,
+          spoilChance: spoiled + trap,
+          rank: currentRank().name,
+          careerStars: careerStars(),
+          magnets: loadMagnets(),
+          newMagnets: state.newMagnets.map((magnet) => magnet.id),
+          nextUnlock: nextMagnetTease() && nextMagnetTease().id,
           cravings: Object.fromEntries(
             Object.entries(state.cravings).map(([kid, craving]) => [kid, craving])
           ),
@@ -2423,6 +2857,8 @@
           stars: state.lastStars.slice(),
           assetsReady: Object.keys(ASSET_READY),
           fridgePhoto: Boolean(ASSET_READY.fridge),
+          shelfCols: SHELF_COLS,
+          fridgeSlots: FRIDGE_SLOTS,
           fridge: state.fridge.map((entry) => ({
             id: entry.id,
             typeId: entry.typeId,
