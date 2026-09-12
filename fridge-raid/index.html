@@ -629,24 +629,32 @@
     #ghost svg, #ghost img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
     #ghost img { transform: scale(var(--sprite-scale, 1.28)); transform-origin: center; }
 
-    #end { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
+    #end {
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      gap: 0.65rem;
+      overflow-x: hidden;
+      overflow-y: auto;
+      touch-action: pan-y;
+    }
     .big-score {
       font-family: Nunito, sans-serif;
-      font-size: 3rem;
+      font-size: 2.6rem;
       line-height: 1;
       color: var(--pink);
-      margin: 0.25rem 0 0.4rem;
+      margin: 0.1rem 0 0.2rem;
     }
     .report ul {
       list-style: none;
-      margin: 0 0 0.9rem;
+      margin: 0 0 0.55rem;
       padding: 0;
       text-align: left;
     }
     .report li {
       display: flex;
       justify-content: space-between;
-      padding: 0.28rem 0;
+      padding: 0.16rem 0;
       border-top: 2px dashed #e4eef2;
       font-weight: 600;
     }
@@ -683,13 +691,7 @@
       font-weight: 800;
       font-size: 0.82rem;
     }
-    .prize-card {
-      background: #fff;
-      border-radius: 22px;
-      padding: 1.1rem 1.2rem 1.2rem;
-      width: min(22rem, 100%);
-      box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
-    }
+    .prize-card h2 { margin: 0.1rem 0 0.35rem; }
     .prize-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -711,13 +713,17 @@
     .prize-slot strong { display: block; font-size: 0.86rem; margin: 0.18rem 0 0.08rem; }
     .prize-slot small { display: block; font-size: 0.68rem; font-weight: 700; color: #4a6670; line-height: 1.25; }
 
-    #intro, #end, #prizes { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
-    .intro-card, .report {
+    #intro, #prizes { align-items: center; justify-content: center; text-align: center; gap: 0.65rem; }
+    .intro-card, .report, .prize-card {
       background: #fff;
       border-radius: 22px;
-      padding: 1.1rem 1.2rem 1.2rem;
+      padding: 0.85rem 1rem 1rem;
       width: min(22rem, 100%);
       box-shadow: 0 8px 0 rgba(10, 80, 90, 0.16);
+    }
+    .report {
+      max-height: 100%;
+      overflow-y: auto;
     }
     .intro-kicker {
       font-size: 0.78rem;
@@ -794,7 +800,7 @@
       display: flex;
       justify-content: center;
       gap: 0.7rem;
-      margin: 0.15rem 0 0.55rem;
+      margin: 0.08rem 0 0.28rem;
     }
     .star-slot { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
     .star-slot small { font-size: 0.68rem; font-weight: 800; color: #4a6670; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -2588,7 +2594,7 @@
         state.timeBonus = timeBonus;
         state.score += timeBonus;
         saveCleared(level.number);
-        note = timeBonus > 0 ? "Time leftover +" + timeBonus : "Packed just in time.";
+        note = timeBonus > 0 ? "" : "Packed just in time.";
       } else if (!won && !level.endless) {
         note = "Feed every kid a balanced lunch before the bus.";
       } else {
@@ -2617,7 +2623,9 @@
       document.getElementById("stat-toss").textContent = String(state.tossedBad);
       document.getElementById("stat-best").textContent = String(best);
       document.getElementById("new-best").classList.toggle("show", state.score >= best && state.score > 0);
-      document.getElementById("end-note").textContent = note;
+      const noteEl = document.getElementById("end-note");
+      noteEl.textContent = note;
+      noteEl.hidden = !note;
       const title = won
         ? (level.endless ? "Bus is here!" : level.name + " packed!")
         : (state.packedOops > 3 ? "Bus still left." : "Bus is here!");
