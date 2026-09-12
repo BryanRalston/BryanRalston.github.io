@@ -1,4 +1,4 @@
-const CACHE = "fridge-raid-v17";
+const CACHE = "fridge-raid-v18";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,10 +8,12 @@ const ASSETS = [
   "./assets/apple.png",
   "./assets/banana.png",
   "./assets/berries.png",
+  "./assets/broccoli.png",
   "./assets/carrot.png",
   "./assets/cheddar.png",
   "./assets/chips.png",
   "./assets/cookie.png",
+  "./assets/cucumber.png",
   "./assets/expired.png",
   "./assets/grapes.png",
   "./assets/juice.png",
@@ -21,6 +23,7 @@ const ASSETS = [
   "./assets/mystery.png",
   "./assets/phone.png",
   "./assets/remote.png",
+  "./assets/roll.png",
   "./assets/rotten.png",
   "./assets/sandwich.png",
   "./assets/slime.png",
