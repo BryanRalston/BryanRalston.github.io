@@ -846,6 +846,7 @@
       border-radius: 12px;
       padding: 0.45rem 0.7rem;
     }
+    #end-hint { margin: 0.15rem 0 0; }
     #end-score-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
     .bonus-list {
       list-style: none;
@@ -1020,7 +1021,14 @@
       pointer-events: none;
     }
     #event-banner strong { display: block; font-family: Nunito, sans-serif; font-size: 1.2rem; }
-    #event-banner span { font-size: 0.86rem; font-weight: 700; color: #244048; }
+    #event-banner span { display: block; font-size: 0.86rem; font-weight: 700; color: #244048; }
+    #event-ready {
+      pointer-events: auto;
+      margin-top: 0.55rem;
+      font-size: 1.05rem;
+      padding: 0.48rem 1.35rem;
+    }
+    #event-ready[hidden] { display: none; }
     #app.clock-paused .clock { outline: 3px solid #ffd23f; }
     .star-row {
       display: flex;
@@ -1283,7 +1291,7 @@
         <div class="kid-row" id="intro-kids"></div>
         <div class="need-row" id="intro-need"></div>
         <p id="intro-blurb">Tap food, then tap Scout's box. It seals when the fruit and protein pips fill — not when the box is just full.</p>
-        <p id="intro-warn" class="intro-warn">Shelves can interrupt. A Fresh delivery or Shelf slide can cover the fridge — the bus clock pauses until Ready.</p>
+        <p id="intro-warn" class="intro-warn">Shelves can interrupt. A Fresh delivery or Shelf slide can cover the fridge — the bus clock pauses until you tap Ready.</p>
         <button type="button" class="play-btn" id="intro-go">Pack lunches</button>
       </div>
     </section>
@@ -1296,6 +1304,7 @@
         <div class="star-row" id="star-row" hidden></div>
         <p id="new-best" class="new-best">New personal best</p>
         <p class="end-note" id="end-note"></p>
+        <p class="end-note" id="end-hint" hidden></p>
         <ul class="bonus-list" id="end-bonuses" hidden></ul>
         <div class="end-magnets" id="end-magnets" hidden></div>
         <p class="end-note" id="end-tease"></p>
@@ -1330,6 +1339,7 @@
       <div id="event-banner" aria-live="polite">
         <strong id="event-title">Fresh delivery!</strong>
         <span id="event-sub">Good food just hit the shelves</span>
+        <button type="button" class="again-btn" id="event-ready" hidden>Ready</button>
       </div>
     </div>
     <div id="toast" aria-live="polite" hidden>
@@ -1920,7 +1930,11 @@
     }
 
     function playNow() {
-      return state.clockPaused ? state.pausedAt : performance.now();
+      if (state.clockPaused || state.eventCover) {
+        if (!state.pausedAt) state.pausedAt = performance.now();
+        return state.pausedAt;
+      }
+      return performance.now();
     }
 
     function playElapsedMs() {
@@ -1929,12 +1943,18 @@
     }
 
     function remainingMs() {
+      if (state.eventCover && !state.clockPaused) pauseClock();
       if (!state.clockStarted) return currentLevel().durationMs;
-      return currentLevel().durationMs - playElapsedMs();
+      return Math.max(0, currentLevel().durationMs - playElapsedMs());
     }
 
     function startClock() {
-      if (state.clockStarted || state.screen !== "play") return;
+      if (state.screen !== "play") return;
+      if (state.eventCover) {
+        pauseClock();
+        return;
+      }
+      if (state.clockStarted) return;
       state.clockStarted = true;
       state.startedAt = performance.now();
       state.pauseAccum = 0;
@@ -1943,7 +1963,12 @@
     }
 
     function pauseClock() {
-      if (!state.clockStarted || state.clockPaused) return;
+      if (state.clockPaused) return;
+      if (!state.clockStarted) {
+        state.clockStarted = true;
+        state.startedAt = performance.now();
+        state.pauseAccum = 0;
+      }
       state.clockPaused = true;
       state.pausedAt = performance.now();
       app.classList.add("clock-paused");
@@ -2490,47 +2515,47 @@
 
     function hideEventOverlay() {
       window.clearTimeout(showEventBanner.timer);
-      window.clearTimeout(showEventBanner.readyTimer);
       const overlay = document.getElementById("event-overlay");
       const banner = document.getElementById("event-banner");
+      const readyBtn = document.getElementById("event-ready");
       overlay.hidden = true;
       overlay.classList.remove("show", "cover", "ready");
       overlay.dataset.event = "";
       banner.dataset.event = "";
+      readyBtn.hidden = true;
       state.eventCover = false;
     }
 
-    function showReadyBeat() {
+    function dismissCover() {
       const overlay = document.getElementById("event-overlay");
-      document.getElementById("event-title").textContent = "Ready!";
-      document.getElementById("event-sub").textContent = "Back to the fridge — bus is rolling";
-      overlay.classList.add("ready");
-      overlay.dataset.event = "ready";
-      window.clearTimeout(showEventBanner.readyTimer);
-      showEventBanner.readyTimer = window.setTimeout(() => {
-        hideEventOverlay();
-        resumeClock();
-        renderHud(remainingMs());
-      }, 700);
+      const wasCover = state.eventCover || overlay.classList.contains("cover");
+      hideEventOverlay();
+      if (wasCover) resumeClock();
+      renderHud(remainingMs());
     }
 
     function showEventBanner(type, title, sub, ms) {
       const overlay = document.getElementById("event-overlay");
       const banner = document.getElementById("event-banner");
+      const readyBtn = document.getElementById("event-ready");
+      const covers = eventCoversPlay(type);
       document.getElementById("event-title").textContent = title;
-      document.getElementById("event-sub").textContent = sub;
+      document.getElementById("event-sub").textContent = covers
+        ? sub + " — bus clock paused"
+        : sub;
       banner.dataset.event = type;
       overlay.dataset.event = type;
       overlay.hidden = false;
       overlay.classList.add("show");
-      overlay.classList.toggle("cover", eventCoversPlay(type));
-      overlay.classList.remove("ready");
+      overlay.classList.toggle("cover", covers);
+      overlay.classList.toggle("ready", covers);
       window.clearTimeout(showEventBanner.timer);
-      window.clearTimeout(showEventBanner.readyTimer);
-      if (eventCoversPlay(type)) {
+      readyBtn.hidden = !covers;
+      if (covers) {
         state.eventCover = true;
         pauseClock();
-        showEventBanner.timer = window.setTimeout(showReadyBeat, ms || 1100);
+        renderHud(remainingMs());
+        readyBtn.focus();
         return;
       }
       state.eventCover = false;
@@ -2623,7 +2648,7 @@
     }
 
     function tickEvents() {
-      if (state.screen !== "play" || state.closing || !state.clockStarted || state.clockPaused) return;
+      if (state.screen !== "play" || state.closing || !state.clockStarted || state.clockPaused || state.eventCover) return;
       const elapsed = playElapsedMs();
       for (const event of state.events) {
         if (event.fired || elapsed < event.atMs) continue;
@@ -3379,6 +3404,14 @@
       return parts.join(". ") + ".";
     }
 
+    function failHint(level) {
+      if (!level || level.endless) return "";
+      if ((level.events || []).some((event) => eventCoversPlay(event.type))) {
+        return "Pack visible required groups before the next shelf event. Tap Ready so the clock stays paused during covers.";
+      }
+      return "Tap a needed food, then tap the lunchbox so every pip fills before the bus.";
+    }
+
     function finishLevel(won) {
       if (state.closing && state.screen === "end") return;
       state.closing = true;
@@ -3435,7 +3468,12 @@
       const noteEl = document.getElementById("end-note");
       noteEl.textContent = note;
       noteEl.hidden = !note;
-      noteEl.classList.toggle("missing", Boolean(!won && !level.endless && note));
+      noteEl.classList.remove("missing");
+      const hintEl = document.getElementById("end-hint");
+      const hint = !won && !level.endless ? failHint(level) : "";
+      hintEl.textContent = hint;
+      hintEl.hidden = !hint;
+      hintEl.classList.toggle("missing", Boolean(hint));
       const title = won
         ? (level.endless ? "Bus is here!" : level.name + " packed!")
         : "Bus left — try again";
@@ -3629,6 +3667,17 @@
       showTitleBest();
       showScreen("title");
     });
+    document.getElementById("event-overlay").addEventListener("click", (event) => {
+      if (!state.eventCover) return;
+      if (event.target === event.currentTarget || event.target.closest("#event-ready")) {
+        dismissCover();
+      }
+    });
+    document.getElementById("event-ready").addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (state.eventCover) dismissCover();
+    });
 
     showTitleBest();
     preloadAssets();
@@ -3642,11 +3691,13 @@
       matchesCraving,
       pipGlyph,
       failReason,
+      failHint,
       boxStatusText,
       remainingMs,
       playElapsedMs,
       eventCoversPlay,
       fireFridgeEvent,
+      dismissCover,
       startAt(levelId) {
         const index = LEVELS.findIndex((level) => level.id === levelId);
         if (index < 0) return false;

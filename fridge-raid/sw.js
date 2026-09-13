@@ -1,4 +1,4 @@
-const CACHE = "fridge-raid-v20";
+const CACHE = "fridge-raid-v21";
 const ASSETS = [
   "./",
   "./index.html",

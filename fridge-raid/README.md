@@ -25,7 +25,7 @@ Each kid wants something different every run (a food group, or a specific snack)
 
 ## Fridge events
 
-L2+ throws short, telegraphed moments. The L2 intro warns that **shelves can interrupt** before the first event. Fresh delivery, Shelf slide, Fast slide, and Shelf fog cover the fridge: the bus clock pauses, then a short **Ready!** beat, then play resumes. Leftovers rising stays a small notice.
+L2+ throws short, telegraphed moments. The L2 intro warns that **shelves can interrupt** before the first event. Fresh delivery, Shelf slide, Fast slide, and Shelf fog cover the fridge: the bus clock pauses until you tap **Ready** (or the dimmed cover). Leftovers rising stays a small notice.
 
 - **Fresh delivery** — good food bursts onto shelves (never removes your last needed groups)
 - **Shelf slide** — the same items shuffle places
@@ -51,7 +51,7 @@ Career stars (and Bus rush score) set your rank: **Rookie → Packer → Lunch H
 
 Fridge Magnets are cosmetic stickers on the title fridge. Earn them from total stars and first 3-star clears. The title shows **🧲 count** and **Prize case · n/10**. Open the case to see locked slots (ink captions, dashed slate tiles) and the next unlock. Between levels you see stars, new magnets, and the next unlock tease. Collection persists in localStorage.
 
-The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; a box that is one group short says **need protein** (not a bare almost). Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein. Packing only refills the empty shelf slot — the rest of the fridge stays put until a named event. A fail screen shows **this stop** points, who still needs what, and **Try again**.
+The play HUD is one row (score, bus-timer, sealed count). The old need-guide strip stays hidden except for a Bus rush multiplier. Per-box pips carry the seal rule; a box that is one group short says **need protein** (not a bare almost). Protein pips use a **P** mark so cheese, yogurt, and milk still read as protein. Packing only refills the empty shelf slot — the rest of the fridge stays put until a named event. A fail screen shows **this stop** points, who still needs what, one short hint (pack visible groups before the next cover, then tap Ready), and **Try again**.
 
 ## Art
 
