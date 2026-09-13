@@ -436,14 +436,14 @@
 
   function renderMeta() {
     els.title.value = state.title || '';
-    const bits = [];
-    bits.push(`<span class="chip"><strong>${escapeHtml(formatDate(state.date))}</strong></span>`);
-    if (state.place) bits.push(`<span class="chip">${escapeHtml(state.place)}</span>`);
-    bits.push(`<span class="chip">${escapeHtml(tpl().name)}</span>`);
+    const line = [formatDate(state.date), state.place, state.notes].filter(Boolean);
     const themeName = (THEMES.find((t) => t.id === state.theme) || THEMES[0]).name;
-    bits.push(`<span class="chip">${escapeHtml(themeName)}</span>`);
-    if (state.notes) bits.push(`<span class="chip">${escapeHtml(state.notes)}</span>`);
-    els.meta.innerHTML = bits.join('');
+    els.meta.innerHTML = `
+      <p class="meta-line">${line.map((part, i) => i === 0 ? `<strong>${escapeHtml(part)}</strong>` : escapeHtml(part)).join(' <span class="dot" aria-hidden="true">·</span> ')}</p>
+      <div class="meta-pills">
+        <span class="chip quiet">${escapeHtml(tpl().name)}</span>
+        <span class="chip quiet">${escapeHtml(themeName)}</span>
+      </div>`;
   }
 
   function renderMeters() {
@@ -484,12 +484,17 @@
   function renderCats() {
     els.catsEmpty.classList.toggle('hidden', state.categories.length > 0);
     els.catList.innerHTML = state.categories.map((cat, i) => {
+      const n = state.claims.filter((c) => c.category === cat.id).length;
+      const claimed = n === 1 ? '1 claimed' : `${n} claimed`;
       return `<li class="cat" data-id="${escapeHtml(cat.id)}">
         <div class="cat-reorder">
           <button type="button" class="icon-btn cat-up" aria-label="Move ${escapeHtml(cat.name)} up" ${i === 0 ? 'disabled' : ''}>▲</button>
           <button type="button" class="icon-btn cat-down" aria-label="Move ${escapeHtml(cat.name)} down" ${i === state.categories.length - 1 ? 'disabled' : ''}>▼</button>
         </div>
-        <input class="cat-name" maxlength="32" value="${escapeHtml(cat.name)}" aria-label="Category name" />
+        <div class="cat-copy">
+          <input class="cat-name" maxlength="32" value="${escapeHtml(cat.name)}" aria-label="Category name" />
+          <div class="who">${claimed}</div>
+        </div>
         <label class="needed-wrap">Need
           <input type="number" min="0" max="99" value="${cat.needed}" data-needed="${escapeHtml(cat.id)}" aria-label="Needed ${escapeHtml(cat.name)}" />
         </label>

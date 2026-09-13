@@ -142,14 +142,15 @@ body {
   flex: 0 0 56px;
   display: grid;
   place-items: center;
-  font-size: 1.7rem;
+  font-size: 1.75rem;
   border-radius: 18px;
-  background: var(--logo-bg);
+  background: var(--card);
+  border: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
 
 [data-theme="ink"] .logo {
-  color: #12161c;
+  background: var(--accent-soft);
 }
 
 .brand-copy { min-width: 0; flex: 1; }
@@ -207,24 +208,42 @@ h1 { margin: 0; }
 .event-meta {
   color: var(--muted);
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 10px;
+  flex-direction: column;
+  gap: 8px;
   font-size: 0.95rem;
+  min-width: 0;
+  flex: 1;
 }
+
+.meta-line {
+  margin: 0;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.meta-line strong { color: var(--ink); font-weight: 700; }
+.meta-line .dot { opacity: 0.45; padding: 0 2px; }
+
+.meta-pills { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: var(--wash);
   color: var(--ink);
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 650;
 }
 
-.chip strong { font-weight: 700; }
+.chip.quiet {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 600;
+}
 
 .meters {
   display: grid;
@@ -291,11 +310,11 @@ h1 { margin: 0; }
   .cat {
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "reorder name del"
+      "reorder copy del"
       "reorder need del";
   }
   .cat-reorder { grid-area: reorder; }
-  .cat-name { grid-area: name; }
+  .cat-copy { grid-area: copy; }
   .needed-wrap { grid-area: need; }
   .cat-del { grid-area: del; align-self: center; }
 }
@@ -415,6 +434,14 @@ h1 { margin: 0; }
 
 .cat-reorder { display: flex; flex-direction: column; gap: 3px; }
 
+.cat-copy { min-width: 0; }
+
+.cat-copy .who {
+  margin: 0 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
 .cat-name {
   width: 100%;
   border: 1px solid transparent;
@@ -422,7 +449,7 @@ h1 { margin: 0; }
   font: inherit;
   font-weight: 700;
   color: var(--ink);
-  padding: 6px 8px;
+  padding: 2px 8px;
   border-radius: 10px;
 }
 

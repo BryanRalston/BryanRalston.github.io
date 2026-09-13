@@ -42,7 +42,7 @@ Everything stays in this browser’s `localStorage` (`potluck-plate-v2`, migrate
 
 ## Offline / PWA
 
-Service worker cache: **`potluck-plate-v2`**. Installable via `manifest.webmanifest`.
+Service worker cache: **`potluck-plate-v3`**. Installable via `manifest.webmanifest`. Storage key remains `potluck-plate-v2`.
 
 ## Pages
 
