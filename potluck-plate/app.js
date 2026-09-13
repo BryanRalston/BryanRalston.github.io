@@ -348,6 +348,7 @@
     claimsList: document.getElementById('claimsList'),
     claimsEmpty: document.getElementById('claimsEmpty'),
     emptyTitle: document.getElementById('emptyTitle'),
+    emptyArt: document.getElementById('emptyArt'),
     emptyBody: document.getElementById('emptyBody'),
     emptyClaim: document.getElementById('btnEmptyClaim'),
     catList: document.getElementById('catList'),
@@ -422,6 +423,7 @@
     if (!state) return;
     const t = tpl();
     els.brandEmoji.textContent = t.emoji;
+    if (els.emptyArt) els.emptyArt.textContent = t.emoji;
     els.tagline.textContent = t.tagline;
     els.sheetTitle.textContent = t.sheetTitle;
     els.emptyTitle.textContent = t.emptyTitle;
@@ -468,7 +470,7 @@
     els.claimsEmpty.classList.toggle('hidden', sorted.length > 0);
     els.claimsList.innerHTML = sorted.map((c) => {
       const tags = (c.tags || []).map((x) => `<span class="pill">${escapeHtml(x)}</span>`).join('');
-      return `<li class="claim" data-id="${c.id}">
+      return `<li class="claim" data-id="${escapeHtml(c.id)}">
         <div>
           <div class="dish">${escapeHtml(c.dish)}</div>
           <div class="who">${escapeHtml(c.person)}${c.notes ? ' · ' + escapeHtml(c.notes) : ''}</div>
@@ -482,14 +484,14 @@
   function renderCats() {
     els.catsEmpty.classList.toggle('hidden', state.categories.length > 0);
     els.catList.innerHTML = state.categories.map((cat, i) => {
-      return `<li class="cat" data-id="${cat.id}">
+      return `<li class="cat" data-id="${escapeHtml(cat.id)}">
         <div class="cat-reorder">
           <button type="button" class="icon-btn cat-up" aria-label="Move ${escapeHtml(cat.name)} up" ${i === 0 ? 'disabled' : ''}>▲</button>
           <button type="button" class="icon-btn cat-down" aria-label="Move ${escapeHtml(cat.name)} down" ${i === state.categories.length - 1 ? 'disabled' : ''}>▼</button>
         </div>
         <input class="cat-name" maxlength="32" value="${escapeHtml(cat.name)}" aria-label="Category name" />
         <label class="needed-wrap">Need
-          <input type="number" min="0" max="99" value="${cat.needed}" data-needed="${cat.id}" aria-label="Needed ${escapeHtml(cat.name)}" />
+          <input type="number" min="0" max="99" value="${cat.needed}" data-needed="${escapeHtml(cat.id)}" aria-label="Needed ${escapeHtml(cat.name)}" />
         </label>
         <button type="button" class="icon-btn cat-del" aria-label="Remove ${escapeHtml(cat.name)}">✕</button>
       </li>`;
@@ -510,6 +512,7 @@
     renderMeters();
     renderClaims();
     renderCats();
+    els.mobileCta.classList.toggle('hidden', !state.categories.length);
     save(state);
   }
 
@@ -660,6 +663,8 @@
     state.date = f.date.value;
     state.place = f.place.value.trim();
     state.notes = f.notes.value.trim();
+    const pressedTheme = els.eventThemes.querySelector('[aria-pressed="true"]');
+    if (pressedTheme) state.theme = applyTheme(pressedTheme.dataset.themeId);
     if (nextTemplate !== state.templateId) applyTemplateToState(nextTemplate);
     els.eventDialog.close();
     render();
