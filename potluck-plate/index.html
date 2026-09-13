@@ -1,51 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="paprika">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#8b3a2a" />
-  <meta name="description" content="Potluck Plate — local-first dish signup for church, school, and team potlucks." />
+  <meta name="theme-color" content="#8b3a2a" id="themeColor" />
+  <meta name="description" content="Potluck Plate — local-first signup for any gathering. No accounts. Share a snapshot link." />
   <title>Potluck Plate</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238b3a2a'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='32'%3E🍽️%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <div class="app">
+  <div id="setup" class="setup hidden" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <div class="setup-card">
+      <p class="product-kicker">Potluck Plate</p>
+      <h2 id="setupTitle">What’s the event?</h2>
+      <p class="setup-lead">Pick a template, name it, copy a share link. Under a minute. Stays on this device — no accounts.</p>
+      <div class="template-grid" id="templateGrid"></div>
+      <div id="setupDetails" class="setup-details hidden">
+        <label>Event name<input id="setupTitleInput" maxlength="80" autocomplete="off" /></label>
+        <label>Date <span class="opt">optional</span><input id="setupDate" type="date" /></label>
+        <fieldset class="theme-field">
+          <legend>Theme</legend>
+          <div class="theme-row" id="setupThemes"></div>
+        </fieldset>
+        <button type="button" class="btn primary wide" id="btnStart">Open signup sheet</button>
+      </div>
+      <button type="button" class="btn ghost wide" id="btnSample">See a sample potluck</button>
+    </div>
+  </div>
+
+  <div class="app" id="appMain">
     <header class="top">
       <div class="brand">
-        <span class="logo" aria-hidden="true">🍽️</span>
-        <div>
-          <h1>Potluck Plate</h1>
-          <p class="tag">Claim a dish. Fill the table. No accounts.</p>
+        <span class="logo" id="brandEmoji" aria-hidden="true">🍽️</span>
+        <div class="brand-copy">
+          <p class="product-kicker">Potluck Plate</p>
+          <h1>
+            <label class="sr" for="eventTitle">Event headline</label>
+            <input id="eventTitle" class="title-input" maxlength="80" placeholder="Name this event" />
+          </h1>
+          <p class="tag" id="eventTagline">Claim a dish. Fill the table. No accounts.</p>
         </div>
       </div>
       <div class="top-actions">
         <button type="button" class="btn ghost" id="btnShare" title="Copy share link">Share link</button>
         <button type="button" class="btn ghost" id="btnPrint">Print list</button>
-        <button type="button" class="btn ghost danger" id="btnReset" title="Clear this device">Reset</button>
+        <button type="button" class="btn ghost" id="btnAbout">About</button>
+        <button type="button" class="btn ghost danger" id="btnReset" title="Clear this device">Clear data</button>
       </div>
     </header>
 
     <section class="event card" id="eventCard">
       <div class="event-head">
-        <div>
-          <label class="sr">Event title</label>
-          <input id="eventTitle" class="title-input" maxlength="80" placeholder="Event title" />
+        <div class="event-meta" id="eventMeta"></div>
+        <div class="event-tools">
+          <button type="button" class="btn small" id="btnEditEvent">Event setup</button>
         </div>
-        <button type="button" class="btn small" id="btnEditEvent">Edit details</button>
       </div>
-      <div class="event-meta" id="eventMeta"></div>
       <div class="meters" id="meters"></div>
     </section>
 
     <dialog id="eventDialog">
       <form method="dialog" id="eventForm" class="dialog-body">
-        <h2>Event details</h2>
-        <label>Title<input name="title" required maxlength="80" /></label>
+        <h2>Event setup</h2>
+        <label>Headline<input name="title" required maxlength="80" placeholder="Maya’s birthday signup" /></label>
         <label>Date<input name="date" type="date" /></label>
-        <label>Place<input name="place" maxlength="80" placeholder="Fellowship hall, picnic shelter…" /></label>
-        <label>Notes<textarea name="notes" rows="3" maxlength="400" placeholder="Bring serving utensils, arrive by 11:45…"></textarea></label>
+        <label>Place<input name="place" maxlength="80" id="eventPlace" placeholder="Fellowship hall, picnic shelter…" /></label>
+        <label>Notes<textarea name="notes" rows="3" maxlength="400" id="eventNotes" placeholder="Bring serving utensils, arrive by 11:45…"></textarea></label>
+        <label>Event type
+          <select name="template" id="eventTemplate"></select>
+        </label>
+        <p class="hint tight">Switching type replaces default categories. Claims are kept; leftover categories stay if they still have sign-ups.</p>
+        <fieldset class="theme-field">
+          <legend>Theme</legend>
+          <div class="theme-row" id="eventThemes"></div>
+        </fieldset>
         <div class="dialog-actions">
           <button type="submit" class="btn primary" value="save">Save</button>
           <button type="button" class="btn ghost" id="btnCancelEvent">Cancel</button>
@@ -56,10 +86,15 @@
     <section class="layout">
       <div class="card claims-panel">
         <div class="panel-head">
-          <h2>Sign-up sheet</h2>
+          <h2 id="sheetTitle">Sign-up sheet</h2>
           <button type="button" class="btn primary" id="btnAddClaim">+ Claim a dish</button>
         </div>
-        <div id="claimsEmpty" class="empty hidden">Nobody’s claimed yet — grab a Main or Dessert and get the table started.</div>
+        <div id="claimsEmpty" class="empty hidden">
+          <div class="empty-art" aria-hidden="true">🍽️</div>
+          <strong id="emptyTitle">The table is empty</strong>
+          <p id="emptyBody">Nobody’s claimed yet — grab a Main or Dessert and get the table started.</p>
+          <button type="button" class="btn primary" id="btnEmptyClaim">Claim a dish</button>
+        </div>
         <ul id="claimsList" class="claims"></ul>
       </div>
 
@@ -68,8 +103,13 @@
           <h2>Categories</h2>
           <button type="button" class="btn small" id="btnAddCat">+ Add</button>
         </div>
+        <p class="hint tight">Rename, reorder, or set how many you need. Soft targets — go over if the crowd is big.</p>
         <ul id="catList" class="cats"></ul>
-        <p class="hint">Needed counts are soft targets — go over if the crowd is big.</p>
+        <div id="catsEmpty" class="empty compact hidden">
+          <strong>Name your categories</strong>
+          <p>Cake, rides, gifts, chairs — whatever this event needs.</p>
+          <button type="button" class="btn small primary" id="btnAddCatEmpty">+ First category</button>
+        </div>
       </aside>
     </section>
 
@@ -78,7 +118,7 @@
         <h2 id="claimDialogTitle">Claim a dish</h2>
         <input type="hidden" name="id" />
         <label>Your name<input name="person" required maxlength="40" placeholder="Alex M." /></label>
-        <label>Dish name<input name="dish" required maxlength="60" placeholder="Honey cornbread" /></label>
+        <label id="itemLabelWrap"><span id="itemLabelText">Dish name</span><input name="dish" required maxlength="60" placeholder="Honey cornbread" /></label>
         <label>Category
           <select name="category" id="claimCategory" required></select>
         </label>
@@ -99,10 +139,27 @@
       </form>
     </dialog>
 
+    <dialog id="aboutDialog">
+      <div class="dialog-body">
+        <h2>About Potluck Plate</h2>
+        <p>A local-first signup sheet for potlucks, birthdays, office lunches, cookouts, showers — or a blank list you name yourself.</p>
+        <p>Everything lives in this browser. <strong>Share links are snapshots</strong>, not live sync. If someone else claims a dish, send a fresh link so they see it.</p>
+        <p>No accounts. No server. No secrets.</p>
+        <div class="dialog-actions">
+          <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+        </div>
+      </div>
+    </dialog>
+
     <footer class="foot">
-      <p>Local-first on this device. Share links carry a snapshot in the URL — not live sync. No accounts, no server.</p>
+      <p><strong>Potluck Plate</strong> · Local-first on this device. Share links carry a snapshot in the URL — not live sync.</p>
     </footer>
   </div>
+
+  <div class="mobile-cta" id="mobileCta">
+    <button type="button" class="btn primary wide" id="btnMobileClaim">+ Claim a dish</button>
+  </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
   <script>

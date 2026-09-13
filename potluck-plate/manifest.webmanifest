@@ -1,7 +1,7 @@
 {
   "name": "Potluck Plate",
   "short_name": "Potluck",
-  "description": "Local-first dish signup for potlucks.",
+  "description": "Local-first signup for potlucks, parties, and any gathering. Snapshot share links — no accounts.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f7f0e4",
