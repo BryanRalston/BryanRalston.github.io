@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#8b3a2a" />
+  <meta name="description" content="Potluck Plate — local-first dish signup for church, school, and team potlucks." />
+  <title>Potluck Plate</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238b3a2a'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='32'%3E🍽️%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">🍽️</span>
+        <div>
+          <h1>Potluck Plate</h1>
+          <p class="tag">Claim a dish. Fill the table. No accounts.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="btn ghost" id="btnShare" title="Copy share link">Share link</button>
+        <button type="button" class="btn ghost" id="btnPrint">Print list</button>
+        <button type="button" class="btn ghost danger" id="btnReset" title="Clear this device">Reset</button>
+      </div>
+    </header>
+
+    <section class="event card" id="eventCard">
+      <div class="event-head">
+        <div>
+          <label class="sr">Event title</label>
+          <input id="eventTitle" class="title-input" maxlength="80" placeholder="Event title" />
+        </div>
+        <button type="button" class="btn small" id="btnEditEvent">Edit details</button>
+      </div>
+      <div class="event-meta" id="eventMeta"></div>
+      <div class="meters" id="meters"></div>
+    </section>
+
+    <dialog id="eventDialog">
+      <form method="dialog" id="eventForm" class="dialog-body">
+        <h2>Event details</h2>
+        <label>Title<input name="title" required maxlength="80" /></label>
+        <label>Date<input name="date" type="date" /></label>
+        <label>Place<input name="place" maxlength="80" placeholder="Fellowship hall, picnic shelter…" /></label>
+        <label>Notes<textarea name="notes" rows="3" maxlength="400" placeholder="Bring serving utensils, arrive by 11:45…"></textarea></label>
+        <div class="dialog-actions">
+          <button type="submit" class="btn primary" value="save">Save</button>
+          <button type="button" class="btn ghost" id="btnCancelEvent">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <section class="layout">
+      <div class="card claims-panel">
+        <div class="panel-head">
+          <h2>Sign-up sheet</h2>
+          <button type="button" class="btn primary" id="btnAddClaim">+ Claim a dish</button>
+        </div>
+        <div id="claimsEmpty" class="empty hidden">Nobody’s claimed yet — grab a Main or Dessert and get the table started.</div>
+        <ul id="claimsList" class="claims"></ul>
+      </div>
+
+      <aside class="card categories-panel">
+        <div class="panel-head">
+          <h2>Categories</h2>
+          <button type="button" class="btn small" id="btnAddCat">+ Add</button>
+        </div>
+        <ul id="catList" class="cats"></ul>
+        <p class="hint">Needed counts are soft targets — go over if the crowd is big.</p>
+      </aside>
+    </section>
+
+    <dialog id="claimDialog">
+      <form method="dialog" id="claimForm" class="dialog-body">
+        <h2 id="claimDialogTitle">Claim a dish</h2>
+        <input type="hidden" name="id" />
+        <label>Your name<input name="person" required maxlength="40" placeholder="Alex M." /></label>
+        <label>Dish name<input name="dish" required maxlength="60" placeholder="Honey cornbread" /></label>
+        <label>Category
+          <select name="category" id="claimCategory" required></select>
+        </label>
+        <fieldset class="tags">
+          <legend>Dietary tags</legend>
+          <label><input type="checkbox" name="tag" value="GF" /> GF</label>
+          <label><input type="checkbox" name="tag" value="V" /> Vegetarian</label>
+          <label><input type="checkbox" name="tag" value="VE" /> Vegan</label>
+          <label><input type="checkbox" name="tag" value="NF" /> Nut-free</label>
+          <label><input type="checkbox" name="tag" value="DF" /> Dairy-free</label>
+        </fieldset>
+        <label>Notes<input name="notes" maxlength="120" placeholder="Serves 12, needs warming…" /></label>
+        <div class="dialog-actions">
+          <button type="submit" class="btn primary" value="save">Save claim</button>
+          <button type="button" class="btn ghost" id="btnCancelClaim">Cancel</button>
+          <button type="button" class="btn ghost danger hidden" id="btnDeleteClaim">Remove</button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer class="foot">
+      <p>Local-first on this device. Share links carry a snapshot in the URL — not live sync. No accounts, no server.</p>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
