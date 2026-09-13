@@ -782,6 +782,7 @@
     state = null;
     setupPick = { templateId: '', theme: 'paprika' };
     els.setupDetails.classList.add('hidden');
+    document.title = 'Potluck Plate';
     showSetup(true);
     toast('Cleared — pick a template to start again');
   });
