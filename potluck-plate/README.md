@@ -28,8 +28,8 @@ Add, rename, remove, and reorder categories. Edit “needed” counts. Soft targ
 Host-picked accent, stored on the event and in the share hash:
 
 - Warm paprika (default)
-- Fresh mint
-- Sky / coral
+- Garden mint
+- Coastal sky
 - Midnight ink
 
 ## Share links
@@ -42,7 +42,7 @@ Everything stays in this browser’s `localStorage` (`potluck-plate-v2`, migrate
 
 ## Offline / PWA
 
-Service worker cache: **`potluck-plate-v3`**. Installable via `manifest.webmanifest`. Storage key remains `potluck-plate-v2`.
+Service worker cache: **`potluck-plate-v4`**. Installable via `manifest.webmanifest`. Storage key remains `potluck-plate-v2`.
 
 ## Pages
 

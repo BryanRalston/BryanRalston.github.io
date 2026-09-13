@@ -4,8 +4,8 @@
   "description": "Local-first signup for potlucks, parties, and any gathering. Snapshot share links — no accounts.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f7f0e4",
-  "theme_color": "#8b3a2a",
+  "background_color": "#f4e8d4",
+  "theme_color": "#8f3a28",
   "icons": [
     {
       "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238b3a2a'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='32'%3E🍽️%3C/text%3E%3C/svg%3E",

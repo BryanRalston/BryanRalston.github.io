@@ -3,10 +3,10 @@
   const LEGACY_KEY = 'potluck-plate-v1';
 
   const THEMES = [
-    { id: 'paprika', name: 'Warm paprika', color: '#8b3a2a' },
-    { id: 'mint', name: 'Fresh mint', color: '#2a6b58' },
-    { id: 'sky', name: 'Sky / coral', color: '#2f6f8f' },
-    { id: 'ink', name: 'Midnight ink', color: '#12161c' },
+    { id: 'paprika', name: 'Warm paprika', color: '#8f3a28' },
+    { id: 'mint', name: 'Garden mint', color: '#21584a' },
+    { id: 'sky', name: 'Coastal sky', color: '#2a5f78' },
+    { id: 'ink', name: 'Midnight ink', color: '#12161d' },
   ];
 
   const TEMPLATES = {
@@ -372,6 +372,7 @@
   };
 
   let setupPick = { templateId: '', theme: 'paprika' };
+  let justClaimedId = '';
 
   function formatDate(iso) {
     if (!iso) return 'Date TBD';
@@ -388,7 +389,8 @@
   function renderThemeRow(host, selected, onPick) {
     host.innerHTML = THEMES.map((t) => (
       `<button type="button" class="theme-swatch" data-theme-id="${t.id}" aria-pressed="${t.id === selected}">
-        <span class="swatch-dot ${t.id}" aria-hidden="true"></span>${escapeHtml(t.name)}
+        <span class="swatch-dot ${t.id}" aria-hidden="true"></span>
+        <span>${escapeHtml(t.name)}</span>
       </button>`
     )).join('');
     host.querySelectorAll('[data-theme-id]').forEach((btn) => {
@@ -412,7 +414,7 @@
       const t = TEMPLATES[id];
       const pressed = setupPick.templateId === id;
       return `<button type="button" class="template-card" data-template="${id}" aria-pressed="${pressed}">
-        <span class="emoji">${t.emoji}</span>
+        <span class="emoji" aria-hidden="true">${t.emoji}</span>
         <strong>${escapeHtml(t.name)}</strong>
         <span>${escapeHtml(t.blurb)}</span>
       </button>`;
@@ -470,7 +472,8 @@
     els.claimsEmpty.classList.toggle('hidden', sorted.length > 0);
     els.claimsList.innerHTML = sorted.map((c) => {
       const tags = (c.tags || []).map((x) => `<span class="pill">${escapeHtml(x)}</span>`).join('');
-      return `<li class="claim" data-id="${escapeHtml(c.id)}">
+      const entered = c.id === justClaimedId ? ' claim-in' : '';
+      return `<li class="claim${entered}" data-id="${escapeHtml(c.id)}">
         <div>
           <div class="dish">${escapeHtml(c.dish)}</div>
           <div class="who">${escapeHtml(c.person)}${c.notes ? ' · ' + escapeHtml(c.notes) : ''}</div>
@@ -479,6 +482,7 @@
         <button type="button" class="btn small ghost edit-claim">Edit</button>
       </li>`;
     }).join('');
+    justClaimedId = '';
   }
 
   function renderCats() {
@@ -537,6 +541,8 @@
   function pickSetupTemplate(id) {
     setupPick.templateId = id;
     const t = TEMPLATES[id];
+    const crest = document.getElementById('setupCrest');
+    if (crest) crest.textContent = t.emoji;
     els.setupDetails.classList.remove('hidden');
     els.setupTitleInput.value = t.defaultTitle;
     els.setupTitleInput.focus();
@@ -708,7 +714,10 @@
     };
     const idx = state.claims.findIndex((c) => c.id === payload.id);
     if (idx >= 0) state.claims[idx] = payload;
-    else state.claims.push(payload);
+    else {
+      state.claims.push(payload);
+      justClaimedId = payload.id;
+    }
     els.claimDialog.close();
     render();
     toast(idx >= 0 ? 'Claim updated' : 'Claimed');
@@ -773,6 +782,7 @@
     state = null;
     setupPick = { templateId: '', theme: 'paprika' };
     els.setupDetails.classList.add('hidden');
+    document.title = 'Potluck Plate';
     showSetup(true);
     toast('Cleared — pick a template to start again');
   });
