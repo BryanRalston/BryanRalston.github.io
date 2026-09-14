@@ -28,7 +28,6 @@ body {
   color: var(--ink);
   line-height: 1.45;
   min-height: 100vh;
-  padding-bottom: calc(var(--dock) + 1.5rem);
 }
 button, input, select { font: inherit; }
 .sr {
@@ -141,6 +140,8 @@ code {
   color: #cfe0d6;
   font-size: 0.82rem;
 }
+
+.page { display: contents; }
 
 .shell {
   max-width: 1120px;
@@ -595,6 +596,41 @@ dialog::backdrop { background: rgba(12, 22, 18, 0.45); }
   [data-pane] { display: none; }
   [data-pane].is-on { display: block; }
   .stack { display: contents; }
+  html {
+    height: 100%;
+  }
+  body {
+    height: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .page {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    margin-bottom: 0.75rem;
+  }
+  .shell {
+    padding-bottom: 1.5rem;
+  }
+  .foot {
+    margin-bottom: 0;
+    padding-bottom: 0.5rem;
+  }
+  .dock {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    flex: 0 0 auto;
+  }
 }
 
 @media (max-width: 680px) {

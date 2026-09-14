@@ -28,7 +28,7 @@ Empty states teach that loop. Nothing leaves this browser.
 
 ## Offline / PWA
 
-Service worker cache: **`pocket-ledger-v1`**. Installable via `manifest.webmanifest`.
+Service worker cache: **`pocket-ledger-v2`**. Installable via `manifest.webmanifest`.
 
 ## Stretch shipped
 
