@@ -614,14 +614,15 @@ dialog::backdrop { background: rgba(12, 22, 18, 0.45); }
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 1.25rem;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    margin-bottom: 0.75rem;
   }
   .shell {
-    padding-bottom: 1.25rem;
+    padding-bottom: 1.5rem;
   }
   .foot {
     margin-bottom: 0;
-    padding-bottom: 0.35rem;
+    padding-bottom: 0.5rem;
   }
   .dock {
     position: relative;
