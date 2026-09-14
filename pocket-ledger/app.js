@@ -299,8 +299,9 @@
       t.income === 0 &&
       t.spentTotal === 0 &&
       t.assignedTotal === 0;
-    els.budgetEmpty.classList.toggle("hidden", !virgin);
-    if (virgin) renderCoach(t);
+    const waitingOnEnvelopes = state.categories.length === 0 && t.income > 0;
+    els.budgetEmpty.classList.toggle("hidden", !virgin && !waitingOnEnvelopes);
+    if (virgin || waitingOnEnvelopes) renderCoach(t);
 
     els.envelopeList.innerHTML = "";
     const groups = Ledger.categoriesByGroup(state, ym(), state.showArchived);

@@ -280,7 +280,7 @@ code {
   background: #f7faf8;
 }
 .empty.compact { padding: 0.8rem; }
-.empty.hidden, .hidden { display: none !important; }
+.empty.hidden, .hidden, [hidden] { display: none !important; }
 .empty strong { display: block; font-size: 1.05rem; margin: 0.15rem 0 0.35rem; }
 .empty p { margin: 0; color: var(--muted); }
 .empty-kicker { color: var(--forest-mid); }
@@ -581,6 +581,14 @@ dialog::backdrop { background: rgba(12, 22, 18, 0.45); }
 @media (max-width: 920px) {
   .layout { grid-template-columns: 1fr; }
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .top-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .brand { grid-column: 1; }
+  .top-actions { grid-column: 2; grid-row: 1; }
+  .month-nav { grid-column: 1 / -1; justify-content: space-between; }
   .top-actions .ghost-btn { display: none; }
   .menu-btn { display: inline-grid; place-items: center; }
   .dock { display: flex; }
