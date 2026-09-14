@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f3d2e" />
+  <meta name="description" content="Pocket Ledger — local-first household envelope budget. Assign every dollar. No bank sync, no cloud, no accounts." />
+  <title>Pocket Ledger</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Pocket Ledger cannot save on this device. Browser storage is blocked (private mode or a setting). Numbers will not persist.
+  </div>
+
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="40" height="40" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Pocket Ledger</p>
+          <p class="lede">Household envelopes. This device only.</p>
+        </div>
+      </div>
+
+      <div class="month-nav" role="group" aria-label="Budget month">
+        <button type="button" class="icon-btn" id="btnPrevMonth" aria-label="Previous month">‹</button>
+        <label class="month-label">
+          <span class="sr">Budget month</span>
+          <input id="monthInput" type="month" required />
+          <strong id="monthTitle">September 2026</strong>
+        </label>
+        <button type="button" class="icon-btn" id="btnNextMonth" aria-label="Next month">›</button>
+        <button type="button" class="text-btn" id="btnThisMonth">This month</button>
+      </div>
+
+      <div class="top-actions">
+        <button type="button" class="ghost-btn" id="btnExport">Export</button>
+        <button type="button" class="ghost-btn" id="btnImport">Import</button>
+        <button type="button" class="ghost-btn" id="btnCsv">CSV</button>
+        <button type="button" class="ghost-btn" id="btnAbout">About</button>
+        <button type="button" class="icon-btn menu-btn" id="btnMenu" aria-label="More actions">⋯</button>
+      </div>
+    </div>
+    <p class="honest" id="honestLine">
+      No bank sync. No cloud. No accounts. Every dollar lives in this browser until you export a backup.
+    </p>
+  </header>
+
+  <main class="shell">
+    <section class="hero" id="assignHero" aria-labelledby="assignHeading">
+      <div class="hero-copy">
+        <p class="hero-kicker" id="assignKicker">Ready to assign</p>
+        <h1 id="assignHeading" class="hero-amount">$0.00</h1>
+        <p class="hero-status" id="assignStatus">Add income, then give every dollar a job.</p>
+      </div>
+      <div class="hero-actions">
+        <button type="button" class="btn primary" id="btnAddIncome">Add income</button>
+        <button type="button" class="btn" id="btnSplit">Split leftover</button>
+        <button type="button" class="btn" id="btnFillPlans">Fill plans</button>
+        <button type="button" class="btn" id="btnRoll">Roll last month</button>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="Month totals">
+      <article class="metric">
+        <p>Income</p>
+        <strong id="metricIncome">$0.00</strong>
+      </article>
+      <article class="metric">
+        <p>Assigned</p>
+        <strong id="metricAssigned">$0.00</strong>
+      </article>
+      <article class="metric">
+        <p>Spent</p>
+        <strong id="metricSpent">$0.00</strong>
+      </article>
+      <article class="metric">
+        <p>Left in envelopes</p>
+        <strong id="metricLeft">$0.00</strong>
+      </article>
+    </section>
+
+    <p id="overspendWarn" class="warn" hidden></p>
+
+    <div class="layout">
+      <section class="panel" id="budgetPanel" data-pane="budget" aria-labelledby="envHeading">
+        <div class="panel-head">
+          <div>
+            <h2 id="envHeading">Envelopes</h2>
+            <p class="panel-sub" id="envSub">Assigned, spent, remaining — this month.</p>
+          </div>
+          <div class="panel-tools">
+            <button type="button" class="btn" id="btnStarter">Household set</button>
+            <button type="button" class="btn primary" id="btnAddEnv">Add envelope</button>
+          </div>
+        </div>
+
+        <div id="budgetEmpty" class="empty hidden">
+          <p class="empty-kicker">The month is empty</p>
+          <strong>Add income → create envelopes → assign every dollar</strong>
+          <p>QuickBooks is a business ledger. This is the kitchen-table job: give each dollar a job before you spend it.</p>
+          <ol class="coach">
+            <li id="coachIncome">Add a paycheck or other inflow</li>
+            <li id="coachEnvelopes">Name envelopes (Groceries, Rent, Fun)</li>
+            <li id="coachAssign">Assign leftover until Ready to assign is $0</li>
+            <li id="coachSpend">Log a purchase and watch remaining drop</li>
+          </ol>
+          <div class="empty-actions">
+            <button type="button" class="btn primary" id="btnEmptyIncome">Add income</button>
+            <button type="button" class="btn" id="btnEmptyStarter">Add household envelopes</button>
+            <button type="button" class="btn" id="btnSample">Try a sample month</button>
+          </div>
+        </div>
+
+        <div id="envelopeList" class="envelopes"></div>
+      </section>
+
+      <div class="stack">
+        <section class="panel" id="activityPanel" data-pane="activity" aria-labelledby="actHeading">
+          <div class="panel-head">
+            <div>
+              <h2 id="actHeading">Activity</h2>
+              <p class="panel-sub">This month’s inflows and spending.</p>
+            </div>
+            <div class="panel-tools">
+              <button type="button" class="btn" id="btnAddExpense">Add expense</button>
+            </div>
+          </div>
+          <div id="activityEmpty" class="empty compact hidden">
+            <strong>Nothing logged yet</strong>
+            <p>Income raises Ready to assign. An expense hits an envelope’s remaining.</p>
+          </div>
+          <ul id="activityList" class="activity"></ul>
+        </section>
+
+        <section class="panel" id="reportPanel" data-pane="reports" aria-labelledby="repHeading">
+          <div class="panel-head">
+            <div>
+              <h2 id="repHeading">Spend this month</h2>
+              <p class="panel-sub">By envelope. No charts that pretend to be tax software.</p>
+            </div>
+          </div>
+          <div id="reportEmpty" class="empty compact hidden">
+            <strong>No spending yet</strong>
+            <p>Log an expense to see which envelopes are working.</p>
+          </div>
+          <div id="reportList" class="report"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p><strong>Pocket Ledger</strong> · Local-first household budget. Not QuickBooks. Not a bank. Your numbers stay on this device.</p>
+    <p class="foot-actions">
+      <button type="button" class="text-btn" id="btnReset">Clear this device</button>
+    </p>
+  </footer>
+
+  <nav class="dock" aria-label="Sections">
+    <button type="button" class="dock-btn is-on" data-dock="budget">Budget</button>
+    <button type="button" class="dock-btn" data-dock="activity">Activity</button>
+    <button type="button" class="dock-btn" data-dock="reports">Reports</button>
+  </nav>
+
+  <dialog id="txnDialog">
+    <form method="dialog" id="txnForm" class="dialog-body">
+      <p class="kicker" id="txnKicker">Transaction</p>
+      <h2 id="txnTitle">Add expense</h2>
+      <input type="hidden" name="id" />
+      <fieldset class="type-toggle">
+        <legend class="sr">Type</legend>
+        <label><input type="radio" name="type" value="expense" checked /> Expense</label>
+        <label><input type="radio" name="type" value="income" /> Income</label>
+      </fieldset>
+      <div class="form-grid">
+        <label>Date<input name="date" type="date" required /></label>
+        <label>Amount
+          <input name="amount" inputmode="decimal" autocomplete="off" required placeholder="0.00" />
+        </label>
+        <label class="wide">Payee
+          <input name="payee" maxlength="60" autocomplete="off" required placeholder="Market, paycheck, landlord…" />
+        </label>
+        <label class="wide" id="txnCatWrap">Envelope
+          <select name="category" id="txnCategory"></select>
+        </label>
+        <label class="wide">Note <span class="opt">optional</span>
+          <input name="note" maxlength="140" autocomplete="off" placeholder="Weekly shop, first half…" />
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save</button>
+        <button type="button" class="btn" id="btnCancelTxn">Cancel</button>
+        <button type="button" class="btn danger hidden" id="btnDeleteTxn">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="envDialog">
+    <form method="dialog" id="envForm" class="dialog-body">
+      <p class="kicker">Envelope</p>
+      <h2 id="envDialogTitle">Add envelope</h2>
+      <input type="hidden" name="id" />
+      <label>Name<input name="name" maxlength="40" required placeholder="Groceries" /></label>
+      <label>Group
+        <select name="group" id="envGroup"></select>
+      </label>
+      <label>Monthly plan <span class="opt">optional, for Fill plans</span>
+        <input name="plan" inputmode="decimal" autocomplete="off" placeholder="600.00" />
+      </label>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save envelope</button>
+        <button type="button" class="btn" id="btnCancelEnv">Cancel</button>
+        <button type="button" class="btn danger hidden" id="btnArchiveEnv">Archive</button>
+        <button type="button" class="btn hidden" id="btnUnarchiveEnv">Unarchive</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="aboutDialog">
+    <div class="dialog-body">
+      <p class="kicker">Pocket Ledger</p>
+      <h2>On-device household budget</h2>
+      <p>Zero-based envelopes for a month: income in, assign every dollar, log spend, see what’s left. Built for the job QuickBooks is the wrong tool for — not invoices, payroll, or tax forms.</p>
+      <p><strong>No bank sync. No cloud. No accounts.</strong> The ledger is this browser’s <code>localStorage</code>. Export a JSON backup if you change phones. Import replaces what’s here.</p>
+      <p>Fill plans uses each envelope’s monthly plan. Split leftover divides Ready to assign equally. Roll last month copies assigned amounts forward — not transactions.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="menuDialog">
+    <div class="dialog-body">
+      <p class="kicker">Device</p>
+      <h2>Backup and more</h2>
+      <div class="menu-list">
+        <button type="button" class="btn" id="btnExportMenu">Export JSON backup</button>
+        <button type="button" class="btn" id="btnImportMenu">Import JSON</button>
+        <button type="button" class="btn" id="btnCsvMenu">Export transactions CSV</button>
+        <button type="button" class="btn" id="btnAboutMenu">About</button>
+        <button type="button" class="btn danger" id="btnResetMenu">Clear this device</button>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn" id="btnCloseMenu">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <input id="importFile" type="file" accept="application/json,.json" hidden />
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="ledger.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
