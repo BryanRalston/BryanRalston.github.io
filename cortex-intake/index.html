@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cortex Developments — Website build &amp; care</title>
+  <meta name="description" content="Website build and ongoing care for local businesses. Starter and Launch packages with optional monthly Care." />
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #5b6472;
+      --line: #e2e8f0;
+      --bg: #0b1220;
+      --card: #ffffff;
+      --accent: #0ea5e9;
+      --accent-2: #a855f7;
+      --ok: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(900px 400px at 10% -10%, rgba(14,165,233,.25), transparent 60%),
+        radial-gradient(700px 360px at 90% 0%, rgba(168,85,247,.2), transparent 55%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 72px; }
+    .brand {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: #e2e8f0;
+      font-weight: 700; letter-spacing: .02em;
+    }
+    .brand-mark {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 24px rgba(14,165,233,.45);
+    }
+    header h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); margin: 0 0 8px; color: #f8fafc; letter-spacing: -0.03em; }
+    header p { margin: 0 0 28px; color: #94a3b8; max-width: 40rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 18px 50px rgba(2,6,23,.35);
+    }
+    h2 { font-size: 1.05rem; margin: 0 0 8px; }
+    .how { color: var(--muted); font-size: .95rem; margin: 0 0 18px; }
+    label { display: block; font-size: 0.92rem; margin: 14px 0 6px; font-weight: 600; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font: inherit;
+      background: #fff;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    .packages { display: grid; gap: 12px; }
+    .pkg {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      cursor: pointer;
+    }
+    .pkg:has(input:checked) { border-color: #7dd3fc; background: #f0f9ff; }
+    .pkg strong { display: block; }
+    .pkg span span { font-weight: 400; color: var(--muted); font-size: .92rem; }
+    .price { font-weight: 700; white-space: nowrap; color: var(--ok); }
+    .note { font-size: 0.9rem; color: var(--muted); margin-top: 16px; }
+    button {
+      background: linear-gradient(135deg, #0284c7, #7c3aed);
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .pay {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      color: #0284c7;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    footer { margin-top: 20px; font-size: 0.85rem; color: #94a3b8; }
+    a { color: #7dd3fc; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand"><div class="brand-mark" aria-hidden="true"></div> Cortex Developments</div>
+    <header>
+      <h1>Website build &amp; care</h1>
+      <p>One form for purchase, setup, launch, and ongoing management. You stay focused on the business; we keep the site current. How we work: concept → pay → build → launch → monthly care.</p>
+    </header>
+
+    <form class="card" action="https://formsubmit.co/b.ralston62989@gmail.com" method="POST">
+      <input type="hidden" name="_subject" value="Cortex Developments — Website setup request" />
+      <input type="hidden" name="_template" value="table" />
+      <input type="hidden" name="_captcha" value="false" />
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
+
+      <h2>1. Your business</h2>
+      <label for="business_name">Business name</label>
+      <input id="business_name" name="business_name" required />
+
+      <label for="contact_name">Owner / contact name</label>
+      <input id="contact_name" name="contact_name" required />
+
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" required />
+
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" />
+
+      <label for="location">City / service area</label>
+      <input id="location" name="location" placeholder="Leesburg, VA and Loudoun County" />
+
+      <label for="what_you_do">What does the business do?</label>
+      <textarea id="what_you_do" name="what_you_do" placeholder="Fence installation, house cleaning, farm stand, etc."></textarea>
+
+      <label for="domain">Do you already have a domain name?</label>
+      <input id="domain" name="domain" placeholder="example: acme-fencing.com or leave blank" />
+
+      <label for="instagram">Instagram (optional)</label>
+      <input id="instagram" name="instagram" placeholder="@yourbusiness" />
+
+      <h2 style="margin-top:28px">2. Build package</h2>
+      <div class="packages">
+        <label class="pkg">
+          <input type="radio" name="package" value="Starter $997" checked />
+          <span>
+            <strong>Starter — $997</strong>
+            <span>5-page site, mobile ready, contact form, Google Map, basic SEO, 1 revision round. Domain + hosting extra unless you add Care or choose Launch.</span>
+          </span>
+          <span class="price">$997</span>
+        </label>
+        <label class="pkg">
+          <input type="radio" name="package" value="Launch $1,497" />
+          <span>
+            <strong>Launch — $1,497</strong>
+            <span>Starter plus photo cleanup, Google Business help, and first year of domain + hosting.</span>
+          </span>
+          <span class="price">$1,497</span>
+        </label>
+      </div>
+
+      <h2 style="margin-top:28px">3. Management (recommended)</h2>
+      <p class="how">While you’re on Care, hosting/SSL stay with us. Build only means you take the site after launch.</p>
+      <div class="packages">
+        <label class="pkg">
+          <input type="radio" name="management" value="Care $99/mo" checked />
+          <span>
+            <strong>Care — $99/month</strong>
+            <span>Hosting, SSL, backups, uptime watch, and up to 30 minutes of small edits each month (hours, phone, a photo, a sentence).</span>
+          </span>
+          <span class="price">$99/mo</span>
+        </label>
+        <label class="pkg">
+          <input type="radio" name="management" value="Care Plus $149/mo" />
+          <span>
+            <strong>Care Plus — $149/month</strong>
+            <span>Everything in Care, plus up to 90 minutes of updates, seasonal content, and a quarterly check that forms and links still work.</span>
+          </span>
+          <span class="price">$149/mo</span>
+        </label>
+        <label class="pkg">
+          <input type="radio" name="management" value="Build only — no management" />
+          <span>
+            <strong>Build only</strong>
+            <span>You take the site after launch. Hosting and updates are on you.</span>
+          </span>
+          <span class="price">$0/mo</span>
+        </label>
+      </div>
+
+      <label for="notes">Anything we should know? (logo, colors, examples you like)</label>
+      <textarea id="notes" name="notes"></textarea>
+
+      <p class="note">After you submit, we’ll email payment links for the build and (if chosen) the monthly care plan. Work starts when the build payment is received. Monthly management bills after launch.</p>
+      <button type="submit">Send request</button>
+    </form>
+
+    <div class="card">
+      <h2>Pay and start setup</h2>
+      <p style="color:var(--muted);margin-top:0">After your request, we’ll send the matching Stripe link. Prefer to pay a deposit now once links are live:</p>
+      <a class="pay" href="#pay">Payment links activate after Stripe setup →</a>
+      <p class="note">Suggested: 50% to start, 50% at launch — or full pay for the $997 Starter.</p>
+    </div>
+
+    <footer>
+      Cortex Developments · Loudoun / NoVA · <a href="mailto:b.ralston62989@gmail.com">b.ralston62989@gmail.com</a><br />
+      We help people build websites, apps, and tools — live products are proof of craft.
+    </footer>
+  </div>
+</body>
+</html>
