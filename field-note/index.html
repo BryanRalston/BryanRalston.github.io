@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#16382a" />
+  <meta name="description" content="Field Note — today’s practice or game day sheet. Pack the bag, check the kids, share a snapshot. No accounts." />
+  <title>Field Note</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,650;1,6..72,420;1,6..72,520&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="turf" aria-hidden="true"></div>
+  <div class="mist" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Field Note cannot save on this device. Browser storage is blocked (private mode or a setting). The sheet will not persist.
+  </div>
+
+  <div class="wrap">
+    <header class="top no-print">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="56" height="56">
+            <rect width="64" height="64" rx="14" fill="#16382a"/>
+            <rect x="10" y="14" width="44" height="36" rx="3" fill="none" stroke="#efe6d2" stroke-width="2"/>
+            <line x1="32" y1="14" x2="32" y2="50" stroke="#efe6d2" stroke-width="1.6"/>
+            <circle cx="32" cy="32" r="7" fill="none" stroke="#efe6d2" stroke-width="1.6"/>
+            <circle cx="32" cy="32" r="2.2" fill="#e2570d"/>
+          </svg>
+        </span>
+        <div class="brand-copy">
+          <p class="kicker">Field Note</p>
+          <p class="lede">Practice and game day, on this device.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="btn ghost" id="btnShare" title="Copy a snapshot link">Copy snapshot</button>
+        <button type="button" class="btn ghost" id="btnPrint">Print</button>
+        <button type="button" class="btn ghost" id="btnAbout">About</button>
+        <button type="button" class="btn ghost" id="btnNewToday" title="Uncheck the bags and set today’s date">New today</button>
+        <button type="button" class="btn ghost danger" id="btnReset">Clear device</button>
+      </div>
+    </header>
+
+    <p class="honest no-print" id="honestLine">
+      Stays in this browser. Share copies a <strong>snapshot</strong> into the URL — not live multi-device sync.
+    </p>
+
+    <div class="clipboard">
+      <div class="binder" aria-hidden="true">
+        <span class="binder-arm"></span>
+        <span class="binder-plate"></span>
+      </div>
+
+      <section class="sheet-head" aria-labelledby="titleLabel">
+        <label class="title-label" id="titleLabel" for="titleInput">Today’s field note</label>
+        <input
+          id="titleInput"
+          class="title-input"
+          maxlength="80"
+          autocomplete="off"
+          placeholder="U10 soccer practice"
+        />
+
+        <div class="meta-grid">
+          <label>Date
+            <input id="dateInput" type="date" required />
+          </label>
+          <label>Arrive by
+            <input id="arriveInput" type="time" />
+          </label>
+          <label class="place-field">Place / field
+            <input id="placeInput" maxlength="120" autocomplete="off" placeholder="Riverside Field 3 — 1200 Oak St" />
+          </label>
+        </div>
+
+        <label class="weather-label">Weather / notes
+          <textarea id="weatherInput" rows="2" maxlength="400" placeholder="Cool and damp. Extra layer. Leave the house by 8:15."></textarea>
+        </label>
+      </section>
+
+      <section class="panel" aria-labelledby="bringHeading">
+        <div class="panel-head">
+          <div>
+            <h2 id="bringHeading">Bring list</h2>
+            <p class="panel-sub" id="bringProgress">Nothing packed yet</p>
+          </div>
+          <div class="tape" id="bringTape" aria-hidden="true"><span></span></div>
+        </div>
+
+        <div id="bringEmpty" class="empty hidden">
+          <p class="empty-kicker">The bag is empty</p>
+          <strong>Add what this field needs</strong>
+          <p>Cleats, water, shin guards, a snack — whatever you always forget at the door.</p>
+        </div>
+
+        <ul id="bringList" class="bring-list"></ul>
+
+        <form id="addItemForm" class="add-row no-print">
+          <label class="sr" for="newItem">Add a bring-list item</label>
+          <input id="newItem" maxlength="40" autocomplete="off" placeholder="Add an item…" />
+          <button type="submit" class="btn primary">Add</button>
+        </form>
+      </section>
+
+      <section class="panel kids-panel" aria-labelledby="kidsHeading">
+        <div class="panel-head">
+          <div>
+            <h2 id="kidsHeading">Kids</h2>
+            <p class="panel-sub">Optional. Each name gets the same list, plus a short note.</p>
+          </div>
+        </div>
+
+        <div id="kidsEmpty" class="empty compact">
+          <p class="empty-kicker">Riding solo?</p>
+          <strong>One bag is enough</strong>
+          <p>Add a name only if each kid needs their own check-off — or a reminder that lives on their row.</p>
+        </div>
+
+        <div id="kidsGrid" class="kids-grid"></div>
+
+        <form id="addKidForm" class="add-row no-print">
+          <label class="sr" for="newKid">Add a kid</label>
+          <input id="newKid" maxlength="40" autocomplete="off" placeholder="Add a kid name…" />
+          <button type="submit" class="btn primary">Add kid</button>
+        </form>
+      </section>
+    </div>
+
+    <article id="printSheet" class="print-sheet" hidden></article>
+
+    <footer class="foot no-print">
+      <p><strong>Field Note</strong> · Local-first. Snapshot links are a copy of this sheet, not live sync. No accounts. No server.</p>
+      <p class="foot-actions">
+        <button type="button" class="btn ghost" id="btnSample">Load a sample Saturday</button>
+      </p>
+    </footer>
+  </div>
+
+  <dialog id="aboutDialog">
+    <div class="dialog-body">
+      <p class="kicker">Field Note</p>
+      <h2>About this sheet</h2>
+      <p>A sideline clipboard for practice and game days: where to be, when to arrive, and what to pack.</p>
+      <p>Everything lives in this browser. <strong>Copy snapshot</strong> packs the current sheet into the URL. Opening that link loads the copy on another phone. Later edits here do not update their copy unless you send a fresh link.</p>
+      <p>No accounts. No server. No secrets.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="shareDialog">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot link</p>
+      <h2>Not live sync</h2>
+      <p>This URL is a copy of the sheet right now. Send a fresh one after you edit.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
