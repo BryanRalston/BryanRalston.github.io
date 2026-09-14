@@ -32,6 +32,8 @@
     newKid: document.getElementById('newKid'),
     printSheet: document.getElementById('printSheet'),
     aboutDialog: document.getElementById('aboutDialog'),
+    shareDialog: document.getElementById('shareDialog'),
+    shareUrlBox: document.getElementById('shareUrlBox'),
     toast: document.getElementById('toast'),
   };
 
@@ -345,12 +347,12 @@
           .join('');
         return `<article class="kid-card" data-id="${escapeHtml(kid.id)}">
           <div class="kid-head">
-            <input class="kid-name" maxlength="40" value="${escapeHtml(kid.name)}" aria-label="Kid name" />
+            <input class="kid-name" name="kid-name" maxlength="40" value="${escapeHtml(kid.name)}" aria-label="Kid name" />
             <button type="button" class="icon-btn remove-kid no-print" aria-label="Remove ${escapeHtml(kid.name)}">✕</button>
           </div>
           <p class="kid-meta">${n} of ${state.items.length} packed</p>
           <ul class="kid-checks">${checks || '<li class="kid-check"><span class="item-label">Add items to the bring list first.</span></li>'}</ul>
-          <input class="kid-note" maxlength="80" value="${escapeHtml(kid.note)}" placeholder="Short note — inhaler, new cleats…" aria-label="Note for ${escapeHtml(kid.name)}" />
+          <input class="kid-note" name="kid-note" maxlength="80" value="${escapeHtml(kid.note)}" placeholder="Short note — inhaler, new cleats…" aria-label="Note for ${escapeHtml(kid.name)}" />
         </article>`;
       })
       .join('');
@@ -460,16 +462,48 @@
     toast('Cleared — this device only');
   }
 
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (_) {
+      try {
+        els.shareUrlBox.focus();
+        els.shareUrlBox.select();
+        return document.execCommand('copy');
+      } catch (__) {
+        return false;
+      }
+    }
+  }
+
   async function shareSnapshot() {
     readFields();
     save();
     const url = await encodeShare();
-    try {
-      await navigator.clipboard.writeText(url);
-      toast('Copied a snapshot — not live sync. Send a fresh link after edits.', 3600);
-    } catch (_) {
-      prompt('Copy this snapshot share link (not live sync):', url);
+    els.shareUrlBox.value = url;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: state.title || 'Field Note',
+          text: 'Field Note snapshot — not live sync',
+          url,
+        });
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
     }
+    const copied = await copyText(url);
+    els.shareDialog.showModal();
+    els.shareUrlBox.focus();
+    els.shareUrlBox.select();
+    toast(
+      copied
+        ? 'Copied a snapshot — not live sync. Send a fresh link after edits.'
+        : 'Snapshot ready — copy the link. Not live sync.',
+      3600
+    );
   }
 
   ['title', 'date', 'arrive', 'place', 'weather'].forEach((key) => {
@@ -563,6 +597,11 @@
   });
   document.getElementById('btnAbout').addEventListener('click', () => els.aboutDialog.showModal());
   document.getElementById('btnCloseAbout').addEventListener('click', () => els.aboutDialog.close());
+  document.getElementById('btnCopyShare').addEventListener('click', async () => {
+    const copied = await copyText(els.shareUrlBox.value);
+    toast(copied ? 'Copied a snapshot — not live sync.' : 'Select the link and copy it.', 2800);
+  });
+  document.getElementById('btnCloseShare').addEventListener('click', () => els.shareDialog.close());
   document.getElementById('btnNewToday').addEventListener('click', newToday);
   document.getElementById('btnReset').addEventListener('click', resetDevice);
   document.getElementById('btnSample').addEventListener('click', () => {

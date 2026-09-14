@@ -155,6 +155,21 @@
     </div>
   </dialog>
 
+  <dialog id="shareDialog">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot link</p>
+      <h2>Not live sync</h2>
+      <p>This URL is a copy of the sheet right now. Send a fresh one after you edit.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>

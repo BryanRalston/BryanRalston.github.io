@@ -530,24 +530,26 @@ body {
 }
 
 .btn.ghost {
-  background: transparent;
-  color: var(--dew);
-  border-color: transparent;
+  background: color-mix(in srgb, #fff 8%, transparent);
+  color: var(--chalk);
+  border-color: color-mix(in srgb, var(--chalk) 28%, transparent);
 }
 
 .btn.ghost:hover {
-  background: color-mix(in srgb, #fff 8%, transparent);
-  color: var(--chalk);
+  background: color-mix(in srgb, #fff 16%, transparent);
+  color: #fff;
 }
 
-.btn.danger { color: #f0b4b0; }
+.btn.danger {
+  color: #ffd4d0;
+  border-color: color-mix(in srgb, #ffd4d0 35%, transparent);
+}
 .clipboard .btn.primary { min-width: 88px; }
-.clipboard .btn.ghost,
-.foot .btn.ghost {
-  color: var(--muted);
-}
 
 .foot .btn.ghost {
+  color: var(--gold);
+  border-color: transparent;
+  background: transparent;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -617,6 +619,30 @@ dialog::backdrop {
 .dialog-body p { margin: 0; color: var(--muted); line-height: 1.5; }
 .dialog-actions { margin-top: 8px; }
 
+dialog .btn.ghost {
+  color: var(--muted);
+  background: transparent;
+  border-color: var(--line);
+}
+
+dialog .btn.ghost:hover {
+  color: var(--ink);
+  background: var(--paper-2);
+}
+
+dialog textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ink);
+  background: var(--paper-2);
+  resize: vertical;
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -648,7 +674,6 @@ dialog::backdrop {
   .top-actions { justify-content: flex-start; }
   .clipboard { padding: 32px 14px 16px; border-radius: 22px; }
   .title-input { font-size: 1.55rem; }
-  .kid-checks { grid-template-columns: 1fr; }
   .btn { min-height: 38px; padding: 8px 12px; font-size: 0.8rem; }
 }
 
