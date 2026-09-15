@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Form Stack">
+  <rect width="64" height="64" rx="14" fill="#1e2450"/>
+  <rect x="16" y="14" width="32" height="38" rx="3" fill="#d8def8" transform="rotate(-7 32 33)"/>
+  <rect x="17" y="16" width="32" height="38" rx="3" fill="#fff6e4"/>
+  <path d="M23 26h20M23 32h16M23 38h18" stroke="#1e2450" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="46" cy="18" r="7" fill="#e14b3a"/>
+</svg>
