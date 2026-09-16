@@ -11,7 +11,22 @@ Live: [bryanralston.github.io/form-stack](https://bryanralston.github.io/form-st
 3. Home list sorts by due soonest. Overdue lights up. Filter by kid or status.
 4. Tap a status chip to move the slip. Delete asks first.
 
-Empty state teaches the loop. **Load example forms** uses Kid A / Kid B — clearly fake sample data.
+Empty state teaches the loop. **Load example forms** uses Kid A / Kid B — clearly fake sample data. On a phone the empty-state **Add a form** button stays visible; the bottom CTA continues the same loop.
+
+## Feature Map (what it does today)
+
+In-product Feature Map / About lists current capabilities, not a roadmap:
+
+- Add / edit / delete forms (title, kid, due date, category, notes)
+- Status: need print → need signature → signed → turned in
+- This-week due list, due-soon header, overdue highlight, filter by kid or status
+- Optional photo of the paper (this device only; omitted from share URLs)
+- Snapshot share in the URL — **not** live sync
+- Print this week
+- Clear device
+- Offline via service worker cache **`form-stack-v1`**
+
+**Is not:** accounts, a server, live family sync, or cloud photos.
 
 ## Persistence
 
