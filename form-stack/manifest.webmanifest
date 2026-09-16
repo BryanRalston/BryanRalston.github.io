@@ -1,0 +1,18 @@
+{
+  "name": "Form Stack",
+  "short_name": "Form Stack",
+  "description": "Local-first school and activity forms tracker. Permission slips, health forms, volunteer signups — on this device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8e6f6",
+  "theme_color": "#1e2450",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
