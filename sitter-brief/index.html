@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#3d2244" />
+  <meta name="description" content="Sitter Brief — a local-first leave-with-babysitter or grandparent one-pager. Kids, bedtime, food, contacts, wifi. Stays on this device." />
+  <title>Sitter Brief</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,480&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="lamp" aria-hidden="true"></div>
+  <div class="counter" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Sitter Brief cannot save on this device. Browser storage is blocked (private mode or a setting). The brief will not persist.
+  </div>
+
+  <div class="wrap">
+    <header class="top no-print">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Sitter Brief</p>
+          <h1>Leave it on the counter.</h1>
+        </div>
+      </div>
+      <div class="return-stamp" id="returnStamp" aria-live="polite">
+        <span class="return-label">Back by</span>
+        <span class="return-time" id="returnStampTime">—</span>
+      </div>
+    </header>
+
+    <p class="honest no-print">
+      Stays in this browser. Share copies a <strong>snapshot</strong> of the current brief into the URL — not live sync. Other saved briefs stay on this device.
+    </p>
+
+    <div class="toolbar no-print">
+      <button type="button" class="btn ghost" id="btnShare">Copy snapshot</button>
+      <button type="button" class="btn ghost" id="btnCopyText">Copy summary</button>
+      <button type="button" class="btn ghost" id="btnPrint">Print brief</button>
+      <button type="button" class="btn ghost" id="btnAbout">Feature Map</button>
+      <button type="button" class="btn ghost danger" id="btnReset">Clear device</button>
+    </div>
+
+    <div id="emptyState" class="empty card" hidden>
+      <p class="empty-kicker">The counter is bare</p>
+      <strong>Fill a brief → print it or share a snapshot</strong>
+      <p>Babysitter, grandparent, last-minute neighbor — one page with the kids, bedtime, food, who to call, wifi, and when you’ll be back.</p>
+      <ol class="coach">
+        <li>Write the kids, routine, food, and contacts</li>
+        <li>Add wifi and the house notes they always ask for</li>
+        <li>Print the page, or copy a snapshot link — not live sync</li>
+      </ol>
+      <div class="empty-actions">
+        <button type="button" class="btn primary" id="btnEmptyWrite">Write a brief</button>
+        <button type="button" class="btn" id="btnSample">Load example briefs</button>
+      </div>
+      <p class="hint">Examples use Kid A / Kid B and fake phones. They are sample data, not a real family.</p>
+    </div>
+
+    <div id="briefApp" hidden>
+      <section class="profiles no-print" aria-labelledby="profilesHeading">
+        <div class="panel-head">
+          <div>
+            <p class="kicker quiet">Saved briefs</p>
+            <h2 id="profilesHeading">Which note</h2>
+          </div>
+          <button type="button" class="btn primary" id="btnNewBrief">New brief</button>
+        </div>
+        <div class="chip-row" id="profileChips" role="tablist" aria-label="Saved briefs"></div>
+      </section>
+
+      <article class="brief card" id="briefCard" aria-labelledby="briefTitle">
+        <header class="brief-head">
+          <div class="brief-head-copy">
+            <p class="kicker">Leave-behind</p>
+            <label class="title-label" for="profileInput">This brief is for</label>
+            <input
+              id="profileInput"
+              class="title-input"
+              maxlength="48"
+              autocomplete="off"
+              placeholder="Saturday sitter"
+            />
+          </div>
+          <label class="return-field">Back by
+            <input id="returnInput" type="time" />
+          </label>
+        </header>
+
+        <section class="block" aria-labelledby="kidsHeading">
+          <div class="block-head">
+            <h2 id="kidsHeading">Kids</h2>
+            <p class="block-sub">Name plus age or a short note.</p>
+          </div>
+          <ul class="row-list" id="kidsList"></ul>
+          <form id="addKidForm" class="add-row no-print">
+            <label class="sr" for="newKidName">Kid name</label>
+            <input id="newKidName" maxlength="40" autocomplete="off" placeholder="Kid name" />
+            <label class="sr" for="newKidNotes">Age or notes</label>
+            <input id="newKidNotes" maxlength="120" autocomplete="off" placeholder="Age / notes" />
+            <button type="submit" class="btn primary">Add kid</button>
+          </form>
+        </section>
+
+        <section class="block" aria-labelledby="bedtimeHeading">
+          <h2 id="bedtimeHeading">Bedtime / routine</h2>
+          <label class="sr" for="bedtimeInput">Bedtime and routine</label>
+          <textarea id="bedtimeInput" rows="3" maxlength="400" placeholder="Lights out, story, water, night light…"></textarea>
+        </section>
+
+        <section class="block" aria-labelledby="foodHeading">
+          <h2 id="foodHeading">Food / allergies</h2>
+          <label class="sr" for="foodInput">Food and allergies</label>
+          <textarea id="foodInput" rows="3" maxlength="400" placeholder="What’s for dinner. What they cannot eat."></textarea>
+        </section>
+
+        <section class="block" aria-labelledby="contactsHeading">
+          <div class="block-head">
+            <h2 id="contactsHeading">Emergency contacts</h2>
+            <p class="block-sub">Who to call, in order.</p>
+          </div>
+          <ul class="row-list" id="contactsList"></ul>
+          <form id="addContactForm" class="add-row no-print">
+            <label class="sr" for="newContactName">Contact name</label>
+            <input id="newContactName" maxlength="40" autocomplete="off" placeholder="Name" />
+            <label class="sr" for="newContactPhone">Phone</label>
+            <input id="newContactPhone" maxlength="40" autocomplete="tel" placeholder="Phone" />
+            <label class="sr" for="newContactNote">Note</label>
+            <input id="newContactNote" maxlength="80" autocomplete="off" placeholder="Note" />
+            <button type="submit" class="btn primary">Add contact</button>
+          </form>
+        </section>
+
+        <section class="block wifi-block" aria-labelledby="wifiHeading">
+          <h2 id="wifiHeading">Wifi</h2>
+          <div class="wifi-grid">
+            <label>Network
+              <input id="wifiNameInput" maxlength="64" autocomplete="off" placeholder="ExampleNet" />
+            </label>
+            <label>Password
+              <input id="wifiPassInput" maxlength="64" autocomplete="off" placeholder="example-password" />
+            </label>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="houseHeading">
+          <h2 id="houseHeading">House notes</h2>
+          <label class="sr" for="houseInput">House notes</label>
+          <textarea id="houseInput" rows="3" maxlength="400" placeholder="Back door sticks. Trash night. Extra key."></textarea>
+        </section>
+      </article>
+
+      <div class="brief-tools no-print">
+        <button type="button" class="btn ghost danger" id="btnDeleteBrief">Delete this brief</button>
+      </div>
+    </div>
+
+    <section class="feature-map card no-print" id="featureMap" aria-labelledby="featureMapHeading">
+      <p class="kicker quiet">Feature Map</p>
+      <h2 id="featureMapHeading">What this brief does today</h2>
+      <p class="lead">Current capabilities — not a roadmap. The note stays on this device.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>Edit a leave-behind</strong>
+          <span>Kids (name + age/notes), bedtime/routine, food/allergies, emergency contacts, wifi, house notes, your return time.</span>
+        </li>
+        <li>
+          <strong>Saved briefs</strong>
+          <span>Switch profiles — Saturday sitter vs Grandma. New brief. Delete this brief.</span>
+        </li>
+        <li>
+          <strong>Printable one-pager</strong>
+          <span>Print CSS turns the brief into a phone-readable paper sheet.</span>
+        </li>
+        <li>
+          <strong>Copy summary</strong>
+          <span>One tap copies the current brief as plain text for a message.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Copies a compressed URL hash of the <em>current</em> brief. Not live sync. Other saved briefs stay here.</span>
+        </li>
+        <li>
+          <strong>Stays on this device</strong>
+          <span><code>localStorage</code> key <code>sitter-brief-v1</code>. Clear device wipes it. Offline via cache <code>sitter-brief-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: accounts, a server, live family sync, a packing list, form tracker, potluck, budget, or shared board.</p>
+    </section>
+
+    <footer class="foot no-print">
+      <p><strong>Sitter Brief</strong> · Local-first on this device. Snapshot links are a copy of the current brief, not live sync.</p>
+    </footer>
+  </div>
+
+  <article id="printSheet" class="print-sheet" hidden></article>
+
+  <div class="mobile-cta no-print" id="mobileCta">
+    <button type="button" class="btn primary wide" id="btnMobilePrimary">Write a brief</button>
+  </div>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Sitter Brief does today</h2>
+      <p class="dialog-lead">A leave-with-babysitter or grandparent one-pager. Current capabilities — not a roadmap.</p>
+      <ul class="feature-list compact">
+        <li>
+          <strong>The brief</strong>
+          <span>Kids, bedtime/routine, food/allergies, emergency contacts, wifi, house notes, return time.</span>
+        </li>
+        <li>
+          <strong>Profiles</strong>
+          <span>Save more than one note. Switch Saturday sitter vs Grandma.</span>
+        </li>
+        <li>
+          <strong>Print / copy</strong>
+          <span>Print the one-pager. Copy a plain-text summary.</span>
+        </li>
+        <li>
+          <strong>Snapshot</strong>
+          <span>URL hash of the current brief. Not live sync. Other briefs stay on this device.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>No accounts. No server. Store <code>sitter-brief-v1</code>. Offline cache <code>sitter-brief-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Share is a snapshot. Copy a fresh link after you edit. Example data uses Kid A / Kid B.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot link</p>
+      <h2 id="shareTitle">Not live sync</h2>
+      <p class="dialog-lead">This URL is a copy of the current brief right now. Later edits here do not update their copy unless you send a fresh link. Other saved briefs are not in this link.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
