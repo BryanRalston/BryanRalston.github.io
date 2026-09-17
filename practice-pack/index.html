@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1e6f8c" />
+  <meta name="description" content="Practice Pack — local-first packing checklist for kids’ sports and activities. Cleats, water, snacks. Stays on this device." />
+  <title>Practice Pack</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Practice Pack cannot save on this device. Browser storage is blocked (private mode or a setting). Bags will not persist.
+  </div>
+
+  <div class="wrap" id="homeView">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Practice Pack</p>
+          <h1>Don’t forget the cleats again.</h1>
+        </div>
+      </div>
+      <div class="due-stamp" id="remainStamp" aria-live="polite">
+        <span class="due-count" id="remainCount">0</span>
+        <span class="due-label" id="remainLabel">to pack</span>
+      </div>
+    </header>
+
+    <p class="honest">
+      Stays in this browser. Share copies a <strong>snapshot</strong> into the URL — not live sync.
+    </p>
+
+    <div class="toolbar">
+      <button type="button" class="btn ghost" id="btnShare">Copy snapshot</button>
+      <button type="button" class="btn ghost" id="btnAbout">Feature Map</button>
+      <button type="button" class="btn ghost danger" id="btnReset">Clear device</button>
+    </div>
+
+    <section class="stack-panel" aria-labelledby="listHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The porch</p>
+          <h2 id="listHeading">Bags</h2>
+        </div>
+        <button type="button" class="btn primary" id="btnAdd">New bag</button>
+      </div>
+
+      <div id="emptyState" class="empty card" hidden>
+        <p class="empty-kicker">Nothing by the door</p>
+        <strong>Name a bag → add what you always forget → leave</strong>
+        <p>Soccer, dance, scouts — each activity gets its own checklist. Check it on the porch. Reset when you get home.</p>
+        <ol class="coach">
+          <li>Create a bag (or load the starters)</li>
+          <li>Mark cleats and water as always-pack</li>
+          <li>Tap <em>Leaving now</em> and check the list</li>
+        </ol>
+        <div class="empty-actions">
+          <button type="button" class="btn primary" id="btnEmptyAdd">New bag</button>
+          <button type="button" class="btn" id="btnStarters">Load starter bags</button>
+        </div>
+        <p class="hint">Starters are Soccer, Dance, Swimming, and Scouts — generic lists, not a real family.</p>
+      </div>
+
+      <ul class="bag-list" id="bagList"></ul>
+    </section>
+
+    <section class="feature-map card" id="featureMap" aria-labelledby="featureMapHeading">
+      <p class="kicker quiet">Feature Map</p>
+      <h2 id="featureMapHeading">What this pack does today</h2>
+      <p class="lead">Current capabilities — not a roadmap. Bags stay on this device.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>Named bags</strong>
+          <span>Activities like Soccer or Dance. Optional day hint and kid label.</span>
+        </li>
+        <li>
+          <strong>Checklist items</strong>
+          <span>Cleats, water, shin guards, snack, jersey. Mark always-pack vs optional.</span>
+        </li>
+        <li>
+          <strong>Leaving now</strong>
+          <span>Large tap targets. Remaining count. A quiet celebrate when the always-pack list is done.</span>
+        </li>
+        <li>
+          <strong>Reset for next</strong>
+          <span>Keeps the items. Clears checkmarks. Always-pack rows stay listed at the top.</span>
+        </li>
+        <li>
+          <strong>Starter templates</strong>
+          <span>Soccer, Dance, Swimming, Scouts on first open. Edit or delete any of them.</span>
+        </li>
+        <li>
+          <strong>Notes</strong>
+          <span>Optional notes per bag. Optional kid name on the card.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Copies a compressed URL hash. Not live sync.</span>
+        </li>
+        <li>
+          <strong>Stays on this device</strong>
+          <span><code>localStorage</code> key <code>practice-pack-v1</code>. Clear device wipes it. Offline via cache <code>practice-pack-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: accounts, a server, live family sync, or photos.</p>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Practice Pack</strong> · Local-first on this device. Snapshot links are a copy, not live sync.</p>
+    </footer>
+  </div>
+
+  <div class="wrap bag-view" id="bagView" hidden>
+    <header class="top compact">
+      <button type="button" class="btn ghost" id="btnBackHome">← Bags</button>
+      <div class="due-stamp small" id="bagRemainStamp" aria-live="polite">
+        <span class="due-count" id="bagRemainCount">0</span>
+        <span class="due-label" id="bagRemainLabel">left</span>
+      </div>
+    </header>
+
+    <section class="bag-hero card" id="bagHero"></section>
+
+    <section class="items-panel" aria-labelledby="itemsHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">In the bag</p>
+          <h2 id="itemsHeading">Checklist</h2>
+        </div>
+        <button type="button" class="btn primary" id="btnLeaveFromBag">Leaving now</button>
+      </div>
+      <p class="panel-sub" id="itemsSub"></p>
+      <div id="alwaysBlock" class="item-block">
+        <h3 class="item-block-title">Always pack</h3>
+        <ul class="item-list" id="alwaysList"></ul>
+      </div>
+      <div id="optionalBlock" class="item-block">
+        <h3 class="item-block-title">Optional</h3>
+        <ul class="item-list" id="optionalList"></ul>
+      </div>
+      <p id="itemsEmpty" class="filter-empty card" hidden>This bag is empty. Add the thing you forgot last week.</p>
+      <form id="addItemForm" class="add-row">
+        <label class="sr" for="newItem">Add an item</label>
+        <input id="newItem" maxlength="40" autocomplete="off" placeholder="Add an item…" />
+        <label class="always-toggle">
+          <input type="checkbox" id="newItemAlways" checked />
+          Always
+        </label>
+        <button type="submit" class="btn primary">Add</button>
+      </form>
+    </section>
+
+    <div class="bag-tools">
+      <button type="button" class="btn ghost" id="btnResetBag">Reset for next</button>
+      <button type="button" class="btn ghost" id="btnEditBag">Edit bag</button>
+      <button type="button" class="btn ghost danger" id="btnDeleteBag">Delete bag</button>
+    </div>
+  </div>
+
+  <div class="leave-shell" id="leaveView" hidden>
+    <header class="leave-top">
+      <button type="button" class="btn ghost light" id="btnLeaveBack">← Back</button>
+      <div class="leave-titles">
+        <p class="kicker light" id="leaveKicker">Leaving now</p>
+        <h1 id="leaveTitle">Bag</h1>
+        <p class="leave-meta" id="leaveMeta"></p>
+      </div>
+      <div class="due-stamp leave-stamp" id="leaveStamp" aria-live="polite">
+        <span class="due-count" id="leaveCount">0</span>
+        <span class="due-label" id="leaveLabel">left</span>
+      </div>
+    </header>
+
+    <div class="celebrate" id="celebrate" hidden>
+      <p class="celebrate-kicker">Packed</p>
+      <strong id="celebrateLine">Bag’s ready. Go.</strong>
+      <p>Always-pack is done. Optional extras are still below if you have a second.</p>
+    </div>
+
+    <section class="leave-block sticky-always" id="leaveAlwaysBlock">
+      <h2>Always pack</h2>
+      <ul class="leave-list" id="leaveAlwaysList"></ul>
+    </section>
+    <section class="leave-block" id="leaveOptionalBlock">
+      <h2>If you have a second</h2>
+      <ul class="leave-list" id="leaveOptionalList"></ul>
+    </section>
+    <p id="leaveEmpty" class="leave-empty" hidden>Nothing in this bag yet. Add items from the bag screen.</p>
+
+    <div class="leave-foot">
+      <button type="button" class="btn ghost light" id="btnLeaveReset">Reset for next</button>
+      <button type="button" class="btn primary wide" id="btnLeaveDone">Done</button>
+    </div>
+  </div>
+
+  <div class="mobile-cta" id="mobileCta">
+    <button type="button" class="btn primary wide" id="btnMobileAdd">New bag</button>
+  </div>
+
+  <dialog id="bagDialog" aria-labelledby="bagDialogTitle">
+    <form method="dialog" id="bagForm" class="dialog-body">
+      <p class="kicker">The bag</p>
+      <h2 id="bagDialogTitle">New bag</h2>
+      <p class="dialog-lead">Name the activity. Day and kid are optional.</p>
+      <input type="hidden" name="id" />
+      <label>Bag name
+        <input name="name" maxlength="48" required autocomplete="off" placeholder="Soccer" />
+      </label>
+      <div class="form-grid">
+        <label>Day hint <span class="opt">optional</span>
+          <input name="dayHint" maxlength="32" autocomplete="off" placeholder="Tue / Thu" />
+        </label>
+        <label>Kid <span class="opt">optional</span>
+          <input name="kid" maxlength="40" autocomplete="off" placeholder="A first name" />
+        </label>
+      </div>
+      <label>Notes <span class="opt">optional</span>
+        <textarea name="notes" rows="2" maxlength="240" placeholder="Inhaler in the side pocket. Leave by 4:40."></textarea>
+      </label>
+      <fieldset id="templateField">
+        <legend>Start from</legend>
+        <div class="template-row" id="templateRow"></div>
+      </fieldset>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save bag</button>
+        <button type="button" class="btn ghost" id="btnCancelBag">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Practice Pack does today</h2>
+      <p class="dialog-lead">Packing lists for kids’ sports and activities. Current capabilities — not a roadmap.</p>
+      <ul class="feature-list compact">
+        <li>
+          <strong>Bags</strong>
+          <span>Add, edit, delete. Name, optional day hint, optional kid label, optional notes.</span>
+        </li>
+        <li>
+          <strong>Items</strong>
+          <span>Always-pack vs optional. Add, toggle, delete. Always-pack stays at the top.</span>
+        </li>
+        <li>
+          <strong>Leaving now</strong>
+          <span>Door mode with large taps, remaining count, and a celebrate when always-pack is done.</span>
+        </li>
+        <li>
+          <strong>Reset for next</strong>
+          <span>One tap. Keeps the list. Clears checks.</span>
+        </li>
+        <li>
+          <strong>Starters</strong>
+          <span>Soccer, Dance, Swimming, Scouts on first open.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Snapshot URL (not live sync). Clear device. Store <code>practice-pack-v1</code>. Offline cache <code>practice-pack-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Share is a snapshot. Copy a fresh link after you pack or edit.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
