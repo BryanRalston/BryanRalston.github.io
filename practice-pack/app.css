@@ -364,7 +364,7 @@ input:focus-visible,
   font-size: 0.78rem;
   font-weight: 750;
   white-space: nowrap;
-  color: var(--sky-deep);
+  color: var(--ink);
 }
 
 .remain-pill.is-ready { color: var(--mint); }
@@ -446,7 +446,7 @@ input:focus-visible,
 }
 
 .item-row .tiny {
-  margin-left: 0.2rem;
+  margin-left: 0.35rem;
 }
 
 .check {
@@ -575,12 +575,16 @@ input:focus-visible,
   border-top: 1px solid var(--line);
 }
 
+body.is-leave {
+  padding-bottom: 8.5rem;
+}
+
 .leave-shell {
   position: relative;
   z-index: 2;
   max-width: 40rem;
   margin: 0 auto;
-  padding-bottom: 5.5rem;
+  padding-bottom: 8.5rem;
 }
 
 .leave-top {
@@ -710,11 +714,13 @@ input:focus-visible,
   bottom: 0;
   z-index: 21;
   display: flex;
+  align-items: center;
   gap: 0.45rem;
   padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
   background: color-mix(in srgb, var(--sky-deep) 92%, #000);
 }
 
+.leave-foot .btn { white-space: nowrap; }
 .leave-foot .btn.primary { background: var(--coral); }
 
 dialog {
