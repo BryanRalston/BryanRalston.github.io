@@ -556,7 +556,9 @@
     const virgin = state.briefs.length === 0;
     els.emptyState.hidden = !virgin;
     els.briefApp.hidden = virgin;
-    els.btnMobilePrimary.textContent = virgin ? "Write a brief" : "Print brief";
+    els.mobileCta.hidden = !virgin;
+    document.body.classList.toggle("has-cta", virgin);
+    els.btnMobilePrimary.textContent = "Write a brief";
     if (virgin) document.title = "Sitter Brief";
     renderStamp();
     if (!virgin) {
