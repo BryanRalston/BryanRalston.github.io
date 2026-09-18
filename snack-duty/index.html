@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1e7a8c" />
+  <meta name="description" content="Snack Duty — local-first team snack rotation for parents. Who brings this week. Stays on this device." />
+  <title>Snack Duty</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="field" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Snack Duty cannot save on this device. Browser storage is blocked (private mode or a setting). The rotation will not persist.
+  </div>
+
+  <div class="wrap" id="appView">
+    <header class="top no-print">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Snack Duty</p>
+          <h1>Who brings snacks this week.</h1>
+        </div>
+      </div>
+      <div class="due-stamp" id="nextStamp" aria-live="polite">
+        <span class="due-count" id="nextStampDay">—</span>
+        <span class="due-label" id="nextStampLabel">on deck</span>
+      </div>
+    </header>
+
+    <p class="honest no-print">
+      Stays in this browser. Share copies a <strong>snapshot</strong> into the URL — not live sync.
+    </p>
+
+    <div class="toolbar no-print">
+      <button type="button" class="btn ghost" id="btnShare">Copy snapshot</button>
+      <button type="button" class="btn ghost" id="btnClipboard">Coach clipboard</button>
+      <button type="button" class="btn ghost" id="btnAbout">Feature Map</button>
+      <button type="button" class="btn ghost danger" id="btnReset">Clear device</button>
+    </div>
+
+    <div id="emptyState" class="empty card" hidden>
+      <p class="empty-kicker">Nobody is on snack yet</p>
+      <strong>Name the group → add families → assign dates</strong>
+      <p>Soccer, school, church — a weekly rotation of who brings snacks. Different from a one-off potluck or a packing list.</p>
+      <ol class="coach">
+        <li>Name the team or class (season is optional)</li>
+        <li>Add families. Note nut-free or other dietary flags</li>
+        <li>Assign dates. Today and next-up sit at the top</li>
+      </ol>
+      <div class="empty-actions">
+        <button type="button" class="btn primary" id="btnEmptyGroup">Create a group</button>
+        <button type="button" class="btn" id="btnStarters">Load Soccer U8 example</button>
+      </div>
+      <p class="hint">The example uses Family A–E only — generic Soccer U8, not a real roster.</p>
+    </div>
+
+    <div id="mainApp" hidden>
+      <section class="on-deck card" id="onDeck" aria-labelledby="onDeckHeading"></section>
+
+      <section class="group-bar card no-print" id="groupBar"></section>
+
+      <section class="suggest card no-print" id="suggestCard" hidden></section>
+
+      <div class="undo-row no-print" id="undoRow" hidden>
+        <button type="button" class="btn ghost" id="btnUndo">Undo last assign</button>
+      </div>
+
+      <section class="stack-panel" aria-labelledby="datesHeading">
+        <div class="panel-head no-print">
+          <div>
+            <p class="kicker quiet">The sideline</p>
+            <h2 id="datesHeading">Snack dates</h2>
+          </div>
+          <button type="button" class="btn primary" id="btnAddDate">Assign date</button>
+        </div>
+        <p class="panel-sub no-print" id="datesSub"></p>
+        <div id="datesEmpty" class="empty compact card no-print" hidden>
+          <p class="empty-kicker">No dates yet</p>
+          <strong>Pick a Saturday. Pick a family.</strong>
+          <p>Start with the next game or class. Dietary flags show on the card so the coach can see them.</p>
+          <button type="button" class="btn primary" id="btnEmptyDate">Assign first date</button>
+        </div>
+        <ul class="date-list" id="dateList"></ul>
+      </section>
+
+      <section class="stack-panel no-print" aria-labelledby="familiesHeading">
+        <div class="panel-head">
+          <div>
+            <p class="kicker quiet">The rotation</p>
+            <h2 id="familiesHeading">Families</h2>
+          </div>
+          <button type="button" class="btn primary" id="btnAddFamily">Add family</button>
+        </div>
+        <p class="panel-sub" id="familiesSub"></p>
+        <div id="familiesEmpty" class="empty compact card" hidden>
+          <p class="empty-kicker">Roster is empty</p>
+          <strong>Add who can bring snacks.</strong>
+          <p>A family name plus an optional dietary note — nut-free, dairy-free, no strawberries.</p>
+          <button type="button" class="btn primary" id="btnEmptyFamily">Add first family</button>
+        </div>
+        <ul class="family-list" id="familyList"></ul>
+      </section>
+    </div>
+
+    <section class="feature-map card no-print" id="featureMap" aria-labelledby="featureMapHeading">
+      <p class="kicker quiet">Feature Map</p>
+      <h2 id="featureMapHeading">What this rotation does today</h2>
+      <p class="lead">Current capabilities — not a roadmap. The roster stays on this device.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>One group</strong>
+          <span>Team or class name plus an optional season label. Edit anytime.</span>
+        </li>
+        <li>
+          <strong>Families</strong>
+          <span>Who can bring snacks. Optional dietary note (nut-free, dairy-free).</span>
+        </li>
+        <li>
+          <strong>Snack dates</strong>
+          <span>Assign a date to a family. Change or remove it. Past dates stay for the rotation.</span>
+        </li>
+        <li>
+          <strong>Today / next-up</strong>
+          <span>On-deck card and stamp so you see who is bringing this week in ten seconds.</span>
+        </li>
+        <li>
+          <strong>Who has not gone</strong>
+          <span>Suggests the family that has not brought in longest. One tap assigns them.</span>
+        </li>
+        <li>
+          <strong>Undo last assign</strong>
+          <span>Reverses the last date add, family change, or removal on this device.</span>
+        </li>
+        <li>
+          <strong>Coach clipboard</strong>
+          <span>Clean print-friendly list — date, family, dietary flags.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Copies a compressed URL hash. Not live sync. Copy a fresh link after you edit.</span>
+        </li>
+        <li>
+          <strong>Stays on this device</strong>
+          <span><code>localStorage</code> key <code>snack-duty-v1</code>. Clear device wipes it. Offline via cache <code>snack-duty-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: accounts, a server, live team sync, a potluck dish list, or a packing bag.</p>
+    </section>
+
+    <footer class="foot no-print">
+      <p><strong>Snack Duty</strong> · Local-first on this device. Snapshot links are a copy, not live sync.</p>
+    </footer>
+  </div>
+
+  <div class="clip-view" id="clipView" hidden>
+    <header class="clip-tools no-print">
+      <button type="button" class="btn ghost" id="btnClipBack">← Back</button>
+      <button type="button" class="btn primary" id="btnPrint">Print list</button>
+    </header>
+    <article class="print-sheet" id="printSheet"></article>
+  </div>
+
+  <div class="mobile-cta no-print" id="mobileCta">
+    <button type="button" class="btn primary wide" id="btnMobilePrimary">Assign date</button>
+  </div>
+
+  <dialog id="groupDialog" aria-labelledby="groupDialogTitle">
+    <form method="dialog" id="groupForm" class="dialog-body">
+      <p class="kicker">The group</p>
+      <h2 id="groupDialogTitle">Create a group</h2>
+      <p class="dialog-lead">Team or class name. Season is optional.</p>
+      <label>Group name
+        <input name="name" maxlength="48" required autocomplete="off" placeholder="Soccer U8" />
+      </label>
+      <label>Season <span class="opt">optional</span>
+        <input name="season" maxlength="32" autocomplete="off" placeholder="Fall 2026" />
+      </label>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save group</button>
+        <button type="button" class="btn ghost" id="btnCancelGroup">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="familyDialog" aria-labelledby="familyDialogTitle">
+    <form method="dialog" id="familyForm" class="dialog-body">
+      <p class="kicker">The roster</p>
+      <h2 id="familyDialogTitle">Add a family</h2>
+      <p class="dialog-lead">A name the coach will recognize. Dietary note is optional.</p>
+      <input type="hidden" name="id" />
+      <label>Family name
+        <input name="name" maxlength="40" required autocomplete="off" placeholder="Family A" />
+      </label>
+      <label>Dietary note <span class="opt">optional</span>
+        <input name="dietary" maxlength="48" autocomplete="off" placeholder="nut-free" />
+      </label>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save family</button>
+        <button type="button" class="btn ghost" id="btnCancelFamily">Cancel</button>
+        <button type="button" class="btn ghost danger hidden" id="btnDeleteFamily">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dateDialog" aria-labelledby="dateDialogTitle">
+    <form method="dialog" id="dateForm" class="dialog-body">
+      <p class="kicker">Snack date</p>
+      <h2 id="dateDialogTitle">Assign a date</h2>
+      <p class="dialog-lead">Who brings snacks. Dietary flags stay visible on the card.</p>
+      <input type="hidden" name="id" />
+      <label>Date
+        <input name="date" type="date" required />
+      </label>
+      <label>Family
+        <select name="familyId" id="dateFamilySelect" required></select>
+      </label>
+      <p class="hint" id="dateSuggestHint"></p>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save date</button>
+        <button type="button" class="btn ghost" id="btnCancelDate">Cancel</button>
+        <button type="button" class="btn ghost danger hidden" id="btnDeleteDate">Remove date</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Snack Duty does today</h2>
+      <p class="dialog-lead">A weekly snack rotation for a team or class. Current capabilities — not a roadmap.</p>
+      <ul class="feature-list compact">
+        <li>
+          <strong>Group</strong>
+          <span>Name plus optional season. One roster on this device.</span>
+        </li>
+        <li>
+          <strong>Families &amp; dates</strong>
+          <span>Add, edit, remove. Dietary notes show on the date card.</span>
+        </li>
+        <li>
+          <strong>On deck</strong>
+          <span>Today / next-up highlight. Suggest who has not brought in longest. Undo last assign.</span>
+        </li>
+        <li>
+          <strong>Clipboard</strong>
+          <span>Print-friendly list for the coach.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Snapshot URL (not live sync). Clear device. Store <code>snack-duty-v1</code>. Offline cache <code>snack-duty-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Share is a snapshot. Copy a fresh link after you assign or edit. Example data uses Family A–E.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot link</p>
+      <h2 id="shareTitle">Not live sync</h2>
+      <p class="dialog-lead">This URL is a copy of the rotation right now. Later edits here do not update their copy unless you send a fresh link.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
