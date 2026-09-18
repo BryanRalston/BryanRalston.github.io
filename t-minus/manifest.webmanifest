@@ -1,7 +1,7 @@
 {
-  "name": "Mondays Left",
-  "short_name": "Mondays Left",
-  "description": "A fun secret-mission retirement countdown. Mondays, markers, and on-device goals — on this device only.",
+  "name": "T-Minus",
+  "short_name": "T-Minus",
+  "description": "A fun secret-mission retirement countdown. T-minus to done-working — Mondays as the hero marker, plus every cadence you arm. On this device only.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

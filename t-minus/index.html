@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0d12" />
-  <meta name="description" content="Mondays Left — a fun secret-mission retirement countdown. Markers, goals, and a T-minus board on this device only." />
-  <title>Mondays Left</title>
+  <meta name="description" content="T-Minus — a fun secret-mission retirement countdown. Mondays is the hero marker. Goals and the board stay on this device." />
+  <title>T-Minus</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,7 +19,7 @@
   <div class="scan" aria-hidden="true"></div>
 
   <div id="storageFail" class="storage-fail" hidden role="alert">
-    Mondays Left cannot save on this device. Browser storage is blocked (private mode or a setting). The board will not persist.
+    T-Minus cannot save on this device. Browser storage is blocked (private mode or a setting). The board will not persist.
   </div>
 
   <div class="wrap" id="appView">
@@ -27,8 +27,8 @@
       <div class="brand">
         <img class="mark" src="icon.svg" width="48" height="48" alt="" />
         <div class="brand-copy">
-          <p class="kicker">Operation file</p>
-          <h1>Mondays Left</h1>
+          <p class="kicker">The countdown</p>
+          <h1>T-Minus</h1>
         </div>
       </div>
       <div class="live-chip" id="liveChip">
@@ -79,12 +79,14 @@
 
     <div id="mainApp" hidden>
       <section class="window" id="countdownWindow" aria-labelledby="mondaysLabel">
+        <img class="window-stamp" src="art-stamp.png" width="96" height="96" alt="" />
         <div class="window-chrome">
           <span class="tminus">T-MINUS</span>
           <span class="classified">CLASSIFIED</span>
         </div>
-        <p class="digits" id="mondayDigits">—</p>
+        <p class="digits" id="mondayDigits" aria-live="polite">—</p>
         <h2 class="digits-label" id="mondaysLabel">MONDAYS</h2>
+        <p class="hero-tag">Hero marker</p>
         <p class="objective" id="objectiveLine"></p>
         <p class="window-meta" id="windowMeta"></p>
         <p class="early-banner" id="earlyBanner" hidden></p>
@@ -99,7 +101,7 @@
           <button type="button" class="btn primary" id="btnAddMarker">Add custom</button>
         </div>
         <p class="panel-sub" id="boardSub">Only active rows sit on the glass.</p>
-        <div class="marker-grid" id="markerGrid"></div>
+        <div id="markerGrid"></div>
         <div id="vaultBox" class="vault card no-print" hidden></div>
       </section>
 
@@ -133,7 +135,7 @@
         </li>
         <li>
           <strong>T-minus window</strong>
-          <span>Dark glass, red/amber digits, Mondays as the hero number.</span>
+          <span>Dark glass, red/amber digits. Mondays is the hero marker — not the product name.</span>
         </li>
         <li>
           <strong>Starter markers</strong>
@@ -157,14 +159,14 @@
         </li>
         <li>
           <strong>On this device</strong>
-          <span><code>localStorage</code> key <code>mondays-left-v1</code>. Offline cache <code>mondays-left-v1</code>.</span>
+          <span><code>localStorage</code> key <code>t-minus-v1</code>. Offline cache <code>t-minus-v1</code>.</span>
         </li>
       </ul>
       <p class="not-list">Not in this app: accounts, a server, investment advice, or anyone else’s trademarks.</p>
     </section>
 
     <footer class="foot no-print">
-      <p><strong>Mondays Left</strong> · Local-first countdown. Snapshot links are a copy, not live sync. Goals never hitch a ride.</p>
+      <p><strong>T-Minus</strong> · Local-first countdown. Snapshot links are a copy, not live sync. Goals never hitch a ride.</p>
     </footer>
   </div>
 
@@ -237,7 +239,7 @@
   <dialog id="aboutDialog" aria-labelledby="aboutTitle">
     <div class="dialog-body">
       <p class="kicker">Feature Map</p>
-      <h2 id="aboutTitle">What Mondays Left does today</h2>
+      <h2 id="aboutTitle">What T-Minus does today</h2>
       <p class="dialog-lead">A retirement countdown with a secret-mission grin. Current capabilities — not a roadmap.</p>
       <ul class="feature-list compact">
         <li>
@@ -246,7 +248,7 @@
         </li>
         <li>
           <strong>Board</strong>
-          <span>Hero Mondays plus armed calendar / cadence / disliked / custom markers.</span>
+          <span>T-Minus board with Mondays as the hero marker, plus calendar / cadence / disliked / custom rows.</span>
         </li>
         <li>
           <strong>Goals</strong>
@@ -258,7 +260,7 @@
         </li>
         <li>
           <strong>On this device</strong>
-          <span>Store <code>mondays-left-v1</code>. Offline cache <code>mondays-left-v1</code>.</span>
+          <span>Store <code>t-minus-v1</code>. Offline cache <code>t-minus-v1</code>.</span>
         </li>
       </ul>
       <p class="not-list">No accounts. No studio logos. Copy a fresh snapshot after you edit.</p>

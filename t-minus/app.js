@@ -97,7 +97,7 @@
     storageOk = false;
     els.storageFail.hidden = false;
     els.storageFail.textContent =
-      "Mondays Left cannot save on this device. Browser storage is blocked" +
+      "T-Minus cannot save on this device. Browser storage is blocked" +
       (reason ? " (" + reason + ")" : "") +
       ". The board will not persist.";
   }
@@ -227,8 +227,21 @@
     els.briefForm.retireAge.required = age;
   }
 
+  function renderDigits(value) {
+    const text = value == null || value === "" ? "—" : String(value);
+    return text
+      .split("")
+      .map((ch) => {
+        if (ch === "," || ch === "—" || ch === "-") {
+          return "<span class=\"digit-comma\">" + escapeHtml(ch) + "</span>";
+        }
+        return "<span class=\"digit-cell\">" + escapeHtml(ch) + "</span>";
+      })
+      .join("");
+  }
+
   function renderWindow(view) {
-    els.mondayDigits.textContent = view.ready ? Mission.formatInt(view.mondays) : "—";
+    els.mondayDigits.innerHTML = renderDigits(view.ready ? Mission.formatInt(view.mondays) : "—");
     els.objectiveLine.textContent = state.objective
       ? "“" + state.objective + "”"
       : "Write the Monday you are walking toward.";
@@ -247,35 +260,57 @@
     }
   }
 
+  function markerCard(row) {
+    const tone = row.marker.hero
+      ? " is-hero"
+      : row.marker.category === "disliked"
+        ? " is-disliked"
+        : row.marker.category === "custom"
+          ? " is-custom"
+          : "";
+    const extra = row.marker.note && row.marker.note !== row.label ? " · " + row.marker.note : "";
+    return (
+      "<button type=\"button\" class=\"marker" +
+      tone +
+      "\" data-id=\"" +
+      escapeHtml(row.marker.id) +
+      "\">" +
+      iconFor(row.marker) +
+      "<span class=\"marker-name\">" +
+      escapeHtml(row.marker.name) +
+      "</span><span class=\"marker-count\">" +
+      escapeHtml(Mission.formatInt(row.remaining)) +
+      "</span><span class=\"marker-cadence\">" +
+      escapeHtml(row.label + extra) +
+      "</span></button>"
+    );
+  }
+
   function renderMarkers(view) {
     const rows = view.rows;
     els.boardSub.textContent = rows.length
       ? rows.length + " armed · tap a card to edit, disarm, or cut it"
       : "Nothing armed. Restore a starter or add a custom cadence.";
-    els.markerGrid.innerHTML = rows
-      .map((row) => {
-        const tone = row.marker.hero
-          ? " is-hero"
-          : row.marker.category === "disliked"
-            ? " is-disliked"
-            : row.marker.category === "custom"
-              ? " is-custom"
-              : "";
+    const groups = [
+      { id: "calendar", title: "On the calendar", line: "Mondays first. The rest of the year reports in." },
+      { id: "normal", title: "Worth showing up for", line: "The small repeats that still count." },
+      { id: "disliked", title: "The ones you will not miss", line: "Count them down. Then never again." },
+      { id: "custom", title: "Your own cadence", line: "You named it. The board does the math." },
+    ];
+    els.markerGrid.innerHTML = groups
+      .map((group) => {
+        const subset = rows.filter((row) => row.marker.category === group.id);
+        if (!subset.length) return "";
         return (
-          "<button type=\"button\" class=\"marker" +
-          tone +
-          "\" data-id=\"" +
-          escapeHtml(row.marker.id) +
-          "\">" +
-          iconFor(row.marker) +
-          "<span class=\"marker-name\">" +
-          escapeHtml(row.marker.name) +
-          "</span><span class=\"marker-count\">" +
-          escapeHtml(Mission.formatInt(row.remaining)) +
-          "</span><span class=\"marker-cadence\">" +
-          escapeHtml(row.label) +
-          (row.marker.note ? " · " + escapeHtml(row.marker.note) : "") +
-          "</span></button>"
+          "<section class=\"marker-group\" data-group=\"" +
+          group.id +
+          "\"><h3>" +
+          escapeHtml(group.title) +
+          "</h3><p>" +
+          escapeHtml(group.line) +
+          "</p><div class=\"marker-grid\">" +
+          subset.map(markerCard).join("") +
+          "</div></section>"
         );
       })
       .join("");
@@ -370,7 +405,7 @@
     const showBoard = view.ready;
     els.briefing.hidden = showBoard;
     els.mainApp.hidden = !showBoard;
-    document.title = showBoard ? Mission.formatInt(view.mondays) + " Mondays Left" : "Mondays Left";
+    document.title = showBoard ? "T-Minus · " + Mission.formatInt(view.mondays) + " Mondays" : "T-Minus";
     els.btnMobilePrimary.textContent = showBoard ? "Add custom" : "Accept mission";
     if (!showBoard) fillBriefForm();
     renderWindow(view);

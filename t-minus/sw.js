@@ -1,4 +1,4 @@
-const CACHE = "mondays-left-v1";
+const CACHE = "t-minus-v1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,8 @@ const ASSETS = [
   "./mission.js",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./art-stamp.png",
+  "./art-grain.png",
 ];
 
 self.addEventListener("install", (event) => {

@@ -36,6 +36,7 @@ body {
   background:
     radial-gradient(900px 420px at 12% -10%, rgba(196, 39, 28, 0.22), transparent 55%),
     radial-gradient(720px 360px at 110% 8%, rgba(255, 176, 32, 0.1), transparent 50%),
+    url("art-grain.png") center / cover no-repeat,
     linear-gradient(180deg, #0c1016 0%, var(--bg) 46%, #050608 100%);
 }
 
@@ -353,6 +354,18 @@ textarea:focus-visible {
   text-align: center;
 }
 
+.window-stamp {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 88px;
+  height: 88px;
+  opacity: 0.28;
+  transform: rotate(-8deg);
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+}
+
 .window::before {
   content: "";
   position: absolute;
@@ -394,6 +407,30 @@ textarea:focus-visible {
     0 0 36px rgba(255, 40, 20, 0.35),
     0 2px 0 #4a0b08;
   letter-spacing: 0.06em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.digit-cell {
+  display: inline-flex;
+  min-width: 0.72em;
+  justify-content: center;
+  padding: 0.08em 0.06em 0.04em;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(40, 8, 8, 0.55), rgba(8, 6, 8, 0.8));
+  box-shadow:
+    0 0 0 1px rgba(255, 59, 47, 0.18) inset,
+    0 10px 18px rgba(0, 0, 0, 0.35);
+}
+
+.digit-comma {
+  display: inline-block;
+  font-size: 0.45em;
+  align-self: end;
+  padding-bottom: 0.2em;
+  opacity: 0.7;
 }
 
 .digits-label {
@@ -401,6 +438,16 @@ textarea:focus-visible {
   margin: 0.35rem 0 0;
   font-size: clamp(1.4rem, 5vw, 2rem);
   color: var(--amber);
+}
+
+.hero-tag {
+  position: relative;
+  margin: 0.2rem 0 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .objective {
@@ -442,6 +489,23 @@ textarea:focus-visible {
 
 .panel-sub { margin: 0 0 0.75rem; }
 
+.marker-group {
+  margin: 0 0 1rem;
+}
+
+.marker-group h3 {
+  margin: 0 0 0.15rem;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+}
+
+.marker-group p {
+  margin: 0 0 0.55rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .marker-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -474,8 +538,8 @@ textarea:focus-visible {
 .marker.is-custom { border-color: rgba(62, 207, 142, 0.28); }
 
 .marker-icon {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: block;
 }
 
@@ -668,7 +732,9 @@ dialog::backdrop { background: rgba(4, 6, 8, 0.72); }
   }
   .toolbar .btn { width: 100%; }
   .form-grid { grid-template-columns: 1fr; }
-  .digits { font-size: clamp(4.2rem, 22vw, 6.2rem); }
+  .digits { font-size: clamp(3.4rem, 18vw, 5.4rem); }
+  .window-stamp { width: 64px; height: 64px; opacity: 0.22; }
+  .honest { font-size: 0.82rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

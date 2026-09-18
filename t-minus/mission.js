@@ -1,6 +1,6 @@
 const Mission = (() => {
-  const STORAGE_KEY = "mondays-left-v1";
-  const HASH_PREFIX = "#m=";
+  const STORAGE_KEY = "t-minus-v1";
+  const HASH_PREFIX = "#t=";
   const UNIT_DAYS = { days: 1, weeks: 7, months: 365.25 / 12, years: 365.25 };
   const UNITS = ["days", "weeks", "months", "years"];
   const CATEGORIES = ["calendar", "normal", "disliked", "custom"];
