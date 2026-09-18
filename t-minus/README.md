@@ -24,7 +24,7 @@ Live: [bryanralston.github.io/t-minus](https://bryanralston.github.io/t-minus/)
 - Early extraction that recalculates the whole board
 - Snapshot share — board / early label only, no $
 - Clear device
-- Offline via service worker cache **`t-minus-v1`**
+- Offline via service worker cache **`t-minus-v2`**
 
 **Is not:** accounts, a server, investment advice, live sync, or anyone else’s trademarks.
 
@@ -41,7 +41,7 @@ Live: [bryanralston.github.io/t-minus](https://bryanralston.github.io/t-minus/)
 
 ## Offline / PWA
 
-Service worker cache: **`t-minus-v1`**. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/t-minus/`.
+Service worker cache: **`t-minus-v2`**. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/t-minus/`.
 
 ## Tests
 

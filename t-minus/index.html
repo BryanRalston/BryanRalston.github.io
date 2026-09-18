@@ -44,7 +44,6 @@
     <div class="toolbar no-print">
       <button type="button" class="btn ghost" id="btnBriefing">Briefing</button>
       <button type="button" class="btn ghost" id="btnShare">Copy snapshot</button>
-      <button type="button" class="btn ghost" id="btnAbout">Feature Map</button>
       <button type="button" class="btn ghost danger" id="btnReset">Burn dossier</button>
     </div>
 
@@ -124,49 +123,9 @@
       </section>
     </div>
 
-    <section class="feature-map card no-print" id="featureMap" aria-labelledby="featureMapHeading">
-      <p class="kicker quiet">Feature Map</p>
-      <h2 id="featureMapHeading">What this board does today</h2>
-      <p class="lead">Current capabilities — not a roadmap. The dossier stays on this device.</p>
-      <ul class="feature-list">
-        <li>
-          <strong>Briefing</strong>
-          <span>Birth + done-working date or age. Looking-forward mission text sits in the countdown window.</span>
-        </li>
-        <li>
-          <strong>T-minus window</strong>
-          <span>Dark glass, red/amber digits. Mondays is the hero marker — not the product name.</span>
-        </li>
-        <li>
-          <strong>Starter markers</strong>
-          <span>Calendar, everyday, and disliked cadences — toggle, edit, or remove every row, including defaults.</span>
-        </li>
-        <li>
-          <strong>Custom cadence</strong>
-          <span>Name + count + period (days / weeks / months / years). Same card as the starters.</span>
-        </li>
-        <li>
-          <strong>Active board only</strong>
-          <span>Disarmed markers drop into the vault. Restore them anytime.</span>
-        </li>
-        <li>
-          <strong>On-device goals</strong>
-          <span>% to goal and a projected hit date. If earlier than mission end, offer early extraction — every marker recalculates. Not advice.</span>
-        </li>
-        <li>
-          <strong>Snapshot share</strong>
-          <span>Board + early label only. No balances. No $ in the URL. Not live sync.</span>
-        </li>
-        <li>
-          <strong>On this device</strong>
-          <span><code>localStorage</code> key <code>t-minus-v1</code>. Offline cache <code>t-minus-v1</code>.</span>
-        </li>
-      </ul>
-      <p class="not-list">Not in this app: accounts, a server, investment advice, or anyone else’s trademarks.</p>
-    </section>
-
     <footer class="foot no-print">
       <p><strong>T-Minus</strong> · Local-first countdown. Snapshot links are a copy, not live sync. Goals never hitch a ride.</p>
+      <p><button type="button" class="text-link" id="btnAbout">What this can do</button></p>
     </footer>
   </div>
 
@@ -260,7 +219,7 @@
         </li>
         <li>
           <strong>On this device</strong>
-          <span>Store <code>t-minus-v1</code>. Offline cache <code>t-minus-v1</code>.</span>
+          <span>Store <code>t-minus-v1</code>. Offline cache <code>t-minus-v2</code>.</span>
         </li>
       </ul>
       <p class="not-list">No accounts. No studio logos. Copy a fresh snapshot after you edit.</p>

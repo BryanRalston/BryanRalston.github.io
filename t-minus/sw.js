@@ -1,4 +1,4 @@
-const CACHE = "t-minus-v1";
+const CACHE = "t-minus-v2";
 const ASSETS = [
   "./",
   "./index.html",
