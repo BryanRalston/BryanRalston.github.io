@@ -55,7 +55,8 @@
         </div>
       </div>
       <div class="top-actions">
-        <button type="button" class="btn ghost" id="btnShare" title="Copy share link">Share link</button>
+        <button type="button" class="btn ghost" id="btnShare" title="Copy snapshot share link">Share link</button>
+        <button type="button" class="btn ghost" id="btnPasteUpdate" title="Merge a guest update link">Paste update</button>
         <button type="button" class="btn ghost" id="btnPrint">Print list</button>
         <button type="button" class="btn ghost" id="btnAbout">About</button>
         <button type="button" class="btn ghost danger" id="btnReset" title="Clear this device">Clear data</button>
@@ -102,6 +103,7 @@
           <h2 id="sheetTitle">Sign-up sheet</h2>
           <button type="button" class="btn primary" id="btnAddClaim">+ Claim a dish</button>
         </div>
+        <p class="hint tight">Not live sync — guests send an update link; host opens it to merge, then re-shares.</p>
         <div id="claimsEmpty" class="empty hidden">
           <div class="empty-art plate" id="emptyArt" aria-hidden="true">🍽️</div>
           <p class="empty-kicker">The first place is yours</p>
@@ -160,7 +162,7 @@
         <p class="product-kicker">Potluck Plate</p>
         <h2>About this sheet</h2>
         <p>A local-first signup sheet for potlucks, birthdays, office lunches, cookouts, showers — or a blank list you name yourself.</p>
-        <p>Everything lives in this browser. <strong>Share links are snapshots</strong>, not live sync. If someone else claims a dish, send a fresh link so they see it.</p>
+        <p>Everything lives in this browser. <strong>Not live sync</strong> — guests send an update link; host opens it to merge, then re-shares.</p>
         <p>No accounts. No server. No secrets.</p>
         <div class="dialog-actions">
           <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
@@ -169,7 +171,7 @@
     </dialog>
 
     <footer class="foot">
-      <p><strong>Potluck Plate</strong> · Local-first on this device. Share links carry a snapshot in the URL — not live sync.</p>
+      <p><strong>Potluck Plate</strong> · Local-first on this device. Not live sync — guests send an update link; host opens it to merge, then re-shares.</p>
     </footer>
   </div>
 
