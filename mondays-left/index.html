@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="description" content="Mondays Left — a fun secret-mission retirement countdown. Markers, goals, and a T-minus board on this device only." />
+  <title>Mondays Left</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Share+Tech+Mono&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scan" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Mondays Left cannot save on this device. Browser storage is blocked (private mode or a setting). The board will not persist.
+  </div>
+
+  <div class="wrap" id="appView">
+    <header class="top no-print">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Operation file</p>
+          <h1>Mondays Left</h1>
+        </div>
+      </div>
+      <div class="live-chip" id="liveChip">
+        <span class="lamp" aria-hidden="true"></span>
+        <span id="liveClock">00:00:00</span>
+      </div>
+    </header>
+
+    <p class="honest no-print">
+      Fun countdown. Original secret-mission vibe — not a studio franchise. Stays in this browser. Snapshot share never includes money.
+    </p>
+
+    <div class="toolbar no-print">
+      <button type="button" class="btn ghost" id="btnBriefing">Briefing</button>
+      <button type="button" class="btn ghost" id="btnShare">Copy snapshot</button>
+      <button type="button" class="btn ghost" id="btnAbout">Feature Map</button>
+      <button type="button" class="btn ghost danger" id="btnReset">Burn dossier</button>
+    </div>
+
+    <section id="briefing" class="briefing card" hidden>
+      <p class="stamp">Accept the briefing</p>
+      <h2>Lock the extraction date.</h2>
+      <p class="lead">Birth + the day you are done working. Then the board counts Mondays — and every other marker you keep armed.</p>
+      <form id="briefForm" class="brief-form">
+        <label>Birth date
+          <input name="birth" type="date" required />
+        </label>
+        <fieldset class="mode-toggle">
+          <legend>Done working</legend>
+          <label class="check"><input type="radio" name="retireMode" value="date" checked /> I have a date</label>
+          <label class="check"><input type="radio" name="retireMode" value="age" /> I have an age</label>
+        </fieldset>
+        <label id="retireDateWrap">Extraction date
+          <input name="retireDate" type="date" />
+        </label>
+        <label id="retireAgeWrap" hidden>Age when you walk
+          <input name="retireAge" type="number" min="1" max="120" step="1" />
+        </label>
+        <label class="wide">Looking-forward / mission objective
+          <input name="objective" maxlength="140" autocomplete="off" placeholder="First Monday that belongs to nobody but you." />
+        </label>
+        <div class="dialog-actions">
+          <button type="submit" class="btn primary" id="btnAccept">Accept mission</button>
+          <button type="button" class="btn ghost" id="btnSample">Load sample dossier</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="mainApp" hidden>
+      <section class="window" id="countdownWindow" aria-labelledby="mondaysLabel">
+        <div class="window-chrome">
+          <span class="tminus">T-MINUS</span>
+          <span class="classified">CLASSIFIED</span>
+        </div>
+        <p class="digits" id="mondayDigits">—</p>
+        <h2 class="digits-label" id="mondaysLabel">MONDAYS</h2>
+        <p class="objective" id="objectiveLine"></p>
+        <p class="window-meta" id="windowMeta"></p>
+        <p class="early-banner" id="earlyBanner" hidden></p>
+      </section>
+
+      <section class="stack-panel" aria-labelledby="boardHeading">
+        <div class="panel-head no-print">
+          <div>
+            <p class="kicker quiet">The board</p>
+            <h2 id="boardHeading">Armed markers</h2>
+          </div>
+          <button type="button" class="btn primary" id="btnAddMarker">Add custom</button>
+        </div>
+        <p class="panel-sub" id="boardSub">Only active rows sit on the glass.</p>
+        <div class="marker-grid" id="markerGrid"></div>
+        <div id="vaultBox" class="vault card no-print" hidden></div>
+      </section>
+
+      <section class="stack-panel no-print" aria-labelledby="goalsHeading">
+        <div class="panel-head">
+          <div>
+            <p class="kicker quiet">Classified objectives</p>
+            <h2 id="goalsHeading">On-device goals</h2>
+          </div>
+          <button type="button" class="btn primary" id="btnAddGoal">Add goal</button>
+        </div>
+        <p class="panel-sub">Name, target, current. Optional monthly + assumed return — an estimate, not advice. Never rides in a share URL.</p>
+        <div id="goalsEmpty" class="empty compact card" hidden>
+          <p class="empty-kicker">Vault is empty</p>
+          <strong>Name a pile. Watch the % climb.</strong>
+          <p>A 401k, a house fund, a “never set an alarm” stash. If the hit date lands before extraction, you can pull the mission left.</p>
+          <button type="button" class="btn primary" id="btnEmptyGoal">Add first goal</button>
+        </div>
+        <ul class="goal-list" id="goalList"></ul>
+      </section>
+    </div>
+
+    <section class="feature-map card no-print" id="featureMap" aria-labelledby="featureMapHeading">
+      <p class="kicker quiet">Feature Map</p>
+      <h2 id="featureMapHeading">What this board does today</h2>
+      <p class="lead">Current capabilities — not a roadmap. The dossier stays on this device.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>Briefing</strong>
+          <span>Birth + done-working date or age. Looking-forward mission text sits in the countdown window.</span>
+        </li>
+        <li>
+          <strong>T-minus window</strong>
+          <span>Dark glass, red/amber digits, Mondays as the hero number.</span>
+        </li>
+        <li>
+          <strong>Starter markers</strong>
+          <span>Calendar, everyday, and disliked cadences — toggle, edit, or remove every row, including defaults.</span>
+        </li>
+        <li>
+          <strong>Custom cadence</strong>
+          <span>Name + count + period (days / weeks / months / years). Same card as the starters.</span>
+        </li>
+        <li>
+          <strong>Active board only</strong>
+          <span>Disarmed markers drop into the vault. Restore them anytime.</span>
+        </li>
+        <li>
+          <strong>On-device goals</strong>
+          <span>% to goal and a projected hit date. If earlier than mission end, offer early extraction — every marker recalculates. Not advice.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Board + early label only. No balances. No $ in the URL. Not live sync.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span><code>localStorage</code> key <code>mondays-left-v1</code>. Offline cache <code>mondays-left-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: accounts, a server, investment advice, or anyone else’s trademarks.</p>
+    </section>
+
+    <footer class="foot no-print">
+      <p><strong>Mondays Left</strong> · Local-first countdown. Snapshot links are a copy, not live sync. Goals never hitch a ride.</p>
+    </footer>
+  </div>
+
+  <dialog id="markerDialog" aria-labelledby="markerDialogTitle">
+    <form method="dialog" id="markerForm" class="dialog-body">
+      <p class="kicker">Marker</p>
+      <h2 id="markerDialogTitle">Add a custom cadence</h2>
+      <p class="dialog-lead">Name it. Give it a pulse. The board does the remaining math.</p>
+      <input type="hidden" name="id" />
+      <label>Name
+        <input name="name" maxlength="40" required autocomplete="off" placeholder="Haircuts" />
+      </label>
+      <div class="form-grid" id="cadenceFields">
+        <label>Count
+          <input name="count" type="number" min="0" max="9999" step="1" value="1" />
+        </label>
+        <label>Every
+          <input name="per" type="number" min="0.01" max="999" step="0.01" value="1" />
+        </label>
+        <label class="wide">Period
+          <select name="unit">
+            <option value="days">days</option>
+            <option value="weeks" selected>weeks</option>
+            <option value="months">months</option>
+            <option value="years">years</option>
+          </select>
+        </label>
+      </div>
+      <label class="check"><input type="checkbox" name="active" checked /> Armed on the board</label>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save marker</button>
+        <button type="button" class="btn ghost" id="btnCancelMarker">Cancel</button>
+        <button type="button" class="btn ghost danger hidden" id="btnDeleteMarker">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="goalDialog" aria-labelledby="goalDialogTitle">
+    <form method="dialog" id="goalForm" class="dialog-body">
+      <p class="kicker">Objective</p>
+      <h2 id="goalDialogTitle">Add a goal</h2>
+      <p class="dialog-lead">Numbers stay in this bunker. The share link will not carry them.</p>
+      <input type="hidden" name="id" />
+      <label>Name
+        <input name="name" maxlength="40" required autocomplete="off" placeholder="401k runway" />
+      </label>
+      <div class="form-grid">
+        <label>Target $
+          <input name="target" inputmode="decimal" autocomplete="off" placeholder="1000000" />
+        </label>
+        <label>Current $
+          <input name="current" inputmode="decimal" autocomplete="off" placeholder="420000" />
+        </label>
+        <label>Monthly $ <span class="opt">optional</span>
+          <input name="monthly" inputmode="decimal" autocomplete="off" placeholder="1500" />
+        </label>
+        <label>Assumed return % <span class="opt">optional</span>
+          <input name="returnPct" inputmode="decimal" autocomplete="off" placeholder="7" />
+        </label>
+      </div>
+      <p class="hint">Estimate only — not advice, not a forecast you should bet the mission on.</p>
+      <div class="dialog-actions">
+        <button type="submit" class="btn primary" value="save">Save goal</button>
+        <button type="button" class="btn ghost" id="btnCancelGoal">Cancel</button>
+        <button type="button" class="btn ghost danger hidden" id="btnDeleteGoal">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Mondays Left does today</h2>
+      <p class="dialog-lead">A retirement countdown with a secret-mission grin. Current capabilities — not a roadmap.</p>
+      <ul class="feature-list compact">
+        <li>
+          <strong>Briefing</strong>
+          <span>Birth, extraction date or age, looking-forward text.</span>
+        </li>
+        <li>
+          <strong>Board</strong>
+          <span>Hero Mondays plus armed calendar / cadence / disliked / custom markers.</span>
+        </li>
+        <li>
+          <strong>Goals</strong>
+          <span>On-device $ with % and a projected hit. Early extraction if it lands first. Not advice.</span>
+        </li>
+        <li>
+          <strong>Share</strong>
+          <span>Snapshot of the board and early label. No $.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Store <code>mondays-left-v1</code>. Offline cache <code>mondays-left-v1</code>.</span>
+        </li>
+      </ul>
+      <p class="not-list">No accounts. No studio logos. Copy a fresh snapshot after you edit.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">Board only. No vault.</h2>
+      <p class="dialog-lead">This URL is a copy of the board right now — dates, markers, early label. Goal balances stay here. Not live sync.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint" id="shareGuard"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="mobile-cta no-print" id="mobileCta">
+    <button type="button" class="btn primary wide" id="btnMobilePrimary">Accept mission</button>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="mission.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
