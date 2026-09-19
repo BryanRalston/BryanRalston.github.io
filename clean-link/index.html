@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07140c" />
+  <meta name="description" content="Clean Link — paste a messy URL, copy a shareable one. Tracking junk stays here. Nothing is sent anywhere." />
+  <title>Clean Link</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="wash" aria-hidden="true"></div>
+  <div class="grid" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Clean Link cannot save history on this device. Browser storage is blocked (private mode or a setting). Cleaning still works.
+  </div>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="52" height="52" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">X-ready utility</p>
+          <h1>Clean Link</h1>
+        </div>
+      </div>
+      <p class="pulse" id="stripPulse" aria-live="polite">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        <span id="pulseText">Ready to wash</span>
+      </p>
+    </header>
+
+    <p class="honest">
+      Paste a messy URL. Get a shareable one. <strong>Runs in this browser only</strong> — no accounts, no server, nothing leaves the device.
+    </p>
+
+    <section class="stage" aria-labelledby="pasteLabel">
+      <label class="paste-label" id="pasteLabel" for="dirtyInput">Dirty URL</label>
+      <textarea
+        id="dirtyInput"
+        rows="4"
+        maxlength="4000"
+        autocomplete="off"
+        spellcheck="false"
+        autocapitalize="off"
+        placeholder="https://example.com/story?id=42&utm_source=twitter&fbclid=IwAR0…"
+      ></textarea>
+      <div class="stage-actions">
+        <button type="button" class="btn primary" id="btnClean">Clean</button>
+        <button type="button" class="btn ghost" id="btnSample">Try a dirty one</button>
+        <button type="button" class="btn ghost" id="btnClear">Clear</button>
+      </div>
+    </section>
+
+    <p id="errorLine" class="error" hidden></p>
+
+    <section id="result" class="result" hidden aria-labelledby="resultHeading">
+      <div class="result-head">
+        <div>
+          <p class="kicker quiet">Before / after</p>
+          <h2 id="resultHeading">Washed</h2>
+        </div>
+        <p class="cut-count" id="cutCount"></p>
+      </div>
+
+      <div class="compare">
+        <article class="pane dirty">
+          <p class="pane-kicker">Before</p>
+          <p class="url" id="beforeUrl"></p>
+        </article>
+        <article class="pane clean">
+          <p class="pane-kicker">After</p>
+          <p class="url" id="afterUrl"></p>
+        </article>
+      </div>
+
+      <div id="chipRow" class="chips" hidden></div>
+
+      <div class="copy-row">
+        <label class="sr" for="cleanBox">Clean URL</label>
+        <input id="cleanBox" type="text" readonly />
+        <button type="button" class="btn primary" id="btnCopy">Copy</button>
+        <button type="button" class="btn ghost" id="btnCopyOpen">Copy and open</button>
+      </div>
+    </section>
+
+    <section class="history" aria-labelledby="historyHeading">
+      <div class="result-head">
+        <div>
+          <p class="kicker quiet">This device</p>
+          <h2 id="historyHeading">Last washes</h2>
+        </div>
+        <button type="button" class="btn ghost" id="btnClearHistory" hidden>Clear history</button>
+      </div>
+      <p class="panel-sub" id="historySub">Last 10 cleans stay in this browser. Reload keeps them.</p>
+      <ul id="historyList" class="history-list"></ul>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Clean Link</strong> · Client-side only. Tracking junk is stripped here. The real path and useful query stay.</p>
+      <p><button type="button" class="text-link" id="btnAbout">What this can do</button></p>
+    </footer>
+  </div>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Clean Link does today</h2>
+      <p class="dialog-lead">A junior-crew checklist — not product chrome. Current capabilities, not a roadmap.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>Paste → Clean → Copy</strong>
+          <span>Type or paste a messy URL. Clean on tap or as you paste. One-tap copy.</span>
+        </li>
+        <li>
+          <strong>Strip trackers, keep the page</strong>
+          <span>utm_*, fbclid, gclid, mc_eid, igshid, si, ref, plus host extras (YouTube feature, Amazon tag, X s/t). Path, real query, and real hashes stay.</span>
+        </li>
+        <li>
+          <strong>Unwrap then wash</strong>
+          <span>Facebook / Google / YouTube / LinkedIn redirect wrappers are peeled first, then the inner link is cleaned.</span>
+        </li>
+        <li>
+          <strong>Before / after</strong>
+          <span>See the dirty URL, the clean URL, and chips for what got cut.</span>
+        </li>
+        <li>
+          <strong>Copy and open</strong>
+          <span>Copy the clean link and open it in a new tab.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Last 10 cleans in <code>localStorage</code> key <code>clean-link-v1</code>. Offline cache <code>clean-link-v1</code>. No accounts. No server.</span>
+        </li>
+      </ul>
+      <p class="not-list">Cannot unwrap short links that need a network hop (t.co). Cannot see inside other people’s browsers.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="clean.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
