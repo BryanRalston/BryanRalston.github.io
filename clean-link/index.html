@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#061210" />
+  <meta name="description" content="Clean Link — paste a messy URL, strip tracking junk, copy a clean link. Stays on this device." />
+  <title>Clean Link</title>
+  <!-- clean-link-v1 -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Clean Link cannot save on this device. Browser storage is blocked (private mode or a setting). History and toggles will not persist.
+  </div>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Clean Link</p>
+          <h1>Snip the tracking. Keep the link.</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Paste a messy URL. Tracking tags get cut here — never sent anywhere. History stays in this browser.
+    </p>
+
+    <section class="composer card" aria-labelledby="pasteLabel">
+      <label class="paste-label" id="pasteLabel" for="pasteField">Messy URL or text with a URL</label>
+      <textarea
+        id="pasteField"
+        rows="5"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        placeholder="https://… or a whole message with a link in it"
+      ></textarea>
+      <p class="extract-note" id="extractNote" hidden></p>
+      <div class="composer-actions">
+        <button type="button" class="btn primary" id="btnClean">Clean</button>
+        <button type="button" class="btn ghost" id="btnSample">Try a messy sample</button>
+        <button type="button" class="btn ghost" id="btnClearPaste">Clear</button>
+      </div>
+    </section>
+
+    <p class="status" id="statusLine" role="status" aria-live="polite">Drop a messy link. We’ll snip the tracking.</p>
+
+    <section class="result" id="resultPanel" hidden>
+      <div class="compare" id="compare">
+        <article class="compare-card before card">
+          <p class="kicker quiet">Before</p>
+          <p class="url-block" id="beforeUrl"></p>
+        </article>
+        <article class="compare-card after card">
+          <p class="kicker quiet">After</p>
+          <p class="url-block clean" id="afterUrl"></p>
+        </article>
+      </div>
+
+      <ul class="chips" id="stripChips" hidden></ul>
+
+      <div class="result-actions">
+        <button type="button" class="btn primary" id="btnCopy">Copy clean URL</button>
+        <button type="button" class="btn ghost" id="btnCopyMd">Copy as markdown</button>
+        <a class="btn ghost" id="btnOpen" href="#" target="_blank" rel="noopener noreferrer">Open clean</a>
+      </div>
+    </section>
+
+    <details class="families card" id="familiesBox">
+      <summary>
+        <span class="kicker quiet">What I strip</span>
+        <strong>Param families</strong>
+        <span class="summary-meta" id="familyMeta"></span>
+      </summary>
+      <p class="lead">On by default. Toggle and it sticks in <code>clean-link-v1</code> on this device.</p>
+      <ul class="family-list" id="familyList"></ul>
+    </details>
+
+    <section class="history-panel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Recent</p>
+          <h2 id="historyHeading">On-device history</h2>
+        </div>
+        <button type="button" class="btn ghost danger" id="btnClearHistory" hidden>Clear history</button>
+      </div>
+      <p class="panel-sub" id="historySub">Last 15 cleaned URLs. This device only.</p>
+      <div id="historyEmpty" class="empty compact card">
+        <p class="empty-kicker">Nothing snipped yet</p>
+        <strong>Clean a link and it lands here.</strong>
+        <p>No server. No sync. Clear it anytime.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Clean Link</strong> · Local-first. URLs never leave this browser.</p>
+      <p><button type="button" class="text-link" id="btnAbout">What’s in this</button></p>
+    </footer>
+  </div>
+
+  <div class="mobile-cta" id="mobileCta" hidden>
+    <button type="button" class="btn primary wide" id="btnMobileCopy">Copy clean URL</button>
+  </div>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Clean Link does today</h2>
+      <p class="dialog-lead">Current capabilities — not a roadmap. Paste stays on this device.</p>
+      <ul class="feature-list compact">
+        <li>
+          <strong>Paste or blob</strong>
+          <span>Big field. Pulls the first http(s) URL out of a message.</span>
+        </li>
+        <li>
+          <strong>Auto-clean</strong>
+          <span>Cleans on paste, blur, or the Clean button.</span>
+        </li>
+        <li>
+          <strong>Before / after</strong>
+          <span>Stripped query params highlighted. Meaningful ones stay (ids, search <code>q</code>).</span>
+        </li>
+        <li>
+          <strong>Copy</strong>
+          <span>One tap for the clean URL, or as a markdown link. Optional open in a new tab.</span>
+        </li>
+        <li>
+          <strong>Tracker families</strong>
+          <span>utm_*, Meta, Google ads, analytics crumbs, email tags, click IDs, share leftovers, tracking ref/source. Toggles persist.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>History of the last 15. Store <code>clean-link-v1</code>. Offline cache <code>clean-link-v1</code>. No accounts, no analytics.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: a server, accounts, or anything that phones home.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="clean.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
