@@ -507,8 +507,10 @@
     }
     state.history = state.history.filter((item) => fingerprint(item) !== fingerprint(next));
     state.current = next;
+    els.editorBox.open = false;
     persist();
     toast("Spot saved on this device.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     return true;
   }
 
@@ -529,6 +531,7 @@
     if (state.current) pushHistory(state.current);
     state.current = chosen;
     fillForm(chosen);
+    els.editorBox.open = false;
     persist();
     toast("Restored as current.");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -562,8 +565,10 @@
     state.current = { ...incoming, id: uid(), savedAt: Date.now() };
     incoming = null;
     fillForm(state.current);
+    els.editorBox.open = false;
     persist();
     toast("Shared stall is now current on this device.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function dismissIncoming() {
