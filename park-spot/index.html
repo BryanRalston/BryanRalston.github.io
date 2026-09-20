@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#12110e" />
+  <meta name="description" content="Park Spot — remember where you parked. Garage, level, section, stall. Stays on this device." />
+  <title>Park Spot</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@400;500;600;700;800&family=Teko:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="asphalt" aria-hidden="true"></div>
+  <div class="sodium" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Park Spot cannot save on this device. Browser storage is blocked (private mode or a setting). Your stall will not persist.
+  </div>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Park Spot</p>
+          <h1>Where did I park?</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Save the stall before you walk away. It stays on this phone — not a server.
+    </p>
+
+    <section id="shareOffer" class="share-offer card" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2>Use this spot?</h2>
+      <p class="share-offer-lead">Someone sent a stall. It is a copy, not live sync. Save it here if you want it on this device.</p>
+      <div class="share-preview" id="sharePreview"></div>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnUseShare">Use this spot</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <section id="emptyState" class="empty card" hidden>
+      <p class="empty-kicker">No stall saved</p>
+      <strong>Write it down before the doors close behind you.</strong>
+      <p>Garage, level, section, and spot stay on this phone. Open Park Spot later and you are back.</p>
+      <button type="button" class="btn ghost" id="btnSample">Load a sample stall</button>
+    </section>
+
+    <section id="hero" class="hero" hidden aria-labelledby="heroSpot">
+      <p class="hero-kicker" id="heroKicker">You parked</p>
+      <p class="hero-spot" id="heroSpot">—</p>
+      <p class="hero-venue" id="heroVenue"></p>
+      <p class="hero-meta" id="heroMeta"></p>
+      <div class="hero-color" id="heroColor" hidden>
+        <span class="color-swatch" id="heroSwatch" aria-hidden="true"></span>
+        <span id="heroColorLabel"></span>
+      </div>
+      <p class="hero-note" id="heroNote" hidden></p>
+      <p class="hero-time" id="heroTime"></p>
+      <div class="hero-actions">
+        <button type="button" class="btn ghost" id="btnShare">Share snapshot</button>
+        <button type="button" class="btn ghost" id="btnCopyText">Copy as text</button>
+        <button type="button" class="btn ghost danger" id="btnClear">Clear current</button>
+      </div>
+    </section>
+
+    <details class="editor card" id="editorBox">
+      <summary>
+        <span class="kicker quiet">Current stall</span>
+        <strong id="editorTitle">Save this spot</strong>
+        <span class="summary-meta" id="editorMeta">Venue is optional. Need at least a garage, level, row, or stall.</span>
+      </summary>
+      <form id="spotForm" class="spot-form">
+        <label class="wide">Venue <span class="opt">optional</span>
+          <input id="fieldVenue" name="venue" maxlength="80" autocomplete="off" list="venueHints" placeholder="Costco, Kaiser, Westfield…" />
+        </label>
+        <datalist id="venueHints"></datalist>
+        <div class="form-grid">
+          <label>Garage
+            <input id="fieldGarage" name="garage" maxlength="24" autocomplete="off" placeholder="C" />
+          </label>
+          <label>Level
+            <input id="fieldLevel" name="level" maxlength="24" autocomplete="off" placeholder="3" />
+          </label>
+          <label>Section / row
+            <input id="fieldSection" name="section" maxlength="24" autocomplete="off" placeholder="H" />
+          </label>
+          <label>Spot #
+            <input id="fieldSpot" name="spot" maxlength="16" autocomplete="off" placeholder="412" />
+          </label>
+        </div>
+        <label class="wide">Note <span class="opt">optional</span>
+          <textarea id="fieldNote" name="note" rows="2" maxlength="160" placeholder="By the elevator, near the cart return"></textarea>
+        </label>
+        <fieldset class="color-field">
+          <legend>Car color <span class="opt">hint</span></legend>
+          <div class="color-chips" id="colorChips" role="radiogroup" aria-label="Car color"></div>
+        </fieldset>
+        <div class="editor-actions">
+          <button type="submit" class="btn primary" id="btnSave">Save this spot</button>
+          <button type="button" class="btn ghost" id="btnResetForm">Reset form</button>
+        </div>
+      </form>
+    </details>
+
+    <section class="history-panel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Recent</p>
+          <h2 id="historyHeading">Last parks</h2>
+        </div>
+        <button type="button" class="btn ghost danger" id="btnClearHistory" hidden>Clear history</button>
+      </div>
+      <p class="panel-sub" id="historySub">Last 8 parks on this device. Restore one as current.</p>
+      <div id="historyEmpty" class="empty compact card">
+        <p class="empty-kicker">No history yet</p>
+        <strong>Save a stall and the next one lands here.</strong>
+        <p>Restore a past park if you came back to the same garage.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Park Spot</strong> · Local-first. Snapshot links are a copy, not live sync.</p>
+      <p><button type="button" class="text-link" id="btnAbout">Feature Map</button></p>
+    </footer>
+  </div>
+
+  <div class="mobile-cta" id="mobileCta">
+    <button type="button" class="btn primary wide" id="btnMobileSave">Save this spot</button>
+  </div>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-body">
+      <p class="kicker">Feature Map</p>
+      <h2 id="aboutTitle">What Park Spot does today</h2>
+      <p class="dialog-lead">Current capabilities — not a roadmap. The stall stays on this device.</p>
+      <ul class="feature-list compact">
+        <li>
+          <strong>Recall hero</strong>
+          <span>Venue, garage, level, section/row, spot #, note, and car-color chip — readable at a glance.</span>
+        </li>
+        <li>
+          <strong>Save current</strong>
+          <span>Edit the form and save. Venue is optional. Need at least one of garage, level, section, or spot.</span>
+        </li>
+        <li>
+          <strong>Clear current</strong>
+          <span>Drops the hero. The stall moves into recent history.</span>
+        </li>
+        <li>
+          <strong>History</strong>
+          <span>Last 8 parks. Restore one as current.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Encodes the current stall into the URL. Pickup can open it and tap <em>Use this spot</em>. Not live sync.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Store <code>park-spot-v1</code>. Offline cache <code>park-spot-v1</code>. No accounts, no analytics.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: a server, maps, GPS, accounts, or anything that phones home.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCloseAbout">Got it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this stall.</h2>
+      <p class="dialog-lead">Send this URL to whoever is picking you up. They can save it on their phone. Later edits here do not update their copy.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The stall is packed into the link itself.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>

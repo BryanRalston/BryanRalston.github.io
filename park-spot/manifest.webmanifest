@@ -1,0 +1,18 @@
+{
+  "name": "Park Spot",
+  "short_name": "Park Spot",
+  "description": "Remember where you parked. Garage, level, section, spot — on this device only.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12110e",
+  "theme_color": "#12110e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
