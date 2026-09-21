@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a0f12" />
+  <meta name="description" content="Tip Math — split the restaurant check without the table staring. Tip, tax, and penny-fair seats. Stays on this device." />
+  <title>Tip Math</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;0,9..144,720;1,9..144,480&family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="linen" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Tip Math cannot save on this device. Browser storage is blocked (private mode or a setting). History will not persist.
+  </div>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Tip Math</p>
+          <h1>Split the check. Keep the night.</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      The table is waiting. Bill, tip, and seats land here — not on a phone calculator. Nothing is uploaded.
+    </p>
+
+    <section id="shareOffer" class="share-offer card" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2>Same numbers, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a check. It is a copy, not live sync. These figures are already on the pad below.</p>
+      <pre class="share-preview" id="sharePreview"></pre>
+      <div class="offer-actions">
+        <button type="button" class="btn ghost" id="btnDismissShare">Got it</button>
+      </div>
+    </section>
+
+    <section id="emptyState" class="empty card" hidden>
+      <p class="empty-kicker">The check is face-down</p>
+      <strong>Enter a subtotal. Tip and seats appear here.</strong>
+      <p>Optional tax, a tip chip, and how many people. Pennies are split so nobody is short a cent.</p>
+      <button type="button" class="btn ghost" id="btnSample">Load a sample check</button>
+    </section>
+
+    <section id="hero" class="hero check" hidden aria-labelledby="heroTotal">
+      <div class="perf left" aria-hidden="true"></div>
+      <div class="perf right" aria-hidden="true"></div>
+      <p class="hero-kicker" id="heroKicker">This table</p>
+      <p class="hero-label">Total</p>
+      <p class="hero-total" id="heroTotal">—</p>
+      <p class="hero-split" id="heroSplit"></p>
+      <dl class="hero-lines">
+        <div>
+          <dt>Tip</dt>
+          <dd id="heroTip">—</dd>
+        </div>
+        <div>
+          <dt>Each</dt>
+          <dd id="heroEach">—</dd>
+        </div>
+      </dl>
+      <ul class="seats" id="heroSeats" hidden></ul>
+      <p class="hero-note" id="heroNote" hidden></p>
+      <div class="hero-actions">
+        <button type="button" class="btn primary" id="btnShare">Share snapshot</button>
+        <button type="button" class="btn ghost" id="btnCopyText">Copy as text</button>
+        <button type="button" class="btn ghost" id="btnKeep">Keep this check</button>
+      </div>
+    </section>
+
+    <section class="pad card" aria-labelledby="padHeading">
+      <p class="kicker quiet">The pad</p>
+      <h2 id="padHeading">Tonight’s bill</h2>
+      <form id="billForm" class="bill-form">
+        <div class="form-grid">
+          <label>Bill subtotal
+            <input id="fieldSubtotal" name="subtotal" inputmode="decimal" autocomplete="off" placeholder="86.40" />
+          </label>
+          <label>Tax <span class="opt">optional</span>
+            <input id="fieldTax" name="tax" inputmode="decimal" autocomplete="off" placeholder="7.56" />
+          </label>
+        </div>
+
+        <fieldset class="mode-field">
+          <legend>Tip on</legend>
+          <div class="mode-row" role="radiogroup" aria-label="Tip base">
+            <button type="button" class="mode-chip" id="btnTipSubtotal" data-tip-on="subtotal" aria-pressed="true">Subtotal</button>
+            <button type="button" class="mode-chip" id="btnTipTotal" data-tip-on="total" aria-pressed="false">After tax</button>
+          </div>
+          <p class="hint" id="tipOnHint">Tip is figured on the food and drink, before tax.</p>
+        </fieldset>
+
+        <fieldset class="chip-field">
+          <legend>Tip %</legend>
+          <div class="chip-row" id="tipChips" role="radiogroup" aria-label="Tip percent"></div>
+          <label class="custom-wrap" id="customWrap" hidden>Custom %
+            <input id="fieldCustom" name="custom" inputmode="decimal" autocomplete="off" placeholder="17.5" />
+          </label>
+        </fieldset>
+
+        <div class="split-row">
+          <label class="people-label">People
+            <span class="stepper">
+              <button type="button" class="step" id="btnPeopleDown" aria-label="Fewer people">−</button>
+              <input id="fieldPeople" name="people" inputmode="numeric" autocomplete="off" value="2" />
+              <button type="button" class="step" id="btnPeopleUp" aria-label="More people">+</button>
+            </span>
+          </label>
+          <label class="round-toggle">
+            <input type="checkbox" id="fieldRoundUp" />
+            Round up per person
+          </label>
+        </div>
+      </form>
+    </section>
+
+    <section class="history-panel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Recent</p>
+          <h2 id="historyHeading">On this device</h2>
+        </div>
+        <button type="button" class="btn ghost danger" id="btnClearHistory" hidden>Clear history</button>
+      </div>
+      <p class="panel-sub">Last 10 checks in this browser. Restore one to the pad.</p>
+      <div id="historyEmpty" class="empty compact card">
+        <p class="empty-kicker">No checks kept</p>
+        <strong>A finished split can live here.</strong>
+        <p>Keep this check, or share a snapshot — both write the last ten on this device.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+    </section>
+
+    <details class="feature-map card" id="featureMap">
+      <summary>
+        <span class="kicker quiet">Feature Map</span>
+        <strong>What Tip Math does today</strong>
+      </summary>
+      <p class="lead">Current capabilities — not a roadmap. The math stays on this device.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>Bill + optional tax</strong>
+          <span>Subtotal is required. Tax is optional. Toggle tip on subtotal or after tax.</span>
+        </li>
+        <li>
+          <strong>Tip chips</strong>
+          <span>15 / 18 / 20 / 22 / 25, plus a custom percent.</span>
+        </li>
+        <li>
+          <strong>Split 1–20</strong>
+          <span>Penny-fair seats — leftover cents go to the first seats so the table still adds up.</span>
+        </li>
+        <li>
+          <strong>Round up per person</strong>
+          <span>Each seat rounds to the next dollar. Extra becomes tip. Nobody is short a cent.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Encodes the current check into the URL (<code>#t=</code> / <code>?t=</code>). A friend sees the same numbers. Not live sync.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Last 10 checks. Store <code>tip-math-v1</code>. Offline cache <code>tip-math-v1</code>. No accounts, no analytics.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: a server, accounts, live sync, or anything that phones home.</p>
+    </details>
+
+    <footer class="foot">
+      <p><strong>Tip Math</strong> · Local-first. Snapshot links are a copy, not live sync.</p>
+    </footer>
+  </div>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this check.</h2>
+      <p class="dialog-lead">Send this URL. They open the same numbers on their phone. Later edits here do not update their copy.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The check is packed into the link itself.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="tip.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
