@@ -16,7 +16,6 @@
   --danger: #a33b32;
   --glass: rgba(246, 239, 226, 0.92);
   --radius: 18px;
-  --cta: 4.6rem;
   --shadow: 0 0 0 1px rgba(196, 161, 90, 0.14), 0 22px 48px rgba(0, 0, 0, 0.38);
 }
 
@@ -36,7 +35,7 @@ html {
 
 body {
   min-height: 100vh;
-  padding: 1.1rem 1rem calc(var(--cta) + 1.1rem);
+  padding: 1.1rem 1rem calc(1.6rem + env(safe-area-inset-bottom));
   background:
     radial-gradient(880px 420px at 12% -14%, rgba(196, 161, 90, 0.16), transparent 55%),
     radial-gradient(680px 340px at 108% 4%, rgba(139, 46, 62, 0.28), transparent 52%),
@@ -175,7 +174,7 @@ code {
 
 .honest {
   margin: 0 0 0.95rem;
-  color: rgba(243, 231, 212, 0.72);
+  color: rgba(251, 246, 236, 0.88);
   font-size: 0.92rem;
   line-height: 1.45;
 }
@@ -627,7 +626,7 @@ summary:focus-visible,
   color: var(--linen);
 }
 
-.panel-sub { margin: 0 0 0.7rem; color: rgba(243, 231, 212, 0.62); }
+.panel-sub { margin: 0 0 0.7rem; color: rgba(251, 246, 236, 0.78); }
 
 .history-list {
   list-style: none;
@@ -720,22 +719,9 @@ summary:focus-visible,
 .not-list { margin: 0.8rem 0 0; font-size: 0.82rem; }
 
 .foot {
-  color: rgba(243, 231, 212, 0.58);
+  color: rgba(251, 246, 236, 0.7);
   font-size: 0.86rem;
   padding: 0.4rem 0 0.5rem;
-}
-
-.mobile-cta {
-  display: none;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-  padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--bg) 80%, #000);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(196, 161, 90, 0.22);
 }
 
 dialog {
@@ -763,7 +749,7 @@ dialog::backdrop { background: rgba(12, 7, 8, 0.72); }
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--cta) + 0.7rem);
+  bottom: calc(1.2rem + env(safe-area-inset-bottom));
   transform: translateX(-50%) translateY(120%);
   background: #2a1a12;
   color: var(--brass);
@@ -781,10 +767,6 @@ dialog::backdrop { background: rgba(12, 7, 8, 0.72); }
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
-}
-
-@media (max-width: 720px) {
-  .mobile-cta:not([hidden]) { display: block; }
 }
 
 @media (max-width: 520px) {

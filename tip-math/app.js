@@ -30,7 +30,6 @@
     shareDialog: document.getElementById("shareDialog"),
     shareUrlBox: document.getElementById("shareUrlBox"),
     toast: document.getElementById("toast"),
-    mobileCta: document.getElementById("mobileCta"),
   };
 
   let storageOk = true;
@@ -280,12 +279,10 @@
     if (!lastResult) {
       els.hero.hidden = true;
       els.emptyState.hidden = false;
-      els.mobileCta.hidden = true;
       return;
     }
     els.emptyState.hidden = true;
     els.hero.hidden = false;
-    els.mobileCta.hidden = false;
     const people = lastResult.people;
     els.heroKicker.textContent = people === 1 ? "Solo check" : people + " at the table";
     els.heroTotal.textContent = TipMath.formatMoney(lastResult.tableTotalCents);
@@ -468,7 +465,6 @@
     toast("Sample check loaded. Keep it if you want it on this device.");
   });
   document.getElementById("btnShare").addEventListener("click", shareSnapshot);
-  document.getElementById("btnMobileShare").addEventListener("click", shareSnapshot);
   document.getElementById("btnCopyText").addEventListener("click", async () => {
     const result = captureDraft();
     if (!result.ok) return;
