@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#101816" />
+  <meta name="description" content="Who's Round — track who bought last coffee, drinks, or lunch. See who's due next. Stays on this device." />
+  <title>Who's Round</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650;7..72,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="mist" aria-hidden="true"></div>
+  <div class="ring" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Who's Round cannot save on this device. Browser storage is blocked (private mode or a setting). The group will not persist.
+  </div>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Who's Round</p>
+          <h1>Whose turn to buy.</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Add the group. Tap Bought when someone pays. Who's due sits up top — least recent buyer, ties go alphabetically.
+    </p>
+
+    <section id="shareOffer" class="share-offer card" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2>Use this group?</h2>
+      <p class="share-offer-lead">Someone sent a round. It is a copy, not live sync. Save it here if you want it on this device.</p>
+      <pre class="share-preview" id="sharePreview"></pre>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnUseShare">Use this group</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <section id="emptyState" class="empty card" hidden>
+      <p class="empty-kicker">No group yet</p>
+      <strong>Name two friends. Tap Bought when someone pays. Who's due is next.</strong>
+      <p>Coffee, drinks, or lunch — the rotation stays on this phone.</p>
+      <button type="button" class="btn primary" id="btnSample">Load Alex / Sam / Jordan</button>
+    </section>
+
+    <section id="hero" class="hero" hidden aria-labelledby="heroName">
+      <p class="hero-kicker" id="heroKicker">Due next</p>
+      <p class="hero-name" id="heroName">—</p>
+      <p class="hero-group" id="heroGroup"></p>
+      <p class="hero-meta" id="heroMeta"></p>
+      <div class="hero-actions">
+        <button type="button" class="btn primary" id="btnBoughtDue">Bought</button>
+        <button type="button" class="btn ghost" id="btnUndo" hidden>Undo</button>
+        <button type="button" class="btn ghost" id="btnShare">Share snapshot</button>
+      </div>
+    </section>
+
+    <section id="groupPanel" class="group-panel card" aria-labelledby="groupHeading">
+      <p class="kicker quiet">The group</p>
+      <h2 id="groupHeading">People on the round</h2>
+      <label class="group-name-label">Group label <span class="opt">optional</span>
+        <input id="fieldGroupName" name="groupName" maxlength="48" autocomplete="off" placeholder="Coffee / Drinks / Lunch" />
+      </label>
+      <ul class="people-list" id="peopleList"></ul>
+      <form id="addForm" class="add-form">
+        <label class="add-label" for="fieldAddName">Add a person
+          <input id="fieldAddName" name="name" maxlength="40" autocomplete="off" placeholder="Name" />
+        </label>
+        <button type="submit" class="btn primary" id="btnAdd">Add</button>
+      </form>
+      <p class="hint" id="peopleHint">Need at least two people to track whose turn it is.</p>
+      <div class="group-actions">
+        <button type="button" class="btn ghost danger" id="btnClearHistory" hidden>Clear history</button>
+        <button type="button" class="btn ghost danger" id="btnClearGroup" hidden>Clear group</button>
+      </div>
+    </section>
+
+    <section id="historyPanel" class="history-panel" hidden aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Recent</p>
+          <h2 id="historyHeading">Last rounds</h2>
+        </div>
+      </div>
+      <p class="panel-sub">Last 12 Bought taps on this device.</p>
+      <div id="historyEmpty" class="empty compact card">
+        <p class="empty-kicker">No rounds yet</p>
+        <strong>Tap Bought when someone pays.</strong>
+        <p>The due person updates. History stays here.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+    </section>
+
+    <details class="feature-map card" id="featureMap">
+      <summary>
+        <span class="kicker quiet">Feature Map</span>
+        <strong>What Who's Round does today</strong>
+      </summary>
+      <p class="lead">Current capabilities — not a roadmap. The rotation stays on this device.</p>
+      <ul class="feature-list">
+        <li>
+          <strong>Who's due</strong>
+          <span>Least recent buyer sits in the hero. Same timestamp ties break alphabetically.</span>
+        </li>
+        <li>
+          <strong>Bought</strong>
+          <span>One tap on a person (or the due hero) stamps the time and advances the round.</span>
+        </li>
+        <li>
+          <strong>People</strong>
+          <span>Add, rename, or remove. Need at least two to track. Optional group label (Coffee / Drinks / Lunch).</span>
+        </li>
+        <li>
+          <strong>Undo</strong>
+          <span>Undo the last Bought. Timestamps roll back from on-device history.</span>
+        </li>
+        <li>
+          <strong>Snapshot share</strong>
+          <span>Encodes the current group into the URL (<code>#r=</code> / <code>?r=</code>). A friend can tap <em>Use this group</em>. Not live sync.</span>
+        </li>
+        <li>
+          <strong>On this device</strong>
+          <span>Last 12 rounds. Store <code>whos-round-v1</code>. Offline cache <code>whos-round-v1</code>. No accounts, no analytics.</span>
+        </li>
+      </ul>
+      <p class="not-list">Not in this app: a server, accounts, live sync, or anything that phones home.</p>
+    </details>
+
+    <footer class="foot">
+      <p><strong>Who's Round</strong> · Local-first. Snapshot links are a copy, not live sync.</p>
+    </footer>
+  </div>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this group.</h2>
+      <p class="dialog-lead">Send this URL. They can open it and tap Use this group. Later edits here do not update their copy.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The group is packed into the link itself.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="renameDialog" aria-labelledby="renameTitle">
+    <div class="dialog-body">
+      <p class="kicker">Rename</p>
+      <h2 id="renameTitle">Edit the name.</h2>
+      <label>Name
+        <input id="fieldRename" maxlength="40" autocomplete="off" />
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnSaveRename">Save</button>
+        <button type="button" class="btn ghost" id="btnCloseRename">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="round.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>

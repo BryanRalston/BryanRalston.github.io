@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Who's Round">
+  <rect width="64" height="64" rx="16" fill="#16302c"/>
+  <circle cx="32" cy="30" r="16" fill="none" stroke="#6ec4a8" stroke-width="3.2"/>
+  <path d="M32 14v4.5M32 41.5V46M16 30h4.5M43.5 30H48" stroke="#6ec4a8" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="32" cy="30" r="3.2" fill="#f0f7f3"/>
+  <path d="M40 44c3.2 2.2 7.2 3.4 11.5 3.4" fill="none" stroke="#9fd9c7" stroke-width="2.2" stroke-linecap="round"/>
+</svg>
