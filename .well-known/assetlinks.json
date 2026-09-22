@@ -11,5 +11,18 @@
         "66:33:51:35:08:FE:03:23:BE:4E:2B:D1:E3:8A:A6:6A:FC:F1:92:67:87:5D:70:C0:11:B4:11:D9:CB:65:34:AE"
       ]
     }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.cortexdevelopments.rootweave",
+      "sha256_cert_fingerprints": [
+        "7F:1E:A9:64:30:D7:AE:F0:E3:74:05:87:E4:02:22:9B:51:22:03:0F:31:4B:56:E3:6F:ED:BA:72:B2:98:AC:BF",
+        "02:E0:A7:12:33:D3:03:68:8E:02:68:37:0F:BD:68:D8:42:4D:7E:52:29:96:EB:DB:F2:BF:A9:95:4A:70:22:DE"
+      ]
+    }
   }
 ]
