@@ -1,0 +1,18 @@
+{
+  "name": "Who's Round",
+  "short_name": "Who's Round",
+  "description": "Track whose turn it is to buy coffee, drinks, or lunch — on this device only.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101816",
+  "theme_color": "#101816",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
