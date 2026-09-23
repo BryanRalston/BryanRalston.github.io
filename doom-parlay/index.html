@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07060a" />
+  <meta name="description" content="Doom Parlay — stack 2 to 8 legs and watch the parlay win chance collapse. Entertainment math only. Stays on this device." />
+  <title>Doom Parlay</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Share+Tech+Mono&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the slip</a>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scan" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Doom Parlay cannot save on this device. Browser storage is blocked (private mode or a setting). The slip will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Doom Parlay needs JavaScript to run the meter. This page does not send data anywhere.</p>
+  </noscript>
+
+  <div class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Stacked odds</p>
+          <h1>Doom Parlay</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Theatrical parlay math. Stack the legs, watch the win chance collapse. Not advice. Not a book. No real money.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2>Same slip, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a parlay. It is a copy, not live sync. Later edits on their phone do not move this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint">Not now drops it. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnUseShare">Use this slip</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <section class="window" id="hero" aria-labelledby="heroLabel" data-band="standby">
+      <div class="window-chrome">
+        <span class="tminus">DOOM PARLAY</span>
+        <span class="classified">ENTERTAINMENT</span>
+      </div>
+      <p class="digits" id="heroPct">—</p>
+      <h2 class="digits-label" id="heroLabel">STANDBY</h2>
+      <p class="american" id="heroAmerican">American —</p>
+      <div
+        class="doom-meter"
+        id="doomMeter"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-valuetext="Standby. Add two legs."
+        aria-label="Doom meter"
+      >
+        <span class="survive-fill" id="surviveFill"></span>
+        <span class="meter-glow" aria-hidden="true"></span>
+      </div>
+      <p class="meter-caption">
+        <span id="surviveCaption">Arm two legs</span>
+        <span id="doomCaption">Doom —</span>
+      </p>
+      <p class="roast" id="heroRoast">Two legs arm the meter. One leg is just a hunch.</p>
+      <p class="formula" id="heroFormula"></p>
+      <p class="independence">Compound is the product of each leg. Assumes the legs are independent. Rounded for display.</p>
+      <p class="sr-only" id="heroSpoken" aria-live="polite"></p>
+    </section>
+
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="btnShare" disabled>Copy snapshot</button>
+      <button type="button" class="btn ghost" id="btnKeep" disabled>Keep this parlay</button>
+      <button type="button" class="btn ghost" id="btnSample">Load sample</button>
+      <button type="button" class="btn ghost danger" id="btnStartOver">Start over</button>
+    </div>
+
+    <section class="stack-panel" aria-labelledby="legsHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The slip</p>
+          <h2 id="legsHeading">Legs</h2>
+        </div>
+        <button type="button" class="btn primary" id="btnAdd">Add leg</button>
+      </div>
+      <p class="panel-sub" id="legsSub">2 to 8 legs. American odds or a win percent.</p>
+      <ol class="leg-list" id="legList"></ol>
+      <button type="button" class="btn ghost wide" id="btnAddBottom">Add leg</button>
+    </section>
+
+    <section class="stack-panel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Recent</p>
+          <h2 id="historyHeading">Last parlays</h2>
+        </div>
+        <button type="button" class="btn ghost danger" id="btnClearHistory" hidden>Clear history</button>
+      </div>
+      <p class="panel-sub">Last 12 slips on this device. Restore one to the glass.</p>
+      <div id="historyEmpty" class="empty">
+        <p class="empty-kicker">No parlays kept</p>
+        <strong>A finished slip can live here.</strong>
+        <p>Keep this parlay, or copy a snapshot. Both write the last twelve on this device.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Doom Parlay</strong> · On this device. A snapshot link (<code>#p=</code> or <code>?p=</code>) is a copy of the slip, not live sync. Not advice. Not a book. No real money.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The slip stays on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Legs</strong>
+            <span>Add 2 to 8 legs. Remove any leg. Start over clears the slip and leaves history.</span>
+          </li>
+          <li>
+            <strong>American or percent</strong>
+            <span>Each leg takes American odds (−110, +150) or a win percent. The toggle sets the default. A leading +/− is read as American. A % sign is read as percent.</span>
+          </li>
+          <li>
+            <strong>Implied probability</strong>
+            <span>Each armed leg shows its implied win chance and the American equivalent.</span>
+          </li>
+          <li>
+            <strong>Compound</strong>
+            <span>Parlay win chance is the product of the leg probabilities. That assumes the legs are independent. Real games are not. The American price of the whole parlay sits under the hero.</span>
+          </li>
+          <li>
+            <strong>Doom meter</strong>
+            <span>The glass drains as the win chance collapses. Roast copy escalates with the meter. Entertainment only.</span>
+          </li>
+          <li>
+            <strong>Labels</strong>
+            <span>Optional team, player, or market. Stored on this device. A snapshot you copy can carry them. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Last 12 parlays on this device. Restore one back onto the glass.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Packs this slip into <code>#p=</code> or <code>?p=</code>. A friend can open that copy. It is not live sync.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>doom-parlay-v1</code>. Offline cache <code>doom-parlay-v1</code>. No accounts, no analytics, no sportsbook.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: real betting, bankroll, odds feeds, accounts, ads, or anything that phones home. Not advice. No real money.</p>
+      </details>
+    </footer>
+  </div>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this slip.</h2>
+      <p class="dialog-lead">Send this URL. They open the same legs. Later edits here do not update their copy. Not live sync.</p>
+      <label>Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The slip is packed into the link itself. Not advice. No real money.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="parlay.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>

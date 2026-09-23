@@ -1,0 +1,18 @@
+{
+  "name": "Doom Parlay",
+  "short_name": "Doom Parlay",
+  "description": "Theatrical parlay doom calculator. Stack American odds or win percents and watch the compound chance collapse. On this device only. Not advice.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07060a",
+  "theme_color": "#07060a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
