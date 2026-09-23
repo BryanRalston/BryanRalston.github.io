@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#081114" />
+  <meta name="description" content="Leave By — street and lot parking meter countdown. See the time you have to leave. Stays on this device." />
+  <title>Leave By</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the meter</a>
+  <div class="night" aria-hidden="true"></div>
+  <div class="lamp" aria-hidden="true"></div>
+  <div class="curb" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Leave By cannot save on this device. Browser storage is blocked (private mode or a setting). The meter will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Leave By needs JavaScript to run the countdown. This page does not send data anywhere.</p>
+  </noscript>
+
+  <div class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Street meter</p>
+          <h1>Leave by</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp-dot" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      You park. The meter runs. Leave before the ticket. The countdown stays on this phone.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2>Same countdown</h2>
+      <p class="share-offer-lead" id="offerLead">
+        Someone sent a meter. It is a copy, not live sync. The leave-by time was packed into the link. Later changes on their phone do not move this one.
+      </p>
+      <div class="offer-face">
+        <p class="offer-kicker">Leave by</p>
+        <p class="offer-time" id="offerTime">—</p>
+        <p class="offer-tick" id="offerTick">—</p>
+        <p class="offer-meta" id="offerMeta"></p>
+      </div>
+      <p class="hint">Amount paid is not in the link. Keep writes this copy onto this phone. Not now drops it. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnUseShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <section id="emptyState" class="empty">
+      <p class="empty-kicker">No meter running</p>
+      <strong>The curb will not remind you.</strong>
+      <p>Pick how long you paid for, or set the time you have to leave. Nothing starts until you tap Start meter.</p>
+    </section>
+
+    <section id="hero" class="meter" hidden aria-labelledby="heroKicker heroTime">
+      <div class="meter-housing">
+        <div class="meter-glass">
+          <p class="meter-kicker" id="heroKicker">Leave by</p>
+          <p class="meter-time" id="heroTime" tabindex="-1">—</p>
+        </div>
+        <div class="drain" id="drain" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Time left on the meter">
+          <span id="drainFill"></span>
+        </div>
+        <p class="tick" id="heroTick" aria-hidden="true">00:00</p>
+        <p class="tick-label" id="heroTickLabel">minutes remaining</p>
+        <p class="sr-only" id="remainSpoken" aria-live="polite" aria-atomic="true"></p>
+        <p class="hero-note" id="heroNote" hidden></p>
+        <p class="hero-paid" id="heroPaid" hidden></p>
+        <p class="hero-sub" id="heroSub"></p>
+      </div>
+      <div class="meter-actions" id="meterActions">
+        <button type="button" class="btn primary" id="btnExtend">+15 min</button>
+        <button type="button" class="btn ghost" id="btnEnded">Ended</button>
+      </div>
+      <div class="meter-secondary">
+        <button type="button" class="btn ghost" id="btnShare">Share snapshot</button>
+        <button type="button" class="btn ghost" id="btnStartOver">Start over</button>
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear</button>
+      </div>
+    </section>
+
+    <section id="startPanel" class="plate" aria-labelledby="startHeading">
+      <p class="kicker quiet">Start a meter</p>
+      <h2 id="startHeading">How long did you pay?</h2>
+      <form id="meterForm">
+        <div class="modes" role="group" aria-label="How to set the meter">
+          <button type="button" id="modeChip" aria-pressed="true">Duration</button>
+          <button type="button" id="modeClock" aria-pressed="false">Leave-by time</button>
+        </div>
+        <fieldset class="chip-field" id="chipPanel">
+          <legend>Minutes</legend>
+          <div class="chips" id="chipList" role="radiogroup" aria-label="Meter length in minutes"></div>
+        </fieldset>
+        <div id="clockPanel" hidden>
+          <label for="fieldClock">Leave-by time
+            <input id="fieldClock" name="leave" type="time" step="60" autocomplete="off" />
+          </label>
+          <p class="hint">Today only. At least a minute from now, and no more than 16 hours out.</p>
+        </div>
+        <label for="fieldNote">Block, lot, or spot <span class="opt">optional</span>
+          <input id="fieldNote" name="note" maxlength="80" autocomplete="off" placeholder="Block 4 · lot C · spot 12" />
+        </label>
+        <label for="fieldPaid">Amount paid <span class="opt">optional</span>
+          <input id="fieldPaid" name="paid" inputmode="decimal" autocomplete="off" placeholder="2.50" />
+        </label>
+        <p class="hint">The amount stays on this phone. It is not put in a snapshot link.</p>
+        <button type="submit" class="btn primary wide" id="btnStart">Start meter</button>
+      </form>
+    </section>
+
+    <section class="history-panel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Recent</p>
+          <h2 id="historyHeading">Last meters</h2>
+        </div>
+        <button type="button" class="btn ghost danger" id="btnClearHistory" hidden>Clear history</button>
+      </div>
+      <p class="panel-sub" id="historySub">Last 12 sessions on this device. Leave-by time, duration, and note.</p>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">No meters yet</p>
+        <strong>When one ends, it lands here.</strong>
+        <p>Same length starts that many minutes again.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Leave By</strong> · On this device. A snapshot link (<code>#m=</code> or <code>?m=</code>) is a copy of the countdown, not live sync.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The meter stays on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Leave-by hero</strong>
+            <span>Large leave-by time, plus minutes remaining that tick while this tab is open.</span>
+          </li>
+          <li>
+            <strong>Duration chips</strong>
+            <span>15 / 30 / 45 / 60 / 90 / 120 minutes.</span>
+          </li>
+          <li>
+            <strong>Leave-by clock</strong>
+            <span>Set an exact time today, at least a minute ahead, up to 16 hours out.</span>
+          </li>
+          <li>
+            <strong>Note</strong>
+            <span>Optional block, lot, or spot. Short text on this phone.</span>
+          </li>
+          <li>
+            <strong>Amount paid</strong>
+            <span>Optional number. Stored locally. Never placed in the share link.</span>
+          </li>
+          <li>
+            <strong>+15 min</strong>
+            <span>Extends a running meter. Hidden once the meter has ended.</span>
+          </li>
+          <li>
+            <strong>Ended, clear, start over</strong>
+            <span>Close the meter, dismiss it, or go back to a fresh start. The session stays in history.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Last 12 sessions: leave-by time, duration, note. Same length starts that duration again.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Packs this countdown into <code>#m=</code> or <code>?m=</code>. A friend can open that copy. The countdown keeps running toward the shared leave-by time. It is not live sync — a later +15 min here does not move a link you already sent.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>leave-by-v1</code>. Offline cache <code>leave-by-v1</code>. No accounts, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: a server, maps, GPS, payments, ticket lookup, or anything that phones home.</p>
+      </details>
+    </footer>
+  </div>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this countdown.</h2>
+      <p class="dialog-lead" id="shareLead"></p>
+      <p class="dialog-lead">Send this URL. They see the same leave-by time, and the countdown keeps running toward that clock time. It is not live sync. If you tap +15 min after copying, their link still ends at the old time. Amount paid stays on this phone and is not in the link.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The meter is packed into the link itself (<code>#m=</code>, or <code>?m=</code> if you move the token into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="meter.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
