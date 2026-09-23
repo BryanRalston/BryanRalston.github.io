@@ -296,6 +296,7 @@
     els.heroTime.textContent = LeaveBy.formatLeaveBy(session.leaveAt, now);
     els.heroTick.textContent = phase === "active" ? LeaveBy.formatTick(left) : "00:00";
     els.heroTickLabel.textContent = phase === "ended" ? LeaveBy.endedCopy(session) : "minutes remaining";
+    els.heroTickLabel.classList.toggle("is-sentence", phase === "ended");
 
     const ratio = LeaveBy.drainRatio(session, now);
     els.drainFill.style.transform = "scaleX(" + ratio.toFixed(4) + ")";
@@ -350,24 +351,18 @@
   }
 
   function renderHistory() {
-    const currentId = state.current ? state.current.id : "";
-    const rows = state.history.filter((item) => item.id !== currentId);
-    const hasHiddenCurrent = state.history.some((item) => item.id === currentId);
-    els.btnClearHistory.hidden = state.history.length === 0;
+    const rows = state.history;
+    els.btnClearHistory.hidden = rows.length === 0;
     if (!armClearHistory) els.btnClearHistory.textContent = "Clear history";
     if (!rows.length) {
       els.historyList.hidden = true;
       els.historyEmpty.hidden = false;
-      els.historySub.textContent = hasHiddenCurrent
-        ? "The meter on screen is the latest. Clear it and it stays in this list. Last 12 on this device."
-        : "Last 12 sessions on this device. Leave-by time, duration, and note.";
+      els.historySub.textContent = "Last 12 sessions on this device. Leave-by time, duration, and note.";
       return;
     }
     els.historyEmpty.hidden = true;
     els.historyList.hidden = false;
-    els.historySub.textContent = hasHiddenCurrent
-      ? "Older meters on this device. The one on screen is hidden here until you clear it."
-      : "Last 12 sessions on this device. Leave-by time, duration, and note.";
+    els.historySub.textContent = "Last 12 sessions on this device. Leave-by time, duration, and note.";
     els.historyList.textContent = "";
     const now = Date.now();
     rows.forEach((item) => {

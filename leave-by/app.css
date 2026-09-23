@@ -411,6 +411,17 @@ code {
   text-transform: uppercase;
 }
 
+.tick-label.is-sentence {
+  max-width: 18rem;
+  margin-right: auto;
+  margin-left: auto;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.35;
+}
+
 .hero-note,
 .hero-paid,
 .hero-sub {
