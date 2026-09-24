@@ -1,0 +1,18 @@
+{
+  "name": "Beat Log",
+  "short_name": "Beat Log",
+  "description": "A personal log for games you want, you're playing, you beat, or you dropped. On this device only.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#120e18",
+  "theme_color": "#120e18",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

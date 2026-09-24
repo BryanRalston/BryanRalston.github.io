@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Beat Log">
+  <rect width="64" height="64" rx="16" fill="#120e18"/>
+  <rect x="12" y="8" width="40" height="48" rx="5" fill="#f3ead7"/>
+  <rect x="12" y="8" width="9" height="48" rx="5" fill="#ff4d8d"/>
+  <rect x="17" y="8" width="4" height="48" fill="#ff4d8d"/>
+  <path d="M40.2 22.4l1.55 3.25 3.55.48-2.6 2.48.64 3.52-3.14-1.7-3.14 1.7.64-3.52-2.6-2.48 3.55-.48z" fill="#c8922a"/>
+  <rect x="26" y="40" width="20" height="2.2" rx="1" fill="#1c1424" opacity="0.38"/>
+  <rect x="26" y="45.2" width="13" height="2.2" rx="1" fill="#1c1424" opacity="0.22"/>
+</svg>

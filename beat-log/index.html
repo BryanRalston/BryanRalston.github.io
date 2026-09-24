@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#120e18" />
+  <meta name="description" content="Beat Log — a personal shelf for games you want, you're playing, you beat, or you dropped. Stays on this device." />
+  <title>Beat Log</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,700;1,9..144,560&family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the shelf</a>
+  <div class="lamp" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Beat Log cannot save on this device. Browser storage is blocked (private mode or a setting). The shelf will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Beat Log needs JavaScript to keep the shelf. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">A shelf for games</p>
+          <h1>Beat Log</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp-dot" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Wishlist, playing, beaten, or dropped. Stars if you mean them. A one-line take if you have one. The shelf stays on this phone. A link is a copy, not a live feed.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same shelf, this phone.</h2>
+      <p class="share-offer-lead" id="offerLead">Someone sent a log. It is a copy, not live sync.</p>
+      <div id="offerPoster" class="poster" hidden></div>
+      <ul id="offerList" class="offer-list" hidden></ul>
+      <p class="hint" id="offerHint">Not now drops it. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnUseShare">Use this copy</button>
+        <button type="button" class="btn primary" id="btnAddShare" hidden>Add to my log</button>
+        <button type="button" class="btn ghost" id="btnOpenMine" hidden>Open on my shelf</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <section id="shelf" aria-labelledby="shelfHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The shelf</p>
+          <h2 id="shelfHeading">Your games</h2>
+        </div>
+      </div>
+      <p class="panel-sub" id="shelfSub">Nothing kept yet.</p>
+      <div class="toolbar" id="toolbar" hidden>
+        <button type="button" class="btn primary" id="btnAdd">Log a game</button>
+        <button type="button" class="btn ghost" id="btnShareShelf" disabled>Copy shelf link</button>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Filter by status" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="wishlist" aria-pressed="false">Wishlist</button>
+        <button type="button" data-filter="playing" aria-pressed="false">Playing</button>
+        <button type="button" data-filter="beaten" aria-pressed="false">Beaten</button>
+        <button type="button" data-filter="dropped" aria-pressed="false">Dropped</button>
+      </div>
+      <div class="sort-bar" id="sortBar" hidden>
+        <span class="sort-label">Order</span>
+        <button type="button" id="sortRecent" aria-pressed="true">Recent</button>
+        <button type="button" id="sortTitle" aria-pressed="false">A–Z</button>
+      </div>
+      <div id="emptyState" class="empty">
+        <p class="empty-kicker">The shelf is dark</p>
+        <strong>Log the game you keep meaning to start.</strong>
+        <p>A title, and whether it is wishlist, playing, beaten, or dropped. Platform, stars, and a take can wait. It stays on this device.</p>
+        <button type="button" class="btn primary" id="btnEmptyAdd">Log a game</button>
+      </div>
+      <div id="filterEmpty" class="empty compact" hidden>
+        <p class="empty-kicker">This lane is empty</p>
+        <strong id="filterEmptyTitle">Nothing in this filter.</strong>
+        <p>The rest of the shelf is still on this device. Switch the filter, or log a game into this lane.</p>
+      </div>
+      <ul class="entry-list" id="list" hidden></ul>
+      <div class="shelf-foot">
+        <button type="button" class="btn ghost danger" id="btnClearShelf" hidden>Clear shelf</button>
+      </div>
+    </section>
+
+    <section id="formPanel" hidden aria-labelledby="formHeading">
+      <form id="gameForm" autocomplete="off">
+        <p class="kicker" id="formKicker">New log</p>
+        <h2 id="formHeading">Log a game</h2>
+        <label for="fieldTitle">Title
+          <input id="fieldTitle" name="title" type="text" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="Hades" />
+        </label>
+        <fieldset>
+          <legend>Status</legend>
+          <div class="status-picks" id="statusPicks" role="group" aria-label="Status">
+            <button type="button" data-status="wishlist" aria-pressed="false">Wishlist <small>Want it</small></button>
+            <button type="button" data-status="playing" aria-pressed="true">Playing <small>On it now</small></button>
+            <button type="button" data-status="beaten" aria-pressed="false">Beaten <small>Credits rolled</small></button>
+            <button type="button" data-status="dropped" aria-pressed="false">Dropped <small>Set it down</small></button>
+          </div>
+        </fieldset>
+        <label for="fieldPlatform">Platform <span class="opt">optional</span>
+          <input id="fieldPlatform" name="platform" type="text" maxlength="40" autocomplete="off" placeholder="Switch, PC, PS5…" />
+        </label>
+        <div class="platform-chips" id="platformChips" role="group" aria-label="Platform shortcuts">
+          <button type="button" data-platform="Switch">Switch</button>
+          <button type="button" data-platform="PlayStation">PlayStation</button>
+          <button type="button" data-platform="Xbox">Xbox</button>
+          <button type="button" data-platform="PC">PC</button>
+          <button type="button" data-platform="Steam Deck">Steam Deck</button>
+          <button type="button" data-platform="Phone">Phone</button>
+        </div>
+        <div
+          id="starPicker"
+          class="star-picker"
+          role="slider"
+          tabindex="0"
+          aria-valuemin="0"
+          aria-valuemax="5"
+          aria-valuenow="0"
+          aria-valuetext="Unrated"
+          aria-label="Star rating"
+          aria-describedby="starHint"
+        >
+          <div class="star-picker-label">
+            <span>Stars <span class="opt">optional</span></span>
+            <span id="starReadout">Unrated</span>
+          </div>
+          <div class="star-row" id="starRow"></div>
+          <p class="hint" id="starHint">Tap the left half of a star for a half step. Arrows move by 0.5. Leave it blank to stay unrated.</p>
+          <button type="button" class="btn ghost" id="btnClearRating" disabled>Clear rating</button>
+        </div>
+        <label for="fieldTake">One-line take <span class="opt">optional</span>
+          <input id="fieldTake" name="take" type="text" maxlength="140" autocomplete="off" placeholder="The run that finally stuck." />
+        </label>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnSave">Save to this device</button>
+          <button type="button" class="btn ghost wide" id="btnCancelForm">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="cardPanel" hidden aria-labelledby="cardLabel">
+      <div class="card-top">
+        <button type="button" class="text-btn" id="btnCardBack">Shelf</button>
+      </div>
+      <h2 class="sr-only" id="cardLabel">Share card</h2>
+      <div id="cardPoster" class="poster"></div>
+      <p class="hint">The card is the screenshot. The link is this one game, packed into the address. Not live sync.</p>
+      <div class="card-actions">
+        <button type="button" class="btn primary" id="btnCardShare">Copy card link</button>
+        <button type="button" class="btn ghost" id="btnCardEdit">Edit</button>
+        <button type="button" class="btn ghost danger" id="btnCardRemove">Remove</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Beat Log</strong> · On this device. A snapshot link (<code>#b=</code> or <code>?b=</code>) is a copy of the shelf or one card, not live sync.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The shelf stays on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Log</strong>
+            <span>Title is required. Status is wishlist, playing, beaten, or dropped. Platform, a 0.5–5 star rating, and a one-line take are optional.</span>
+          </li>
+          <li>
+            <strong>Edit</strong>
+            <span>Open a card and edit the same game. The id stays, so a card you already shared still matches this copy.</span>
+          </li>
+          <li>
+            <strong>Remove</strong>
+            <span>Remove one game, or clear the shelf. Undo puts it back until the toast leaves.</span>
+          </li>
+          <li>
+            <strong>Filters</strong>
+            <span>All, wishlist, playing, beaten, dropped. The filter is a view. A shelf link still packs the whole log.</span>
+          </li>
+          <li>
+            <strong>Order</strong>
+            <span>Recent, or A–Z. Remembered on this device with the shelf.</span>
+          </li>
+          <li>
+            <strong>Share card</strong>
+            <span>A poster for one game: title, status, stars, take. Built to be screenshotted.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Packs the whole shelf or one card into <code>#b=</code> or <code>?b=</code>. Opening it offers that copy. It is not live sync.</span>
+          </li>
+          <li>
+            <strong>Cap</strong>
+            <span>48 games on this device. A bigger snapshot keeps what fits.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>beat-log-v1</code>. Offline cache <code>beat-log-v1</code>. No accounts, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: accounts, friends, prices, achievement sync, ads, or anything that phones home.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this shelf.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They open the same games. Later edits here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The log is packed into the link itself (<code>#b=</code>, or <code>?b=</code> if you move the token into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="log.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
