@@ -65,6 +65,7 @@
   let tickTimer = 0;
   let crackId = "";
   let pendingFocus = "";
+  let shareImporting = false;
 
   function reasonMessage(reason) {
     switch (reason) {
@@ -332,7 +333,7 @@
       case "ready":
         els.meterDigits.textContent = "BREAK";
         els.meterLabel.textContent = "A seal can break";
-        els.meterSub.textContent = face.title + " · tap Reveal";
+        els.meterSub.textContent = face.title + " · tap Break the seal";
         break;
       case "exposed":
         els.meterDigits.textContent = "OPEN";
@@ -766,8 +767,14 @@
   async function tryImportShare() {
     const hash = location.hash || "";
     let token = "";
-    if (hash.startsWith(HASH_PREFIX)) token = decodeURIComponent(hash.slice(HASH_PREFIX.length));
-    else token = new URLSearchParams(location.search).get(QUERY_KEY) || "";
+    try {
+      if (hash.startsWith(HASH_PREFIX)) token = decodeURIComponent(hash.slice(HASH_PREFIX.length));
+      else token = new URLSearchParams(location.search).get(QUERY_KEY) || "";
+    } catch (_) {
+      cleanShareUrl();
+      toast("That snapshot could not be read.");
+      return null;
+    }
     if (!token) return null;
     try {
       const json = await TakeLock.decompressPayload(token);
@@ -780,6 +787,26 @@
       toast("That snapshot could not be read.");
       return null;
     }
+  }
+
+  async function pullShare() {
+    if (shareImporting) return false;
+    shareImporting = true;
+    try {
+      const parsed = await tryImportShare();
+      if (!parsed) return false;
+      incoming = parsed;
+      if (view !== "vault") setView("vault");
+      return true;
+    } finally {
+      shareImporting = false;
+    }
+  }
+
+  function onShareNav() {
+    pullShare().then((applied) => {
+      if (applied) render();
+    });
   }
 
   function onListClick(event) {
@@ -941,9 +968,11 @@
     const stored = loadStored();
     if (stored) state = stored;
     wire();
-    incoming = await tryImportShare();
+    await pullShare();
     render();
     scheduleTick();
+    window.addEventListener("hashchange", onShareNav);
+    window.addEventListener("popstate", onShareNav);
   }
 
   boot();

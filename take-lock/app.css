@@ -795,6 +795,10 @@ dialog::backdrop { background: rgba(7, 5, 10, 0.74); }
 body[data-view="poster"] .honest,
 body[data-view="form"] .honest { display: none; }
 
+@media (max-width: 391px) {
+  .brand-copy .kicker { margin-bottom: 0.55rem; }
+}
+
 @media (min-width: 720px) {
   body { padding-top: 1.8rem; }
   .poster { min-height: 32rem; }

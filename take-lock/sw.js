@@ -1,4 +1,4 @@
-const CACHE = "take-lock-v1";
+const CACHE = "take-lock-v2";
 const ASSETS = [
   "./",
   "./index.html",

@@ -22,7 +22,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Presets: 15 min, 1 hour, tonight at 7, tomorrow at 1, ready now, or an exact minute
 - Sealed card: countdown and unlock time, take text not drawn
 - Live crack when this tab is open at unlock
-- Reveal after the fact, if the clock hit while the tab was closed
+- Break the seal after the fact, if the clock hit while the tab was closed
 - Exposed card built to screenshot
 - Edit, including reseal by moving the unlock forward
 - Remove and clear, with Undo
@@ -30,7 +30,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Snapshot share via `#t=` or `?t=` — keep or merge, not live sync
 - 24 takes on this device
 - Storage-blocked private-mode alert
-- Offline via service worker cache **`take-lock-v1`**
+- Offline via service worker cache **`take-lock-v2`**
 
 **Is not:** betting, a book, an odds feed, accounts, ads, analytics, or live multi-device sync.
 
@@ -50,7 +50,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 
 ## Offline / PWA
 
-Service worker cache: **`take-lock-v1`**. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/take-lock/`.
+Service worker cache: **`take-lock-v2`**. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/take-lock/`. The store key stays **`take-lock-v1`**.
 
 ## Tests
 
