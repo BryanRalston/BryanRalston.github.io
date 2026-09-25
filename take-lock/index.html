@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#100c12" />
+  <meta name="description" content="Take Lock — seal a hot take until kickoff. The words stay hidden until the clock says so. On this device. Entertainment only. Not betting advice." />
+  <title>Take Lock</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;600&family=Literata:ital,opsz,wght@0,7..72,560;0,7..72,700;1,7..72,560&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body data-view="vault">
+  <a class="skip" href="#content">Skip to the vault</a>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Take Lock cannot save on this device. Browser storage is blocked (private mode or a setting). The vault will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Take Lock needs JavaScript to keep the vault. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Sealed until the clock</p>
+          <h1>Take Lock</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp-dot" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest" id="honest">
+      Lock a hot take until kickoff, or any minute you pick. The words stay off the glass until then. Entertainment only. Not betting advice.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same vault, this phone.</h2>
+      <p class="share-offer-lead" id="offerLead">Someone sent a copy. It is not live sync. Later edits on their phone do not move this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint" id="offerHint">The link already held the words. This screen still hides a take until its unlock time. Not now drops the copy. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn primary" id="btnMergeShare" hidden>Add to my vault</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="vaultView">
+      <section class="meter" id="meter" hidden data-band="sealed" aria-labelledby="meterLabel">
+        <div class="meter-chrome">
+          <span class="tminus">TAKE LOCK</span>
+          <span class="classified" id="meterClass">SEALED</span>
+        </div>
+        <p class="digits" id="meterDigits" aria-hidden="true">—</p>
+        <h2 id="meterLabel">Until the next seal breaks</h2>
+        <p class="meter-sub" id="meterSub"></p>
+      </section>
+
+      <div class="toolbar" id="toolbar" hidden>
+        <button type="button" class="btn primary" id="btnAdd">Seal a take</button>
+        <button type="button" class="btn ghost" id="btnShareVault" disabled>Copy vault link</button>
+      </div>
+
+      <section aria-labelledby="listHeading">
+        <div class="panel-head">
+          <div>
+            <p class="kicker quiet">The vault</p>
+            <h2 id="listHeading">Takes</h2>
+          </div>
+        </div>
+        <p class="panel-sub" id="shelfSub">Nothing kept yet.</p>
+        <div class="filters" id="filters" role="group" aria-label="Filter takes" hidden>
+          <button type="button" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" data-filter="sealed" aria-pressed="false">Sealed</button>
+          <button type="button" data-filter="exposed" aria-pressed="false">Exposed</button>
+        </div>
+        <div id="emptyState" class="empty">
+          <p class="empty-kicker">The vault is empty</p>
+          <strong>Seal the take you do not want to walk back.</strong>
+          <p>A matchup, the opinion, and the minute it can open. It stays on this phone. The glass stays shut until then.</p>
+          <div class="empty-actions">
+            <button type="button" class="btn primary" id="btnEmptyAdd">Seal a take</button>
+            <button type="button" class="btn ghost" id="btnSample">Load a sample</button>
+          </div>
+        </div>
+        <div id="filterEmpty" class="empty compact" hidden>
+          <p class="empty-kicker" id="filterEmptyKicker">This lane is empty</p>
+          <strong id="filterEmptyTitle">Nothing in this filter.</strong>
+          <p id="filterEmptyBody">The rest of the vault is still on this device.</p>
+        </div>
+        <ul class="take-list" id="list" hidden></ul>
+        <div class="vault-foot">
+          <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear vault</button>
+        </div>
+      </section>
+    </div>
+
+    <section id="formPanel" hidden aria-labelledby="formHeading">
+      <form id="takeForm" autocomplete="off">
+        <p class="kicker" id="formKicker">New seal</p>
+        <h2 id="formHeading">Seal a take</h2>
+        <label for="fieldTitle">Matchup
+          <input id="fieldTitle" name="title" type="text" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="City vs Coast" />
+        </label>
+        <label for="fieldBody">The take
+          <textarea id="fieldBody" name="body" maxlength="280" rows="4" placeholder="Say it now. Read it when the clock says you can."></textarea>
+        </label>
+        <p class="hint" id="bodyCount">0 / 280</p>
+        <label for="fieldTag">Side <span class="opt">optional</span>
+          <input id="fieldTag" name="tag" type="text" maxlength="32" autocomplete="off" placeholder="Home, visitor, a name…" />
+        </label>
+        <div class="chips" id="tagChips" role="group" aria-label="Side shortcuts">
+          <button type="button" data-tag="Home">Home</button>
+          <button type="button" data-tag="Away">Away</button>
+          <button type="button" data-tag="Favorite">Favorite</button>
+          <button type="button" data-tag="Underdog">Underdog</button>
+        </div>
+        <fieldset>
+          <legend>Unlock</legend>
+          <div class="chips" id="presetChips" role="group" aria-label="Unlock presets">
+            <button type="button" data-preset="15">15 min</button>
+            <button type="button" data-preset="60" aria-pressed="true">1 hour</button>
+            <button type="button" data-preset="tonight">Tonight 7</button>
+            <button type="button" data-preset="tomorrow">Tomorrow 1</button>
+            <button type="button" data-preset="now">Ready now</button>
+          </div>
+          <label for="fieldUnlock">Exact time
+            <input id="fieldUnlock" name="unlock" type="datetime-local" />
+          </label>
+        </fieldset>
+        <p class="hint">Before that minute, the take is not drawn. If this tab is open when it hits, the seal cracks. If you come back later, tap Reveal.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnSave">Seal on this device</button>
+          <button type="button" class="btn ghost wide" id="btnCancelForm">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="posterPanel" hidden aria-labelledby="posterLabel">
+      <div class="card-top">
+        <button type="button" class="text-btn" id="btnPosterBack">Vault</button>
+      </div>
+      <h2 class="sr-only" id="posterLabel">Share card</h2>
+      <div id="poster" class="poster"></div>
+      <p class="hint">The card is the screenshot. A sealed card does not print the take. The link still carries the words so they can open later. Not live sync. Not betting advice.</p>
+      <div class="card-actions">
+        <button type="button" class="btn primary" id="btnPosterReveal" hidden>Break the seal</button>
+        <button type="button" class="btn primary" id="btnPosterShare">Copy card link</button>
+        <button type="button" class="btn ghost" id="btnPosterEdit">Edit</button>
+        <button type="button" class="btn ghost danger" id="btnPosterRemove">Remove</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Take Lock</strong> · On this device. A snapshot link (<code>#t=</code> or <code>?t=</code>) is a copy, not live sync. The link contains the take so a friend can open it later. Entertainment only. Not betting advice.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The vault stays on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Seal</strong>
+            <span>A matchup, the take, an optional side tag, and an unlock time. Presets are 15 minutes, 1 hour, tonight at 7, tomorrow at 1, ready now, or an exact minute. 24 takes on this device.</span>
+          </li>
+          <li>
+            <strong>Sealed</strong>
+            <span>The take text is not drawn. The card shows a seal, a countdown, and the unlock time.</span>
+          </li>
+          <li>
+            <strong>Watching</strong>
+            <span>If this tab is open when the clock hits, the seal cracks and the take is exposed.</span>
+          </li>
+          <li>
+            <strong>Reveal</strong>
+            <span>If the clock hit while the tab was closed, the card waits. Break the seal to expose it. Reveal does nothing early.</span>
+          </li>
+          <li>
+            <strong>Exposed</strong>
+            <span>The take in full, on a card built to be screenshotted.</span>
+          </li>
+          <li>
+            <strong>Edit</strong>
+            <span>Change the words, the side, or the clock. Move the unlock into the future and the take seals again.</span>
+          </li>
+          <li>
+            <strong>Remove</strong>
+            <span>Remove one take, or clear the vault. Undo puts it back until the toast leaves.</span>
+          </li>
+          <li>
+            <strong>Filters</strong>
+            <span>All, sealed (still shut, or waiting on Reveal), and exposed. A vault link still packs every take.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Packs the vault or one card into <code>#t=</code> or <code>?t=</code>. A friend can keep that copy or merge it. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>take-lock-v1</code>. Offline cache <code>take-lock-v1</code>. No accounts, no odds feed, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: betting, a book, odds, accounts, ads, or anything that phones home. Entertainment only. Not betting advice.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this vault.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They open the same takes. Later edits here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The takes are packed into the link itself (<code>#t=</code>, or <code>?t=</code> if you move the token into a query string). A sealed card still hides the words until unlock. Not betting advice.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="vault.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>

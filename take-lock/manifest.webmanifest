@@ -1,0 +1,18 @@
+{
+  "name": "Take Lock",
+  "short_name": "Take Lock",
+  "description": "Seal a hot take until kickoff. It stays on this device until the clock says it can open. Entertainment only. Not betting advice.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#100c12",
+  "theme_color": "#100c12",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
