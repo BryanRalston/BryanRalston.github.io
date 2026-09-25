@@ -548,6 +548,13 @@ h1 { margin: 0; }
 
 .claim .who { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
 
+.claim-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
 .claim .btn.ghost {
   border-color: transparent;
   color: var(--muted);
