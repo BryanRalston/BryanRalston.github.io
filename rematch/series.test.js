@@ -267,13 +267,70 @@ eq(payload.s.g[2].n, "OT nailbiter", "share note");
 eq(payload.s.g[0].w, "y", "share you win");
 const parsed = Rematch.parseShare(payload);
 eq(parsed.series.title, "FIFA 25", "parsed title");
+eq(parsed.series.you, "Sam", "custom sender name stays");
+eq(parsed.series.rival, "Riley", "custom sender rival stays");
 eq(Rematch.summary(parsed.series).status, "tied", "parsed still tied");
 
 const kept = Rematch.keepShare(Rematch.emptyState(), parsed);
 assert(kept.ok, "keep");
 eq(kept.becameActive, true, "keep takes the glass");
-eq(kept.state.you, "Sam", "keep adopts you");
+eq(kept.state.you, "You", "keep leaves receiver you");
+eq(kept.state.rival, "Rival", "keep leaves receiver rival");
+eq(kept.state.series[0].you, "Sam", "kept series keeps the sender name");
+eq(kept.state.series[0].rival, "Riley", "kept series keeps the sender rival");
 eq(kept.state.series[0].id, fifaId, "keep id");
+
+let ping = Rematch.startSeries(Rematch.emptyState(), { title: "Ping Pong", bestOf: 3 }, 10);
+const pingId = ping.state.series[0].id;
+ping = Rematch.logGame(ping.state, pingId, "you", "", 11);
+assert(ping.ok, "ping lead");
+eq(Rematch.summary(ping.series).headline, "You lead", "local default still says you");
+ping = Rematch.logGame(ping.state, pingId, "you", "", 12);
+assert(ping.ok, "ping clinch");
+eq(Rematch.summary(ping.series).headline, "You clinched", "local clinch still says you");
+const pingShare = Rematch.parseShare(Rematch.shareSeries(ping.series));
+eq(pingShare.series.you, "Sender", "stock you is the sender");
+eq(pingShare.series.rival, "Them", "stock rival is them");
+eq(Rematch.summary(pingShare.series).headline, "Sender clinched", "sender clinched");
+eq(Rematch.summary(pingShare.series).you, 2, "sender score held");
+const receiver = Rematch.setNames(Rematch.emptyState(), "Alex", "Jordan").state;
+const keptPing = Rematch.keepShare(receiver, pingShare);
+assert(keptPing.ok, "keep default-name series");
+eq(keptPing.state.you, "Alex", "keep does not overwrite you");
+eq(keptPing.state.rival, "Jordan", "keep does not overwrite rival");
+eq(keptPing.state.series[0].you, "Sender", "kept card says sender");
+eq(Rematch.summary(keptPing.state.series[0]).headline, "Sender clinched", "kept headline is the sender");
+
+let theirs = Rematch.startSeries(Rematch.emptyState(), { title: "Pool", bestOf: 1 }, 20);
+const poolId = theirs.state.series[0].id;
+theirs = Rematch.logGame(theirs.state, poolId, "rival", "", 21);
+const theirShare = Rematch.parseShare(Rematch.shareSeries(theirs.series));
+eq(Rematch.summary(theirShare.series).headline, "Them clinched", "sender rival is them");
+
+let darts = Rematch.startSeries(
+  Rematch.setNames(Rematch.emptyState(), "Alex", "Jordan").state,
+  { title: "Darts", bestOf: 5 },
+  30
+);
+const dartsId = darts.state.series[0].id;
+darts = Rematch.logGame(darts.state, dartsId, "you", "180", 31);
+assert(darts.ok, "darts game");
+eq(Rematch.summary(darts.series).you, 1, "darts score before shelve");
+const shelved = Rematch.shelveSeries(darts.state);
+assert(shelved.ok, "shelve open series");
+eq(shelved.state.activeId, "", "shelve clears the glass");
+eq(shelved.state.you, "Alex", "shelve leaves names");
+eq(shelved.state.series.length, 1, "shelved series stays");
+eq(shelved.state.series[0].id, dartsId, "same series");
+eq(shelved.state.series[0].games.length, 1, "shelved games unchanged");
+eq(shelved.state.series[0].games[0].note, "180", "shelved note unchanged");
+eq(Rematch.summary(shelved.state.series[0]).you, 1, "shelved score held");
+eq(Rematch.summary(shelved.state.series[0]).headline, "Alex leads", "shelved headline");
+const afterShelf = Rematch.startSeries(shelved.state, { title: "Next", bestOf: 3 }, 32);
+assert(afterShelf.ok, "start after shelve");
+eq(afterShelf.state.series[1].id, dartsId, "darts stays on the shelf");
+eq(Rematch.summary(afterShelf.state.series[1]).you, 1, "shelf score after a new series");
+eq(Rematch.shelveSeries(Rematch.emptyState()).ok, false, "nothing to shelve");
 
 const house = Rematch.startSeries(
   Rematch.setNames(Rematch.emptyState(), "You", "Rival").state,
@@ -354,7 +411,16 @@ async function roundTrip() {
   assert(html.indexOf("<details") !== -1, "feature map collapsed");
   assert(app.indexOf('"#r="') !== -1 && app.indexOf('"r"') !== -1, "app reads hash and query");
   assert(app.indexOf("rematch-v1") === -1, "app uses the key from series.js");
-  assert(sw.indexOf('const CACHE = "rematch-v1"') !== -1, "cache name");
+  assert(sw.indexOf('const CACHE = "rematch-v2"') !== -1, "cache name");
+  assert(sw.indexOf("rematch-v1") === -1, "cache left the store key alone");
+  assert(html.indexOf("novalidate") !== -1, "form uses the app message");
+  assert(html.indexOf("rematch-v2") !== -1, "feature map names the cache");
+  assert(html.indexOf("Shelve and start new") !== -1, "feature map shelve");
+  assert(app.indexOf("Shelve and start new") !== -1, "shelve action");
+  assert(app.indexOf("fieldBest.disabled") !== -1, "preset disables custom");
+  const icon = fs.readFileSync(path.join(__dirname, "icon.svg"));
+  assert(!icon.includes(0x14), "icon has no stray control byte");
+  assert(icon.includes("&#8212;"), "icon dash");
   assert(sw.indexOf("./series.js") !== -1, "series module cached");
   assert(css.indexOf(".num") !== -1, "scoreboard styles");
   console.log("rematch tests ok");

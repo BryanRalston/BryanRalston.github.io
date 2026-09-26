@@ -1,4 +1,4 @@
-const CACHE = "rematch-v1";
+const CACHE = "rematch-v2";
 const ASSETS = [
   "./",
   "./index.html",

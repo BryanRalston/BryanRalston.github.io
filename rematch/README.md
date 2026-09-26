@@ -12,7 +12,7 @@ Live: [bryanralston.github.io/rematch](https://bryanralston.github.io/rematch/)
 2. Start a series: the game, best of 3 / 5 / 7 or an odd custom, and an optional stakes line.
 3. Tap **You won** or **They won**. The scoreboard updates. An optional one-line note sticks to that game.
 4. The status reads series open, a lead, tied, or clinched, plus how many wins are left to clinch.
-5. Past series stay on this phone. Open one to see the card again.
+5. Past series stay on this phone. Open one to see the card again. **Shelve and start new** puts an open series on that shelf without changing the score.
 6. Copy a series link. Someone else can keep that copy. It is not live sync.
 7. Remove one series, or clear them all. Undo puts it back.
 
@@ -25,13 +25,13 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Theatrical scoreboard
 - You won / They won, with an optional one-line note
 - Status: open, lead, tied, you clinched, they clinched — and wins left to clinch
-- History of past series, including putting an unfinished one back on the glass
+- History of past series. Shelve and start new moves an open series onto that shelf unchanged. An unfinished series can go back on the glass
 - Remove and clear, with Undo
 - Undo last game
-- Snapshot share via `#r=` or `?r=` — Keep or Not now, not live sync
+- Snapshot share via `#r=` or `?r=` — Keep or Not now, not live sync. A received series that still uses the default names You and Rival is labeled Sender and Them. Keep does not replace the names on this phone
 - 24 series on this device
 - Storage-blocked private-mode alert
-- Offline via service worker cache **`rematch-v1`**
+- Offline via service worker cache **`rematch-v2`**
 
 **Is not:** a league, accounts, live sync, a book, ads, analytics, or anything that phones home.
 
@@ -49,7 +49,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 
 ## Offline / PWA
 
-Service worker cache: **`rematch-v1`**. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/rematch/`. The store key is **`rematch-v1`**.
+Service worker cache: **`rematch-v2`**. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/rematch/`. The store key stays **`rematch-v1`**.
 
 ## Tests
 
