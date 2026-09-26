@@ -694,6 +694,11 @@
     if (wired) return;
     wired = true;
 
+    function selectName(event) {
+      event.target.select();
+    }
+    els.fieldYou.addEventListener("focus", selectName);
+    els.fieldRival.addEventListener("focus", selectName);
     els.fieldYou.addEventListener("input", function () { commitNames(false); });
     els.fieldRival.addEventListener("input", function () { commitNames(false); });
     els.fieldYou.addEventListener("blur", function () { commitNames(true); });
@@ -792,6 +797,12 @@
     render();
     incoming = await tryImportShare();
     render();
+    window.addEventListener("hashchange", async function () {
+      const share = await tryImportShare();
+      if (!share) return;
+      incoming = share;
+      render();
+    });
   }
 
   boot();
