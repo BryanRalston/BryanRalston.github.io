@@ -174,7 +174,7 @@
     const sum = Rematch.summary(series);
     const stakes = series.stakes ? " · " + series.stakes : "";
     return series.title + " · " + series.you + " " + sum.you + "–" + sum.rival + " " + series.rival
-      + " · Best of " + series.bestOf + stakes;
+      + " · " + sum.headline + " · Best of " + series.bestOf + stakes;
   }
 
   function bandOf(sum) {
@@ -382,6 +382,8 @@
       btn.setAttribute("aria-pressed", pressed ? "true" : "false");
     });
     els.customBest.hidden = !customBest;
+    els.fieldBest.disabled = !customBest;
+    if (!customBest) els.fieldBest.value = "";
   }
 
   function applyView(name) {
@@ -422,7 +424,10 @@
     els.logPanel.hidden = !logging;
     els.actionRow.hidden = !glass;
     els.btnUndoGame.hidden = !(onBoard && active && active.games.length);
-    els.btnNewSeries.hidden = !(onBoard && active && sum && sum.clinched);
+    const openSeries = onBoard && active && sum && !sum.clinched;
+    const clinchedSeries = onBoard && active && sum && sum.clinched;
+    els.btnNewSeries.hidden = !(openSeries || clinchedSeries);
+    els.btnNewSeries.textContent = openSeries ? "Shelve and start new" : "New series";
     els.btnContinue.hidden = !(view === "archive" && sum && !sum.clinched);
     els.btnShare.hidden = !glass;
     els.btnRemove.hidden = !glass;
@@ -599,6 +604,23 @@
     els.fieldTitle.focus();
   }
 
+  function shelveAndStart() {
+    const result = Rematch.shelveSeries(state);
+    if (!result.ok) {
+      toast(reasonMessage(result.reason));
+      return;
+    }
+    state = result.state;
+    save();
+    showStart = false;
+    hideFormError();
+    view = "board";
+    archiveId = "";
+    render();
+    toast(result.series.title + " is on the shelf.");
+    els.fieldTitle.focus();
+  }
+
   function loadSample() {
     const result = Rematch.loadSample(state, Date.now());
     if (!result.ok) {
@@ -711,7 +733,12 @@
       const series = glassSeries();
       if (series) removeCurrent(series.id);
     });
-    els.btnNewSeries.addEventListener("click", openStart);
+    els.btnNewSeries.addEventListener("click", function () {
+      const series = activeSeries();
+      const sum = series ? Rematch.summary(series) : null;
+      if (sum && !sum.clinched) shelveAndStart();
+      else openStart();
+    });
     els.btnContinue.addEventListener("click", continueSeries);
     els.btnArchiveBack.addEventListener("click", backToGlass);
     els.btnShare.addEventListener("click", function () {

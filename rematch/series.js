@@ -362,6 +362,29 @@
     return { ok: true, state: next, series: series };
   }
 
+  function shelveSeries(state) {
+    const next = normalizeState(state);
+    if (!next.activeId) return { ok: false, reason: "missing", state: next };
+    const series = next.series.find(function (row) { return row.id === next.activeId; });
+    if (!series) return { ok: false, reason: "missing", state: next };
+    next.activeId = "";
+    return { ok: true, state: next, series: series };
+  }
+
+  function fromSenderSide(series) {
+    return {
+      id: series.id,
+      title: series.title,
+      bestOf: series.bestOf,
+      stakes: series.stakes,
+      you: series.you === "You" ? "Sender" : series.you,
+      rival: series.rival === "Rival" ? "Them" : series.rival,
+      games: series.games,
+      created: series.created,
+      updated: series.updated,
+    };
+  }
+
   function sampleSeries(now, you, rival) {
     return {
       id: SAMPLE_ID,
@@ -424,7 +447,7 @@
     if (!raw || typeof raw !== "object" || raw.k !== "series") return null;
     const series = normalizeSeries(raw.s);
     if (!series) return null;
-    return { v: 1, k: "series", series: series };
+    return { v: 1, k: "series", series: fromSenderSide(series) };
   }
 
   function keepShare(state, share) {
@@ -449,11 +472,7 @@
     }
     next.series = [incoming].concat(next.series);
     const becameActive = !next.activeId;
-    if (becameActive) {
-      next.activeId = incoming.id;
-      next.you = incoming.you;
-      next.rival = incoming.rival;
-    }
+    if (becameActive) next.activeId = incoming.id;
     return {
       ok: true,
       state: next,
@@ -533,6 +552,7 @@
     clearSeries: clearSeries,
     restoreAll: restoreAll,
     activateSeries: activateSeries,
+    shelveSeries: shelveSeries,
     loadSample: loadSample,
     shareSeries: shareSeries,
     parseShare: parseShare,
