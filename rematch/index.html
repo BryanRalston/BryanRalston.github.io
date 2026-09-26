@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#08090f" />
+  <meta name="description" content="Rematch — a couch rivalry series tracker. Name yourselves, log each game, and keep the scoreboard on this device. Entertainment only." />
+  <title>Rematch</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body data-view="board">
+  <a class="skip" href="#content">Skip to the scoreboard</a>
+  <div class="flood" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Rematch cannot save on this device. Browser storage is blocked (private mode or a setting). The series will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Rematch needs JavaScript to keep the scoreboard. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Couch rivalry</p>
+          <h1>Rematch</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      You, a rival, a series, the stakes. The scoreboard stays on this phone. Entertainment only. Friend rivalry — not a league and not money.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same series, this phone.</h2>
+      <p class="share-offer-lead" id="offerLead">Someone sent a copy. It is not live sync. Later games on their phone do not move this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint" id="offerHint">Keep adds that series on this phone. Not now drops the copy. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <section class="names" id="nameRow" aria-label="Display names">
+      <label>
+        <span class="who">You</span>
+        <input id="fieldYou" maxlength="18" autocomplete="off" autocapitalize="words" enterkeyhint="next" />
+      </label>
+      <label>
+        <span class="who rival">Rival</span>
+        <input id="fieldRival" maxlength="18" autocomplete="off" autocapitalize="words" enterkeyhint="done" />
+      </label>
+    </section>
+
+    <div id="archiveBar" class="archive-bar" hidden>
+      <button type="button" class="text-btn" id="btnArchiveBack">The glass</button>
+      <p class="kicker quiet">Past series</p>
+    </div>
+
+    <section class="board" id="board" data-band="idle" data-clinch="no" aria-labelledby="boardTitle">
+      <div class="board-chrome">
+        <span class="kicker" id="boardKicker">The glass</span>
+        <span class="stamp" id="stamp">Standby</span>
+      </div>
+      <h2 id="boardTitle">No series yet</h2>
+      <div class="scoreline">
+        <div class="side" id="sideYou">
+          <p class="role" aria-hidden="true">You</p>
+          <p class="num you" id="scoreYou" aria-hidden="true">0</p>
+          <p class="side-name" id="nameYouBoard" hidden></p>
+        </div>
+        <p class="dash" aria-hidden="true">—</p>
+        <div class="side" id="sideRival">
+          <p class="role" aria-hidden="true">Rival</p>
+          <p class="num rival" id="scoreRival" aria-hidden="true">0</p>
+          <p class="side-name" id="nameRivalBoard" hidden></p>
+        </div>
+      </div>
+      <p class="headline" id="statusLine">Waiting on a series.</p>
+      <p class="detail" id="detailLine"></p>
+      <p class="stakes" id="stakesLine" hidden><span class="sr-only">Stakes. </span><span id="stakesText"></span></p>
+      <ol class="pips" id="pips" hidden aria-hidden="true"></ol>
+      <p class="sr-only" id="spoken" aria-live="polite"></p>
+    </section>
+
+    <section id="logPanel" class="log" hidden>
+      <label class="note-label" for="fieldNote">Note for the next game <span class="opt">optional</span>
+        <input id="fieldNote" maxlength="80" autocomplete="off" placeholder="OT nailbiter" enterkeyhint="done" />
+      </label>
+      <div class="win-row">
+        <button type="button" class="win you" id="btnYou">
+          <span class="win-label">You won</span>
+          <span class="win-name" id="youWinName">You</span>
+        </button>
+        <button type="button" class="win rival" id="btnRival">
+          <span class="win-label">They won</span>
+          <span class="win-name" id="rivalWinName">Rival</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="tapeWrap" class="tape-wrap" hidden aria-labelledby="tapeHeading">
+      <h3 id="tapeHeading">Games</h3>
+      <ol class="tape" id="tape"></ol>
+    </section>
+
+    <div class="actions" id="actionRow" hidden>
+      <button type="button" class="btn primary" id="btnShare">Copy series link</button>
+      <button type="button" class="btn ghost" id="btnUndoGame" hidden>Undo last game</button>
+      <button type="button" class="btn ghost" id="btnNewSeries" hidden>New series</button>
+      <button type="button" class="btn ghost" id="btnContinue" hidden>Put on the glass</button>
+      <button type="button" class="btn ghost danger" id="btnRemove">Remove</button>
+    </div>
+
+    <section id="startPanel" aria-labelledby="startHeading">
+      <form id="seriesForm" autocomplete="off">
+        <p class="kicker" id="startKicker">On the glass</p>
+        <h2 id="startHeading">Start a series</h2>
+        <label for="fieldTitle">Game
+          <input id="fieldTitle" name="title" type="text" maxlength="60" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="FIFA 25" />
+        </label>
+        <fieldset>
+          <legend>Best of</legend>
+          <div class="chips" id="presetChips" role="group" aria-label="Best of">
+            <button type="button" data-best="3" aria-pressed="false">3</button>
+            <button type="button" data-best="5" aria-pressed="true">5</button>
+            <button type="button" data-best="7" aria-pressed="false">7</button>
+            <button type="button" data-best="custom" aria-pressed="false">Custom</button>
+          </div>
+          <div id="customBest" hidden>
+            <label for="fieldBest">Odd number, 1 to 21
+              <input id="fieldBest" name="best" type="number" inputmode="numeric" min="1" max="21" step="1" placeholder="9" />
+            </label>
+          </div>
+        </fieldset>
+        <label for="fieldStakes">Stakes <span class="opt">optional</span>
+          <input id="fieldStakes" name="stakes" type="text" maxlength="80" autocomplete="off" enterkeyhint="done" placeholder="Loser buys wings" />
+        </label>
+        <p class="hint">First to the majority. Best of 5 is first to 3. An even number cannot clinch, so custom has to be odd.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnStart">Start series</button>
+          <button type="button" class="btn ghost wide" id="btnCancelStart" hidden>Cancel</button>
+          <button type="button" class="btn ghost wide" id="btnSample">Load a sample</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="historyPanel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">Shelved</p>
+          <h2 id="historyHeading">Past series</h2>
+        </div>
+      </div>
+      <p class="panel-sub" id="historySub">0 of 24 on this phone.</p>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">Nothing shelved</p>
+        <strong id="historyEmptyTitle">Past series land here.</strong>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+      <div class="history-foot">
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear series</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Rematch</strong> · On this device. A snapshot link (<code>#r=</code> or <code>?r=</code>) is a copy of one series, not live sync. Entertainment only. Friend rivalry — not a league, not a book, not money.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The series stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Names</strong>
+            <span>You and Rival, editable. The series on the glass uses the names as you type them. A shelved series keeps the names it had.</span>
+          </li>
+          <li>
+            <strong>Series</strong>
+            <span>A game title, best of 3, 5, 7, or an odd custom from 1 to 21, and an optional stakes line. First to the majority clinches. 24 series on this phone.</span>
+          </li>
+          <li>
+            <strong>Scoreboard</strong>
+            <span>The running score, large enough to settle an argument. You on gold, rival on ice.</span>
+          </li>
+          <li>
+            <strong>Log a game</strong>
+            <span>You won or They won. An optional one-line note sticks to that game. Undo last game takes a mis-tap back, including a clincher.</span>
+          </li>
+          <li>
+            <strong>Status</strong>
+            <span>Series open, a lead, tied mid-series, you clinched, or they clinched. The line under the score says how many wins are left to clinch.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Past series stay on this phone. Open one to see the card. An unfinished series can go back on the glass.</span>
+          </li>
+          <li>
+            <strong>Remove</strong>
+            <span>Remove one series, or clear every series. Undo puts it back until the toast leaves. Names stay.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Packs the series on the glass, or one opened from history, into <code>#r=</code> or <code>?r=</code>. Opening it offers Keep or Not now. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>rematch-v1</code>. Offline cache <code>rematch-v1</code>. No accounts, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: accounts, leagues, live sync, a book, ads, or anything that phones home. Entertainment only. Friend rivalry — not money.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this series.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They open the same series. Later games here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The series is packed into the link itself (<code>#r=</code>, or <code>?r=</code> if you move the token into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="series.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
