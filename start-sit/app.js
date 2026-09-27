@@ -383,10 +383,12 @@
     state = result.state;
     save();
     writeFight(result.card);
-    actionUndo = { action: "decide", cardId: result.card.id, previous: null, previousOpenId: previousOpenId };
+    if (!result.already) {
+      actionUndo = { action: "decide", cardId: result.card.id, previous: null, previousOpenId: previousOpenId };
+    }
     render();
     scrollCard();
-    toast("Booth call is up.");
+    toast(result.already ? "Already on the shelf." : "Booth call is up.");
   }
 
   function onSwap() {

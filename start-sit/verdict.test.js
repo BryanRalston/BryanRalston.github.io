@@ -72,7 +72,15 @@ async function main() {
   assert(html.toLowerCase().indexOf("not betting") !== -1, "not betting");
   assert(app.indexOf("StartSit.STORAGE_KEY") !== -1, "app uses storage key");
   assert(app.indexOf('"#s="') !== -1, "hash prefix");
-  assert(sw.indexOf('"start-sit-v1"') !== -1, "sw cache");
+  assert(sw.indexOf('"start-sit-v2"') !== -1, "sw cache");
+  assert(sw.indexOf("start-sit-v1") === -1, "storage key stays out of the cache name");
+  assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");
+  assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
+  assert(html.indexOf("either slot order") !== -1, "order-independent copy");
+  assert(html.indexOf("already shelved") !== -1, "shelf reuse copy");
+  assert(html.indexOf("does not copy the sender's star") !== -1, "keep star copy");
+  assert(html.indexOf("start-sit-v2") !== -1, "feature map cache name");
+  assert(html.indexOf(">start-sit-v1<") !== -1, "feature map storage key");
   assert(manifest.indexOf('"Start Sit"') !== -1, "manifest name");
   const boot = app.slice(app.lastIndexOf("function boot"));
   const listenAt = boot.indexOf('addEventListener("hashchange"');
@@ -110,6 +118,22 @@ async function main() {
   const blank = StartSit.callBooth({ name: "Ada", note: "   " }, { name: "Bea", note: "" }, 0);
   eq(blank.tag, "COIN JERSEY", "empty notes are a coin");
 
+  const bijan = { name: "Bijan Robinson", team: "ATL RB", note: "" };
+  const gibbs = { name: "Jahmyr Gibbs", team: "DET RB", note: "" };
+  const forward = StartSit.callBooth(bijan, gibbs, 0);
+  const reverse = StartSit.callBooth(gibbs, bijan, 0);
+  function started(call, a, b) {
+    return call.starter === "a" ? a.name : b.name;
+  }
+  eq(started(forward, bijan, gibbs), "Bijan Robinson", "canonical pair starts Bijan");
+  eq(started(reverse, gibbs, bijan), "Bijan Robinson", "slot order does not flip the starter");
+  eq(forward.confidence, 60, "bijan confidence");
+  eq(reverse.confidence, forward.confidence, "same confidence");
+  eq(reverse.reason, forward.reason, "same reason");
+  eq(reverse.tag, forward.tag, "same tag");
+  eq(forward.starter, "a", "Bijan in slot A");
+  eq(reverse.starter, "b", "Bijan in slot B");
+
   eq(StartSit.decide(StartSit.emptyState(), { a: { name: "  " }, b: { name: "Bea" } }, 1).reason, "nameA");
   eq(StartSit.decide(StartSit.emptyState(), { a: { name: "Ada" }, b: { name: "   " } }, 1).reason, "nameB");
   eq(StartSit.decide(StartSit.emptyState(), { a: { name: " " }, b: { name: " \n" } }, 1).reason, "names");
@@ -140,6 +164,39 @@ async function main() {
   const blocked = StartSit.decide(shelf, { a: { name: "A24" }, b: { name: "B24" } }, 9000);
   eq(blocked.ok, false, "cap blocks");
   eq(blocked.reason, "cap");
+  const buried = shelf.cards.find(function (card) { return card.a.name === "A0"; });
+  const resurfaced = StartSit.decide(shelf, { a: { name: "b0" }, b: { name: "a0" } }, 9001);
+  assert(resurfaced.ok && resurfaced.already, "cap still reopens a pair");
+  eq(resurfaced.state.cards.length, 24, "reopen does not grow the shelf");
+  eq(resurfaced.state.cards[0].id, buried.id, "existing card moves to the top");
+  eq(resurfaced.state.openId, buried.id, "existing card is shown");
+
+  const firstFight = StartSit.decide(StartSit.emptyState(), { a: bijan, b: gibbs }, 30);
+  assert(firstFight.ok && !firstFight.already, "new fight");
+  const swappedFight = StartSit.decide(firstFight.state, {
+    a: { name: " jahmyr gibbs ", team: "det rb", note: "" },
+    b: { name: "BIJAN ROBINSON", team: "atl rb", note: " " },
+  }, 31);
+  assert(swappedFight.ok && swappedFight.already, "opposite slots reuse the card");
+  eq(swappedFight.state.cards.length, 1, "no duplicate card");
+  eq(swappedFight.card.id, firstFight.card.id, "same card id");
+  eq(StartSit.starterPlayer(swappedFight.card).name, "Bijan Robinson", "shown starter stays");
+  const otherFight = StartSit.decide(swappedFight.state, { a: { name: "Ada" }, b: { name: "Bea" } }, 32);
+  const lifted = StartSit.decide(otherFight.state, { a: gibbs, b: bijan }, 33);
+  assert(lifted.already, "lift");
+  eq(lifted.state.cards.length, 2, "lift does not add");
+  eq(lifted.state.cards[0].id, firstFight.card.id, "lifted to the top");
+  eq(lifted.state.openId, firstFight.card.id, "lifted card is open");
+  const noted = StartSit.decide(lifted.state, {
+    a: bijan,
+    b: { name: "Jahmyr Gibbs", team: "DET RB", note: "hot" },
+  }, 34);
+  assert(noted.ok && !noted.already, "a new note is a new fight");
+  eq(noted.state.cards.length, 3);
+  const flippedSlots = StartSit.swapSides(firstFight.state, firstFight.card.id, 35);
+  eq(StartSit.starterPlayer(flippedSlots.card).name, "Bijan Robinson", "swap keeps Bijan");
+  eq(flippedSlots.card.reason, firstFight.card.reason, "swap keeps the reason");
+  eq(flippedSlots.card.confidence, firstFight.card.confidence, "swap keeps the percent");
 
   const swapped = StartSit.swapSides(again.state, again.card.id, 5);
   assert(swapped.ok, "swap");
@@ -198,6 +255,9 @@ async function main() {
   const kept = StartSit.keepShare(StartSit.emptyState(), parsed);
   assert(kept.ok, "keep");
   eq(kept.state.openId, parsed.card.id);
+  eq(kept.card.starred, false, "keep drops the sender star");
+  eq(kept.state.cards[0].starred, false, "shelf copy is not starred");
+  eq(parsed.card.starred, true, "the snapshot still records the star");
   const dup = StartSit.keepShare(kept.state, parsed);
   eq(dup.ok, false);
   eq(dup.reason, "exists");
@@ -222,6 +282,54 @@ async function main() {
   eq(dirty.cards.length, 1, "drops junk");
   eq(dirty.openId, "ok", "falls back to a real card");
   eq(dirty.cards[0].a.name, "Ada");
+
+  const salt4 = StartSit.callBooth(players.a, players.b, 4);
+  const salt5 = StartSit.callBooth(players.a, players.b, 5);
+  eq(salt4.starter, salt5.starter, "this rematch keeps the starter");
+  assert(salt5.reason.indexOf("changed its mind on purpose") !== -1, "raw rematch line still exists");
+  const mindState = StartSit.normalizeState({
+    v: 1,
+    openId: "mind-case",
+    cards: [{
+      id: "mind-case",
+      a: players.a,
+      b: players.b,
+      salt: 4,
+      starter: salt4.starter,
+      confidence: salt4.confidence,
+      reason: salt4.reason,
+      tag: salt4.tag,
+      created: 1,
+      updated: 1,
+    }],
+  });
+  const keptStarter = StartSit.reroll(mindState, "mind-case", 2);
+  eq(keptStarter.card.starter, salt5.starter, "reroll starter");
+  eq(keptStarter.card.confidence, salt5.confidence, "reroll confidence");
+  assert(keptStarter.card.reason.indexOf("changed its mind on purpose") === -1, "same starter skips that line");
+
+  const ada = { name: "Ada", note: "" };
+  const bea = { name: "Bea", note: "" };
+  const beforeFlip = StartSit.callBooth(ada, bea, 23);
+  const flipState = StartSit.normalizeState({
+    v: 1,
+    openId: "flip-case",
+    cards: [{
+      id: "flip-case",
+      a: ada,
+      b: bea,
+      salt: 23,
+      starter: beforeFlip.starter,
+      confidence: beforeFlip.confidence,
+      reason: beforeFlip.reason,
+      tag: beforeFlip.tag,
+      created: 1,
+      updated: 1,
+    }],
+  });
+  const flipped = StartSit.reroll(flipState, "flip-case", 9);
+  assert(flipped.card.starter !== beforeFlip.starter, "rematch can change the starter");
+  assert(flipped.card.reason.indexOf("changed its mind on purpose") !== -1, "a real change can say so");
 }
 
 main().catch(function (err) {
