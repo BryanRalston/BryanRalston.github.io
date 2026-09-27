@@ -158,7 +158,7 @@
             </label>
           </fieldset>
         </div>
-        <p class="hint">Names are required. A gut note can nudge the costume coin. The same names, tags, and notes always get the same call until Rematch.</p>
+        <p class="hint">Names are required. A gut note can nudge the costume coin. The same names, tags, and notes get the same call in either slot order, until Rematch.</p>
         <p id="formError" class="form-error" hidden role="alert"></p>
         <div class="form-actions">
           <button type="submit" class="btn primary wide" id="btnDecide">Decide</button>
@@ -201,7 +201,7 @@
           </li>
           <li>
             <strong>Same pair</strong>
-            <span>The same names, tags, and notes always get the same call. A gut note with hot or cold words can nudge who starts. It is still a seeded costume.</span>
+            <span>The same names, tags, and notes always get the same call, in either slot order. A gut note with hot or cold words can nudge who starts. It is still a seeded costume.</span>
           </li>
           <li>
             <strong>Swap sides</strong>
@@ -209,7 +209,7 @@
           </li>
           <li>
             <strong>Rematch / Reroll</strong>
-            <span>A new seeded flavor on that same card. The star stays. Undo rematch restores the previous call.</span>
+            <span>A new seeded flavor on that same card. If the same player still starts, the line does not say the booth changed its mind. The star stays. Undo rematch restores the previous call.</span>
           </li>
           <li>
             <strong>Star</strong>
@@ -221,11 +221,11 @@
           </li>
           <li>
             <strong>History</strong>
-            <span>Up to 24 verdicts on this phone. Open one to put it back on the card. Remove one, or clear every verdict. Undo puts them back until the toast leaves.</span>
+            <span>Up to 24 verdicts on this phone. Deciding a pair that is already shelved, in either order, brings that card to the top instead of adding another. Open one to put it back on the card. Remove one, or clear every verdict. Undo puts them back until the toast leaves.</span>
           </li>
           <li>
             <strong>Snapshot share</strong>
-            <span>Copy link packs the open verdict, including one opened from the shelf, into <code>#s=</code>. <code>?s=</code> works if the token is in the query string. Opening it offers Keep or Not now. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+            <span>Copy link packs the open verdict, including one opened from the shelf, into <code>#s=</code>. <code>?s=</code> works if the token is in the query string. Opening it offers Keep or Not now. Keep does not copy the sender's star. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
           </li>
           <li>
             <strong>Load sample</strong>
@@ -233,7 +233,7 @@
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>start-sit-v1</code>. Offline cache <code>start-sit-v1</code>. If storage is blocked, a banner says so. No accounts, no analytics.</span>
+            <span>Store <code>start-sit-v1</code>. Offline cache <code>start-sit-v2</code>. The page is fetched from the network when you are online. If storage is blocked, a banner says so. No accounts, no analytics.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: fantasy advice, betting, projections, news, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For fun with friends.</p>

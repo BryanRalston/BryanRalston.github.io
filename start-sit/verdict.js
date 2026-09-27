@@ -119,6 +119,35 @@
     return COIN_LINES;
   }
 
+  function cmpText(left, right) {
+    if (left < right) return -1;
+    if (left > right) return 1;
+    return 0;
+  }
+
+  function comparePlayers(left, right) {
+    const name = cmpText(left.name.toLowerCase(), right.name.toLowerCase());
+    if (name) return name;
+    const team = cmpText(left.team.toLowerCase(), right.team.toLowerCase());
+    if (team) return team;
+    return cmpText(left.note.toLowerCase(), right.note.toLowerCase());
+  }
+
+  function playersMatch(left, right) {
+    return left.name.toLowerCase() === right.name.toLowerCase()
+      && left.team.toLowerCase() === right.team.toLowerCase()
+      && left.note.toLowerCase() === right.note.toLowerCase();
+  }
+
+  function sameMatchup(card, a, b) {
+    return (playersMatch(card.a, a) && playersMatch(card.b, b))
+      || (playersMatch(card.a, b) && playersMatch(card.b, a));
+  }
+
+  function mindChangeReason(startName, sitName) {
+    return fill("The booth changed its mind on purpose. Start {S}. Sit {T}.", startName, sitName);
+  }
+
   function tagFor(salt, lean) {
     if (salt > 0) return "REMATCH";
     const mag = Math.abs(lean);
@@ -128,27 +157,33 @@
   }
 
   function callBooth(playerA, playerB, salt) {
-    const a = normalizePlayer(playerA);
-    const b = normalizePlayer(playerB);
+    const slotA = normalizePlayer(playerA);
+    const slotB = normalizePlayer(playerB);
+    const flip = comparePlayers(slotA, slotB) > 0;
+    const left = flip ? slotB : slotA;
+    const right = flip ? slotA : slotB;
+    const leftSlot = flip ? "b" : "a";
+    const rightSlot = flip ? "a" : "b";
     const cleanSalt = normalizeSalt(salt);
     const usedSalt = cleanSalt == null ? 0 : cleanSalt;
     const hash = fnv1a([
-      a.name.toLowerCase(),
-      a.team.toLowerCase(),
-      a.note.toLowerCase(),
-      b.name.toLowerCase(),
-      b.team.toLowerCase(),
-      b.note.toLowerCase(),
+      left.name.toLowerCase(),
+      left.team.toLowerCase(),
+      left.note.toLowerCase(),
+      right.name.toLowerCase(),
+      right.team.toLowerCase(),
+      right.note.toLowerCase(),
       String(usedSalt),
     ].join("\n"));
-    const lean = heat(a.note) - heat(b.note);
-    const scoreA = 50 + (lean * 8) + ((hash % 11) - 5);
-    const starter = scoreA >= 50 ? "a" : "b";
-    const margin = Math.abs(scoreA - 50);
+    const lean = heat(left.note) - heat(right.note);
+    const scoreLeft = 50 + (lean * 8) + ((hash % 11) - 5);
+    const leftWins = scoreLeft >= 50;
+    const starter = leftWins ? leftSlot : rightSlot;
+    const margin = Math.abs(scoreLeft - 50);
     let confidence = 60 + Math.min(32, margin) + (hash % 5);
     if (confidence > 96) confidence = 96;
-    const startPlayer = starter === "a" ? a : b;
-    const sitPlayer = starter === "a" ? b : a;
+    const startPlayer = leftWins ? left : right;
+    const sitPlayer = leftWins ? right : left;
     const pool = poolFor(usedSalt, lean);
     const reason = fill(pool[hash % pool.length], startPlayer.name, sitPlayer.name);
     return {
@@ -253,6 +288,15 @@
     if (!a.name) return { ok: false, reason: "nameA", state: next };
     if (!b.name) return { ok: false, reason: "nameB", state: next };
     if (a.name.toLowerCase() === b.name.toLowerCase()) return { ok: false, reason: "same", state: next };
+    const existingIdx = next.cards.findIndex(function (card) { return sameMatchup(card, a, b); });
+    if (existingIdx >= 0) {
+      const existing = next.cards[existingIdx];
+      if (existingIdx > 0) {
+        next.cards = [existing].concat(next.cards.filter(function (_, index) { return index !== existingIdx; }));
+      }
+      next.openId = existing.id;
+      return { ok: true, state: next, card: existing, already: true };
+    }
     if (next.cards.length >= HISTORY_CAP) return { ok: false, reason: "cap", state: next };
     const when = stampOf(now) || Date.now();
     const call = callBooth(a, b, 0);
@@ -272,7 +316,7 @@
     if (!card) return { ok: false, reason: "missing", state: next };
     next.cards = [card].concat(next.cards);
     next.openId = card.id;
-    return { ok: true, state: next, card: card };
+    return { ok: true, state: next, card: card, already: false };
   }
 
   function replaceCard(state, id, mapper, now) {
@@ -315,6 +359,15 @@
     return replaceCard(state, id, function (card) {
       const salt = card.salt + 1;
       const call = callBooth(card.a, card.b, salt);
+      const startPlayer = call.starter === "a" ? card.a : card.b;
+      const sitPlayer = call.starter === "a" ? card.b : card.a;
+      let reason = call.reason;
+      if (call.starter === card.starter && reason === mindChangeReason(startPlayer.name, sitPlayer.name)) {
+        const pool = REMATCH_LINES.filter(function (line) {
+          return line.indexOf("changed its mind on purpose") === -1;
+        });
+        reason = fill(pool[call.hash % pool.length], startPlayer.name, sitPlayer.name);
+      }
       return {
         id: card.id,
         a: card.a,
@@ -322,7 +375,7 @@
         salt: salt,
         starter: call.starter,
         confidence: call.confidence,
-        reason: call.reason,
+        reason: reason,
         tag: call.tag,
         starred: card.starred,
         created: card.created,
@@ -483,6 +536,7 @@
     const next = normalizeState(state);
     const incoming = share && share.card ? normalizeCard(share.card) : null;
     if (!incoming) return { ok: false, reason: "missing", state: next };
+    incoming.starred = false;
     if (findIndex(next.cards, incoming.id) >= 0) {
       return { ok: false, reason: "exists", state: next, card: incoming };
     }
