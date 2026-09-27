@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07110c" />
+  <meta name="description" content="Start Sit — Sunday lineup theater. Name two players, get a seeded start-or-sit card. Entertainment only. For fun with friends. Not fantasy advice. Not betting. Stays on this device." />
+  <title>Start Sit</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the booth</a>
+  <div class="yard" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Start Sit cannot save on this device. Browser storage is blocked (private mode or a setting). The verdicts will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Start Sit needs JavaScript to run the booth. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Sunday lineup</p>
+          <h1>Start Sit</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Two names, one start. Entertainment only. For fun with friends. Not fantasy advice. Not betting. The same pair gets the same call until you hit Rematch.
+    </p>
+
+    <p class="sr-only" id="spoken" aria-live="polite"></p>
+
+    <section id="shareOffer" class="share-offer" hidden aria-labelledby="offerHeading">
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same verdict, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a copy. It is not live sync. A rematch on their phone does not change this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint">Keep adds that card on this phone. Not now drops the copy. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfBar" class="shelf-bar" hidden>
+      <button type="button" class="text-btn" id="btnLatest">Latest fight</button>
+      <p class="kicker quiet">From the shelf</p>
+    </div>
+
+    <section id="emptyHero" class="empty-hero" aria-labelledby="emptyHeading">
+      <p class="empty-kicker">The booth is dark</p>
+      <h2 id="emptyHeading">Two names. One start.</h2>
+      <p>Sunday lineup anxiety, played as theater. Name both players and tap Decide. The booth picks a side and invents a reason. It is a costume on a coin, not a projection.</p>
+    </section>
+
+    <article class="verdict" id="verdictCard" hidden tabindex="-1" aria-labelledby="verdictHeading">
+      <div class="card-chrome">
+        <p class="kicker">The booth</p>
+        <div class="chrome-side">
+          <span class="star-pill" id="starPill" hidden>Starred</span>
+          <span class="stamp" id="stamp">Coin jersey</span>
+        </div>
+      </div>
+      <h2 class="sr-only" id="verdictHeading">No verdict yet</h2>
+      <div class="split">
+        <div class="lane start" id="laneA">
+          <p class="lane-word" id="wordA">Start</p>
+          <p class="lane-name" id="laneNameA"></p>
+          <p class="lane-team" id="laneTeamA" hidden></p>
+          <p class="lane-note" id="laneNoteA" hidden></p>
+        </div>
+        <div class="lane sit" id="laneB">
+          <p class="lane-word" id="wordB">Sit</p>
+          <p class="lane-name" id="laneNameB"></p>
+          <p class="lane-team" id="laneTeamB" hidden></p>
+          <p class="lane-note" id="laneNoteB" hidden></p>
+        </div>
+      </div>
+      <div class="reason-band">
+        <p class="reason" id="reasonLine"></p>
+        <div class="meter-row">
+          <div class="conf-lockup">
+            <p class="conf-num"><span id="confValue">0</span><span class="conf-unit">%</span></p>
+            <p class="conf-caption">theater</p>
+          </div>
+          <div
+            class="meter"
+            id="meter"
+            role="meter"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-valuetext="Entertainment confidence 0 percent. Not a projection."
+            aria-label="Entertainment confidence"
+          >
+            <span class="meter-fill" id="meterFill"></span>
+          </div>
+        </div>
+        <p class="meter-note">Entertainment meter. Not a projection. Not advice.</p>
+      </div>
+    </article>
+
+    <div class="actions" id="actionRow" hidden>
+      <button type="button" class="btn ghost" id="btnSwap">Swap sides</button>
+      <button type="button" class="btn ghost" id="btnRematch" aria-label="Rematch, reroll a new seeded flavor">
+        Rematch
+        <span class="btn-sub">Reroll</span>
+      </button>
+      <button type="button" class="btn ghost" id="btnStar" aria-pressed="false">Star</button>
+      <button type="button" class="btn ghost" id="btnUndo" disabled>Undo</button>
+      <button type="button" class="btn primary" id="btnShare">Copy link</button>
+      <button type="button" class="btn ghost danger" id="btnRemove">Remove</button>
+    </div>
+
+    <section id="fightPanel" aria-labelledby="fightHeading">
+      <form id="fightForm" autocomplete="off" novalidate>
+        <p class="kicker" id="fightKicker">The fight</p>
+        <h2 id="fightHeading">Name the fight</h2>
+        <div class="player-grid">
+          <fieldset class="player a">
+            <legend>Player A</legend>
+            <label for="nameA">Name
+              <input id="nameA" name="nameA" type="text" maxlength="32" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Avery Knox" />
+            </label>
+            <label for="teamA">Team / pos <span class="opt">optional</span>
+              <input id="teamA" name="teamA" type="text" maxlength="18" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" placeholder="PHI RB" />
+            </label>
+            <label for="noteA">Gut note <span class="opt">optional</span>
+              <input id="noteA" name="noteA" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="goal line hammer" />
+            </label>
+          </fieldset>
+          <fieldset class="player b">
+            <legend>Player B</legend>
+            <label for="nameB">Name
+              <input id="nameB" name="nameB" type="text" maxlength="32" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Nico Vale" />
+            </label>
+            <label for="teamB">Team / pos <span class="opt">optional</span>
+              <input id="teamB" name="teamB" type="text" maxlength="18" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" placeholder="DAL RB" />
+            </label>
+            <label for="noteB">Gut note <span class="opt">optional</span>
+              <input id="noteB" name="noteB" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="committee whispers" />
+            </label>
+          </fieldset>
+        </div>
+        <p class="hint">Names are required. A gut note can nudge the costume coin. The same names, tags, and notes always get the same call until Rematch.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnDecide">Decide</button>
+          <button type="button" class="btn ghost wide" id="btnSample">Load sample</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="historyPanel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The shelf</p>
+          <h2 id="historyHeading">Past matchups</h2>
+        </div>
+      </div>
+      <p class="panel-sub" id="historySub">0 of 24 on this phone.</p>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">Nothing shelved</p>
+        <strong>The first fight lands here.</strong>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+      <div class="history-foot">
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Start Sit</strong> · On this device. A snapshot link (<code>#s=</code> or <code>?s=</code>) is a copy of one verdict, not live sync. Entertainment only. For fun with friends. Not fantasy advice. Not betting.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The verdicts stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>The fight</strong>
+            <span>Player A and Player B. A name is required, and whitespace is trimmed. Team / pos and a short gut note are optional. The two names have to differ.</span>
+          </li>
+          <li>
+            <strong>Decide</strong>
+            <span>A theatrical card. One side is START, gold and green. The other is SIT, cooled gray and ice. One spicy line, plus a confidence meter. The meter is entertainment theater, not a projection and not a model.</span>
+          </li>
+          <li>
+            <strong>Same pair</strong>
+            <span>The same names, tags, and notes always get the same call. A gut note with hot or cold words can nudge who starts. It is still a seeded costume.</span>
+          </li>
+          <li>
+            <strong>Swap sides</strong>
+            <span>The two columns trade places. The same player still starts. Undo swap puts them back.</span>
+          </li>
+          <li>
+            <strong>Rematch / Reroll</strong>
+            <span>A new seeded flavor on that same card. The star stays. Undo rematch restores the previous call.</span>
+          </li>
+          <li>
+            <strong>Star</strong>
+            <span>Mark a verdict you want to find on the shelf. Undo star takes the mark off.</span>
+          </li>
+          <li>
+            <strong>Undo</strong>
+            <span>The Undo button takes back the last decide, swap, rematch, or star on the open card. Remove and Clear all use the toast Undo until it leaves.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Up to 24 verdicts on this phone. Open one to put it back on the card. Remove one, or clear every verdict. Undo puts them back until the toast leaves.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link packs the open verdict, including one opened from the shelf, into <code>#s=</code>. <code>?s=</code> works if the token is in the query string. Opening it offers Keep or Not now. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>Load sample</strong>
+            <span>Avery Knox over Nico Vale, so there is a card to look at without typing.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>start-sit-v1</code>. Offline cache <code>start-sit-v1</code>. If storage is blocked, a banner says so. No accounts, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: fantasy advice, betting, projections, news, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For fun with friends.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this verdict.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They can keep the same card. Later rematches here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The verdict is packed into the link itself (<code>#s=</code>, or <code>?s=</code> if the token is moved into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="verdict.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "Start Sit",
+  "short_name": "Start Sit",
+  "description": "Sunday lineup theater. Name two players and get a seeded start-or-sit card on this device. Entertainment only. Not fantasy advice. Not betting.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07110c",
+  "theme_color": "#07110c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
