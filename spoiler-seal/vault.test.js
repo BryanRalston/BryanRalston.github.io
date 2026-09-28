@@ -106,6 +106,16 @@ assert(!early.already, "first break");
 state = early.state;
 eq(SpoilerSeal.phase(state.seals.find((seal) => seal.id === gameId), NOW + 10), "cracked", "early is cracked");
 eq(SpoilerSeal.publicFace(state.seals.find((seal) => seal.id === gameId), NOW + 10).result, "Bills 31, Chiefs 24", "early reveals result");
+eq(early.seal.crackedAt, NOW + 10, "break records when it opened");
+assert(early.seal.crackedAt < early.seal.unlockAt, "break time is earlier than unlock");
+eq(SpoilerSeal.publicFace(early.seal, NOW + 10).crackedAt, NOW + 10, "face carries break time");
+const stillOpen = SpoilerSeal.updateSeal(state, gameId, {
+  title: "Chiefs @ Bills",
+  result: "Bills 31, Chiefs 24",
+  unlockAt: NOW - 1000,
+}, NOW + 15);
+eq(stillOpen.seal.crackedAt, NOW + 10, "editing an open seal keeps the break time");
+eq(SpoilerSeal.setStar(state, gameId, true, NOW + 12).seal.crackedAt, NOW + 10, "star keeps the break time");
 eq(SpoilerSeal.breakSeal(state, gameId, NOW + 11).already, true, "second break is quiet");
 
 const resealed = SpoilerSeal.updateSeal(state, gameId, {
@@ -118,6 +128,7 @@ const resealed = SpoilerSeal.updateSeal(state, gameId, {
 assert(resealed.ok, "edit");
 state = resealed.state;
 eq(resealed.seal.cracked, false, "future edit reseals");
+eq(resealed.seal.crackedAt, 0, "reseal clears the break time");
 eq(SpoilerSeal.phase(resealed.seal, NOW + 20), "sealed", "resealed phase");
 eq(SpoilerSeal.publicFace(resealed.seal, NOW + 20).result, "", "reseal hides result");
 
@@ -135,6 +146,21 @@ eq(SpoilerSeal.publicFace(due.state.seals.find((seal) => seal.id === showId), NO
 const later = SpoilerSeal.crackDue(due.state, NOW + 3 * 60 * 60 * 1000);
 eq(later.opened.indexOf(gameId) !== -1, true, "game auto-cracks");
 eq(SpoilerSeal.publicFace(later.state.seals.find((seal) => seal.id === gameId), NOW + 3 * 60 * 60 * 1000).result, "Bills 31, Chiefs 24", "auto-crack reveals");
+eq(later.state.seals.find((seal) => seal.id === gameId).crackedAt, NOW + 3 * 60 * 60 * 1000, "auto-crack uses the unlock time");
+
+const legacy = SpoilerSeal.normalizeState({
+  v: 1,
+  seals: [{ id: "old", title: "Old game", result: "secret score", unlockAt: NOW + 1000, cracked: true }],
+});
+eq(legacy.seals[0].cracked, true, "old cracked flag stays on this device");
+eq(legacy.seals[0].crackedAt, 0, "old data has no break time");
+
+const immediate = SpoilerSeal.addSeal(SpoilerSeal.emptyState(), {
+  title: "Already over",
+  result: "done",
+  unlockAt: NOW - 1000,
+}, NOW);
+eq(immediate.seal.crackedAt, NOW, "a past unlock records now");
 
 const removed = SpoilerSeal.removeSeal(state, gameId);
 assert(removed.ok, "remove");
@@ -188,6 +214,44 @@ eq(kept.state.seals.length, 3, "keep size");
 eq(SpoilerSeal.keepShare(kept.state, SpoilerSeal.parseShare(card)).reason, "exists", "duplicate card");
 eq(SpoilerSeal.keepShare(capped, SpoilerSeal.parseShare(card)).reason, "cap", "full vault refuses a new card");
 
+const host = SpoilerSeal.addSeal(SpoilerSeal.emptyState(), {
+  title: "Chiefs @ Bills",
+  tag: "NFL",
+  result: "Bills 31, Chiefs 24",
+  unlockAt: NOW + 3 * 60 * 60 * 1000,
+}, NOW);
+const broke = SpoilerSeal.breakSeal(host.state, host.seal.id, NOW + 60 * 1000);
+const packed = SpoilerSeal.shareCard(broke.seal);
+assert(packed.e[0].cracked === undefined, "share omits cracked");
+assert(packed.e[0].crackedAt === undefined, "share omits crackedAt");
+eq(packed.e[0].result, "Bills 31, Chiefs 24", "share still carries the result");
+const fromSender = SpoilerSeal.parseShare(packed);
+eq(fromSender.seals[0].cracked, false, "sender's broken card arrives sealed");
+eq(SpoilerSeal.phase(fromSender.seals[0], NOW + 60 * 1000), "sealed", "recipient follows unlock");
+eq(SpoilerSeal.publicFace(fromSender.seals[0], NOW + 60 * 1000).result, "", "recipient result stays hidden");
+eq(SpoilerSeal.publicFace(fromSender.seals[0], NOW + 60 * 1000).stamp, "SEALED", "preview stamp");
+const received = SpoilerSeal.parseShare({
+  v: 1,
+  k: "card",
+  e: [{
+    id: "early-share",
+    title: "Chiefs @ Bills",
+    tag: "NFL",
+    result: "Bills 31, Chiefs 24",
+    unlockAt: NOW + 3 * 60 * 60 * 1000,
+    cracked: true,
+    crackedAt: NOW + 60 * 1000,
+  }],
+});
+eq(received.seals[0].cracked, false, "parse drops cracked");
+eq(received.seals[0].crackedAt, 0, "parse drops crackedAt");
+const keptEarly = SpoilerSeal.keepShare(SpoilerSeal.emptyState(), received);
+eq(keptEarly.state.seals[0].cracked, false, "keep drops cracked");
+eq(SpoilerSeal.publicFace(keptEarly.state.seals[0], NOW + 60 * 1000).result, "", "kept card stays sealed");
+const vaultPacked = SpoilerSeal.shareVault(broke.state);
+assert(vaultPacked.e.every((row) => row.cracked === undefined && row.crackedAt === undefined), "vault share omits cracked state");
+eq(SpoilerSeal.parseShare(vaultPacked).seals[0].cracked, false, "vault link arrives sealed");
+
 const cleared = SpoilerSeal.clearSeals(state);
 eq(cleared.seals.length, 0, "clear");
 eq(cleared.filter, state.filter, "clear keeps filter");
@@ -226,7 +290,33 @@ async function roundTrip() {
   assert(app.indexOf('"hashchange"') !== -1 && app.indexOf('"popstate"') !== -1, "later share navigation");
   const boot = app.slice(app.indexOf("async function boot"));
   assert(boot.indexOf("await pullShare()") !== -1 && boot.indexOf("await pullShare()") < boot.indexOf('addEventListener("hashchange"'), "listeners after first import");
-  assert(sw.indexOf('const CACHE = "spoiler-seal-v1"') !== -1, "cache name");
+  assert(html.indexOf("Result stays sealed. Type to replace it, or leave it as is to keep it.") !== -1, "sealed edit hint");
+  assert(html.indexOf("Seal it stops when the shelf is full.") !== -1, "cap is up front in the feature map");
+  assert(html.indexOf("shows the time it was broken") !== -1, "opened time in the feature map");
+  assert(html.indexOf("the result stays out of the form") !== -1, "sealed edit in the feature map");
+  assert(html.indexOf("follows the unlock time") !== -1, "share follows unlock in the feature map");
+  assert(html.indexOf(">spoiler-seal-v1<") !== -1, "storage key in the feature map");
+  assert(html.indexOf(">spoiler-seal-v2<") !== -1, "cache name in the feature map");
+  assert(html.indexOf('class="feature-map" open') === -1, "feature map stays collapsed");
+  const openAddFn = app.slice(app.indexOf("function openAdd"), app.indexOf("function openEdit"));
+  const capAt = openAddFn.indexOf("SEAL_CAP");
+  const viewAt = openAddFn.indexOf('setView("form")');
+  assert(capAt !== -1 && viewAt !== -1 && capAt < viewAt, "full shelf blocks the form");
+  const openEditFn = app.slice(app.indexOf("function openEdit"), app.indexOf("function cancelForm"));
+  assert(openEditFn.indexOf('masked ? "" : seal.result') !== -1, "sealed edit leaves the result field empty");
+  const readDraftFn = app.slice(app.indexOf("function readDraft"), app.indexOf("function el("));
+  assert(readDraftFn.indexOf("resultMasked") !== -1 && readDraftFn.indexOf("current.result") !== -1, "empty sealed edit keeps the stored result");
+  const setViewFn = app.slice(app.indexOf("function setView"), app.indexOf("function toLocalInput"));
+  assert(setViewFn.indexOf("blankResultField") !== -1, "leaving the form clears the result");
+  const whenFn = app.slice(app.indexOf("function whenLine"), app.indexOf("function crackSentence"));
+  assert(whenFn.indexOf("face.crackedAt || face.unlockAt") !== -1, "opened line uses the break time, then unlock");
+  const renderFn = app.slice(app.indexOf("function render()"), app.indexOf("function applyCrack"));
+  assert(renderFn.indexOf("paintList(now)") !== -1, "shelf is repainted");
+  assert(renderFn.indexOf('if (view === "shelf")') === -1, "hidden shelf is not left stale");
+  assert(sw.indexOf('const CACHE = "spoiler-seal-v2"') !== -1, "cache name");
+  assert(sw.indexOf("spoiler-seal-v1") === -1, "storage key stays out of the worker");
+  assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
+  assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");
   assert(css.indexOf(".vault-card") !== -1, "vault card");
   assert(css.indexOf(".wax") !== -1, "sealed stamp");
   assert(icon.startsWith("<svg"), "icon is svg");

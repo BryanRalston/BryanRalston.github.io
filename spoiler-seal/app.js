@@ -37,6 +37,7 @@
     fieldTag: document.getElementById("fieldTag"),
     fieldNote: document.getElementById("fieldNote"),
     fieldResult: document.getElementById("fieldResult"),
+    resultHint: document.getElementById("resultHint"),
     resultCount: document.getElementById("resultCount"),
     tagChips: document.getElementById("tagChips"),
     presetChips: document.getElementById("presetChips"),
@@ -70,6 +71,7 @@
   let crackId = "";
   let pendingFocus = "";
   let shareImporting = false;
+  let resultMasked = false;
 
   function reasonMessage(reason) {
     switch (reason) {
@@ -167,6 +169,7 @@
   }
 
   function setView(next) {
+    if (view === "form" && next !== "form") blankResultField();
     view = next;
     document.body.dataset.view = next;
     els.shelfView.hidden = next !== "shelf";
@@ -222,6 +225,21 @@
     els.resultCount.textContent = els.fieldResult.value.length + " / " + SpoilerSeal.RESULT_MAX;
   }
 
+  function blankResultField() {
+    resultMasked = false;
+    els.fieldResult.value = "";
+    els.resultHint.hidden = true;
+    els.fieldResult.setAttribute("aria-describedby", "resultCount");
+    paintResultCount();
+  }
+
+  function paintResultPrivacy(masked) {
+    resultMasked = masked;
+    els.resultHint.hidden = !masked;
+    els.fieldResult.setAttribute("aria-describedby", masked ? "resultHint resultCount" : "resultCount");
+    paintResultCount();
+  }
+
   function pressPreset(kind) {
     els.presetChips.querySelectorAll("[data-preset]").forEach((btn) => {
       btn.setAttribute("aria-pressed", btn.dataset.preset === kind ? "true" : "false");
@@ -241,6 +259,10 @@
   }
 
   function openAdd() {
+    if (state.seals.length >= SpoilerSeal.SEAL_CAP) {
+      toast(reasonMessage("cap"));
+      return;
+    }
     formMode = "add";
     editingId = "";
     els.formKicker.textContent = "New seal";
@@ -251,7 +273,7 @@
     els.fieldNote.value = "";
     els.fieldResult.value = "";
     hideFormError();
-    paintResultCount();
+    paintResultPrivacy(false);
     paintTagChips();
     applyUnlock(SpoilerSeal.presetUnlock("3h", Date.now()), "3h");
     setView("form");
@@ -270,12 +292,13 @@
     els.formKicker.textContent = "Edit";
     els.formHeading.textContent = "Edit this seal";
     els.btnSave.textContent = "Save seal";
+    const masked = SpoilerSeal.phase(seal, Date.now()) === "sealed";
     els.fieldTitle.value = seal.title;
     els.fieldTag.value = seal.tag;
     els.fieldNote.value = seal.note;
-    els.fieldResult.value = seal.result;
+    els.fieldResult.value = masked ? "" : seal.result;
     hideFormError();
-    paintResultCount();
+    paintResultPrivacy(masked);
     paintTagChips();
     applyUnlock(seal.unlockAt, "");
     setView("form");
@@ -292,11 +315,16 @@
 
   function readDraft() {
     const raw = els.fieldUnlock.value;
+    let result = els.fieldResult.value;
+    if (resultMasked) {
+      const current = findSeal(editingId);
+      if (current && !String(result).trim()) result = current.result;
+    }
     return {
       title: els.fieldTitle.value,
       tag: els.fieldTag.value,
       note: els.fieldNote.value,
-      result: els.fieldResult.value,
+      result: result,
       unlockAt: raw ? new Date(raw).getTime() : NaN,
     };
   }
@@ -318,12 +346,11 @@
   }
 
   function whenLine(face) {
-    const clock = SpoilerSeal.formatUnlock(face.unlockAt);
     switch (face.phase) {
       case "sealed":
-        return "Unlocks " + clock;
+        return "Unlocks " + SpoilerSeal.formatUnlock(face.unlockAt);
       case "cracked":
-        return "Opened " + clock;
+        return "Opened " + SpoilerSeal.formatUnlock(face.crackedAt || face.unlockAt);
       default: {
         const _never = face.phase;
         throw new Error("Unknown phase " + _never);
@@ -571,7 +598,7 @@
     return share.seals.map((seal) => {
       const face = SpoilerSeal.publicFace(seal, now);
       const tag = face.tag ? " · " + face.tag : "";
-      return face.title + tag + " · " + face.stamp;
+      return face.title + tag + " · " + face.stamp + " · " + whenLine(face);
     }).join("\n");
   }
 
@@ -597,11 +624,10 @@
   function render() {
     const now = Date.now();
     paintOffer(now);
-    if (view === "shelf") {
-      paintMeter(now);
-      paintList(now);
-    }
+    paintMeter(now);
+    paintList(now);
     if (view === "card") paintCard(now);
+    else els.vaultCard.replaceChildren();
     if (pendingFocus === "card") {
       pendingFocus = "";
       const target = els.btnBreak.hidden ? document.getElementById("btnCardBack") : els.btnBreak;
