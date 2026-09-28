@@ -131,8 +131,9 @@
           <input id="fieldNote" name="note" type="text" maxlength="140" autocomplete="off" placeholder="Watching after the kids are down." />
         </label>
         <label for="fieldResult">Result to reveal <span class="opt">optional</span>
-          <textarea id="fieldResult" name="result" maxlength="280" rows="3" placeholder="The score or the ending. Hidden until the seal cracks. Leave blank and fill it in after you watch."></textarea>
+          <textarea id="fieldResult" name="result" maxlength="280" rows="3" aria-describedby="resultCount" placeholder="The score or the ending. Hidden until the seal cracks. Leave blank and fill it in after you watch."></textarea>
         </label>
+        <p class="hint" id="resultHint" hidden>Result stays sealed. Type to replace it, or leave it as is to keep it.</p>
         <p class="hint" id="resultCount">0 / 280</p>
         <fieldset>
           <legend>Unlock</legend>
@@ -178,7 +179,7 @@
         <ul class="feature-list">
           <li>
             <strong>Seal</strong>
-            <span>A game, show, or episode title. Optional league or show tag, a note that stays visible, and a result to reveal later. 24 seals on this device.</span>
+            <span>A game, show, or episode title. Optional league or show tag, a note that stays visible, and a result to reveal later. 24 seals on this device. Seal it stops when the shelf is full.</span>
           </li>
           <li>
             <strong>Unlock</strong>
@@ -194,7 +195,7 @@
           </li>
           <li>
             <strong>Break the seal</strong>
-            <span>Cracks the result early, before the clock. Undo puts the bars back if the unlock is still ahead.</span>
+            <span>Cracks the result early, before the clock, and shows the time it was broken. Undo puts the bars back if the unlock is still ahead.</span>
           </li>
           <li>
             <strong>Cracked</strong>
@@ -202,7 +203,7 @@
           </li>
           <li>
             <strong>Edit</strong>
-            <span>Change the title, tag, note, result, or clock. A future unlock reseals it.</span>
+            <span>Change the title, tag, note, result, or clock. While the card is sealed, the result stays out of the form. A future unlock reseals it.</span>
           </li>
           <li>
             <strong>Star</strong>
@@ -218,11 +219,11 @@
           </li>
           <li>
             <strong>Snapshot share</strong>
-            <span>Copy link packs the open card or the whole vault into <code>#v=</code> or <code>?v=</code>. Keep or Not now. A duplicate says it is already on this phone. Not live sync. Nothing is uploaded.</span>
+            <span>Copy link packs the open card or the whole vault into <code>#v=</code> or <code>?v=</code>. Their card follows the unlock time, even if you already broke the seal. Keep or Not now. A duplicate says it is already on this phone. Not live sync. Nothing is uploaded.</span>
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>spoiler-seal-v1</code>. Offline cache <code>spoiler-seal-v1</code>. No accounts, no score feed, no analytics.</span>
+            <span>Store <code>spoiler-seal-v1</code>. Offline cache <code>spoiler-seal-v2</code>. No accounts, no score feed, no analytics.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: live scores, league feeds, network apps, accounts, ads, or anything that phones home. Entertainment, and personal spoiler hygiene. Not affiliated with any league or network.</p>

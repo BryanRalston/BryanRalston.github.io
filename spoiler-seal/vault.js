@@ -44,6 +44,12 @@
     return rounded;
   }
 
+  function normalizeCrackedAt(value) {
+    if (value == null || value === "") return 0;
+    const n = normalizeUnlock(value);
+    return n == null ? 0 : n;
+  }
+
   function phase(seal, now) {
     if (!seal) throw new Error("Unknown phase");
     if (seal.cracked) return "cracked";
@@ -137,6 +143,7 @@
       result: clampLine(raw.result, RESULT_MAX),
       unlockAt: unlockAt,
       cracked: raw.cracked === true,
+      crackedAt: normalizeCrackedAt(raw.crackedAt),
       starred: raw.starred === true,
       created: created,
       updated: stamp(raw.updated != null ? raw.updated : created),
@@ -188,6 +195,12 @@
     const at = stamp(now);
     if (unlockAt > at + MAX_AHEAD_MS) return { ok: false, reason: "far" };
     const chosenId = id || clampId(draft && draft.id) || uid();
+    const opening = unlockAt <= at;
+    let crackedAt = 0;
+    if (opening) {
+      if (previous && previous.cracked) crackedAt = previous.crackedAt || 0;
+      else crackedAt = at;
+    }
     return {
       ok: true,
       seal: {
@@ -197,7 +210,8 @@
         note: clampLine(draft && draft.note, NOTE_MAX),
         result: clampLine(draft && draft.result, RESULT_MAX),
         unlockAt: unlockAt,
-        cracked: unlockAt <= at,
+        cracked: opening,
+        crackedAt: crackedAt,
         starred: previous ? previous.starred === true : false,
         created: previous ? previous.created : at,
         updated: at,
@@ -277,6 +291,7 @@
       result: seal.result,
       unlockAt: seal.unlockAt,
       cracked: true,
+      crackedAt: at,
       starred: seal.starred,
       created: seal.created,
       updated: at,
@@ -302,6 +317,7 @@
         result: seal.result,
         unlockAt: seal.unlockAt,
         cracked: true,
+        crackedAt: seal.unlockAt,
         starred: seal.starred,
         created: seal.created,
         updated: at,
@@ -325,6 +341,7 @@
       result: seal.result,
       unlockAt: seal.unlockAt,
       cracked: seal.cracked,
+      crackedAt: seal.crackedAt || 0,
       starred: nextStar,
       created: seal.created,
       updated: stamp(now),
@@ -420,6 +437,7 @@
       tag: seal.tag,
       note: seal.note,
       unlockAt: seal.unlockAt,
+      crackedAt: seal.crackedAt || 0,
       starred: seal.starred === true,
       result: open ? seal.result : "",
       awaiting: open && !seal.result,
@@ -455,9 +473,24 @@
     if (seal.tag) out.tag = seal.tag;
     if (seal.note) out.note = seal.note;
     if (seal.result) out.result = seal.result;
-    if (seal.cracked) out.cracked = true;
     if (seal.starred) out.starred = true;
     return out;
+  }
+
+  function sharedSeal(seal) {
+    return {
+      id: seal.id,
+      title: seal.title,
+      tag: seal.tag,
+      note: seal.note,
+      result: seal.result,
+      unlockAt: seal.unlockAt,
+      cracked: false,
+      crackedAt: 0,
+      starred: seal.starred === true,
+      created: seal.created,
+      updated: seal.updated,
+    };
   }
 
   function shareVault(state) {
@@ -485,7 +518,7 @@
       default:
         return null;
     }
-    const seals = takeSeals(raw.e, kind === "card" ? 1 : SEAL_CAP);
+    const seals = takeSeals(raw.e, kind === "card" ? 1 : SEAL_CAP).map(sharedSeal);
     if (!seals.length) return null;
     return { v: 1, k: kind, seals: seals };
   }
@@ -498,9 +531,10 @@
     state.seals.forEach(function (seal) { have[seal.id] = true; });
     const fresh = [];
     share.seals.forEach(function (seal) {
-      if (have[seal.id]) return;
-      have[seal.id] = true;
-      fresh.push(seal);
+      const clean = sharedSeal(seal);
+      if (have[clean.id]) return;
+      have[clean.id] = true;
+      fresh.push(clean);
     });
     if (!fresh.length) return { ok: false, reason: "exists", state: state };
     const room = Math.max(0, SEAL_CAP - state.seals.length);
