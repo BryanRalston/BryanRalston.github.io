@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07090e" />
+  <meta name="description" content="Spoiler Seal — black out a score or an ending until you are ready. On this device. Personal spoiler hygiene. Not affiliated with any league or network." />
+  <title>Spoiler Seal</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Oswald:wght@500;600&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body data-view="shelf">
+  <a class="skip" href="#content">Skip to the vault</a>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Spoiler Seal cannot save on this device. Browser storage is blocked (private mode or a setting). Seals will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Spoiler Seal needs JavaScript to keep the vault. This page does not send data anywhere.</p>
+  </noscript>
+
+  <div id="announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Result blacked out</p>
+          <h1>Spoiler Seal</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp-dot" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest" id="honest">
+      You are watching later. The score, the ending, the group chat — blacked out until you are ready. On this device. Entertainment, and personal spoiler hygiene. Not affiliated with any league or network.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">A copy, on this phone.</h2>
+      <p class="share-offer-lead" id="offerLead">Someone sent a copy. It is not live sync. Later edits on their phone do not move this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint" id="offerHint">A sealed result stays blacked out here until it cracks. Not now drops the copy. The address bar is cleared on purpose, so a refresh will not ask again.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfView">
+      <section class="meter" id="meter" hidden data-band="sealed" aria-labelledby="meterLabel">
+        <div class="meter-chrome">
+          <span class="board-label">NEXT UNLOCK</span>
+          <span class="classified" id="meterClass">SEALED</span>
+        </div>
+        <p class="digits" id="meterDigits" aria-hidden="true">—</p>
+        <h2 id="meterLabel">Until the vault cracks</h2>
+        <p class="meter-sub" id="meterSub"></p>
+      </section>
+
+      <div class="toolbar" id="toolbar" hidden>
+        <button type="button" class="btn primary" id="btnAdd">Seal it</button>
+        <button type="button" class="btn ghost" id="btnShareVault" disabled>Copy link</button>
+      </div>
+
+      <section aria-labelledby="listHeading">
+        <div class="panel-head">
+          <div>
+            <p class="kicker quiet">The shelf</p>
+            <h2 id="listHeading">Seals</h2>
+          </div>
+        </div>
+        <p class="panel-sub" id="shelfSub">Nothing in the vault yet.</p>
+        <div class="filters" id="filters" role="group" aria-label="Filter seals" hidden>
+          <button type="button" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" data-filter="sealed" aria-pressed="false">Sealed</button>
+          <button type="button" data-filter="cracked" aria-pressed="false">Cracked</button>
+        </div>
+        <div id="emptyState" class="empty">
+          <p class="empty-kicker">The vault is dark</p>
+          <strong>Name the game, or the episode, before the timeline does.</strong>
+          <p>A score, a finale, a group chat. It stays blacked out on this phone until the clock you set — or until you break the seal.</p>
+          <div class="empty-actions">
+            <button type="button" class="btn primary" id="btnEmptyAdd">Seal it</button>
+            <button type="button" class="btn ghost" id="btnSample">Load a sample</button>
+          </div>
+        </div>
+        <div id="filterEmpty" class="empty compact" hidden>
+          <p class="empty-kicker" id="filterEmptyKicker">This shelf is clear</p>
+          <strong id="filterEmptyTitle">Nothing in this filter.</strong>
+          <p id="filterEmptyBody">The rest of the vault is still on this device.</p>
+        </div>
+        <ul class="seal-list" id="list" hidden></ul>
+        <div class="vault-foot">
+          <button type="button" class="btn ghost" id="btnSampleShelf" hidden>Load a sample</button>
+          <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+        </div>
+      </section>
+    </div>
+
+    <section id="formPanel" hidden aria-labelledby="formHeading">
+      <form id="sealForm" autocomplete="off" novalidate>
+        <p class="kicker" id="formKicker">New seal</p>
+        <h2 id="formHeading">Seal a spoiler</h2>
+        <label for="fieldTitle">What you're protecting
+          <input id="fieldTitle" name="title" type="text" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="Chiefs @ Bills, or the finale you have not seen" />
+        </label>
+        <label for="fieldTag">League or show <span class="opt">optional</span>
+          <input id="fieldTag" name="tag" type="text" maxlength="32" autocomplete="off" placeholder="NFL, Premier League, a network…" />
+        </label>
+        <div class="chips" id="tagChips" role="group" aria-label="League and show shortcuts">
+          <button type="button" data-tag="NFL">NFL</button>
+          <button type="button" data-tag="NBA">NBA</button>
+          <button type="button" data-tag="MLB">MLB</button>
+          <button type="button" data-tag="NHL">NHL</button>
+          <button type="button" data-tag="Soccer">Soccer</button>
+          <button type="button" data-tag="TV">TV</button>
+          <button type="button" data-tag="Film">Film</button>
+        </div>
+        <label for="fieldNote">Note <span class="opt">optional, visible while sealed</span>
+          <input id="fieldNote" name="note" type="text" maxlength="140" autocomplete="off" placeholder="Watching after the kids are down." />
+        </label>
+        <label for="fieldResult">Result to reveal <span class="opt">optional</span>
+          <textarea id="fieldResult" name="result" maxlength="280" rows="3" placeholder="The score or the ending. Hidden until the seal cracks. Leave blank and fill it in after you watch."></textarea>
+        </label>
+        <p class="hint" id="resultCount">0 / 280</p>
+        <fieldset>
+          <legend>Unlock</legend>
+          <div class="chips" id="presetChips" role="group" aria-label="Unlock presets">
+            <button type="button" data-preset="1h">+1h</button>
+            <button type="button" data-preset="3h" aria-pressed="true">+3h</button>
+            <button type="button" data-preset="night">End of night</button>
+          </div>
+          <label for="fieldUnlock">Exact time
+            <input id="fieldUnlock" name="unlock" type="datetime-local" />
+          </label>
+        </fieldset>
+        <p class="hint">Before that minute the result stays blacked out. If this tab is open when it hits, the seal cracks on its own. Break the seal if you are ready early. A time already past opens immediately.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnSave">Seal it</button>
+          <button type="button" class="btn ghost wide" id="btnCancelForm">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="cardPanel" hidden aria-labelledby="cardLabel">
+      <div class="card-top">
+        <button type="button" class="text-btn" id="btnCardBack">Shelf</button>
+      </div>
+      <h2 class="sr-only" id="cardLabel">Sealed card</h2>
+      <div id="vaultCard" class="vault-card"></div>
+      <p class="hint">The card is the screenshot. A sealed card does not print the result. The link still carries it so it can open later. Not live sync. Not a league or network app.</p>
+      <div class="card-actions">
+        <button type="button" class="btn primary wide" id="btnBreak">Break the seal</button>
+        <button type="button" class="btn ghost" id="btnCardShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCardEdit">Edit</button>
+        <button type="button" class="btn ghost" id="btnCardStar" aria-pressed="false">Star</button>
+        <button type="button" class="btn ghost danger" id="btnCardRemove">Remove</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Spoiler Seal</strong> · On this device. A snapshot link (<code>#v=</code> or <code>?v=</code>) is a copy, not live sync. The link contains the result so it can open later. The screen keeps it blacked out until the seal cracks. Entertainment, and personal spoiler hygiene. Not affiliated with any league or network.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The vault stays on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Seal</strong>
+            <span>A game, show, or episode title. Optional league or show tag, a note that stays visible, and a result to reveal later. 24 seals on this device.</span>
+          </li>
+          <li>
+            <strong>Unlock</strong>
+            <span>Presets are +1h, +3h, and end of night (11:59 PM), or an exact minute. A time already past opens immediately.</span>
+          </li>
+          <li>
+            <strong>Sealed card</strong>
+            <span>The title stays readable. The result is blacked out under a SEALED stamp, with a live countdown to unlock.</span>
+          </li>
+          <li>
+            <strong>Auto-crack</strong>
+            <span>If this tab is open when the clock hits, the seal cracks and the result is revealed. Coming back later opens it too.</span>
+          </li>
+          <li>
+            <strong>Break the seal</strong>
+            <span>Cracks the result early, before the clock. Undo puts the bars back if the unlock is still ahead.</span>
+          </li>
+          <li>
+            <strong>Cracked</strong>
+            <span>The result you typed. If you left it blank, the card says it is ready for your notes.</span>
+          </li>
+          <li>
+            <strong>Edit</strong>
+            <span>Change the title, tag, note, result, or clock. A future unlock reseals it.</span>
+          </li>
+          <li>
+            <strong>Star</strong>
+            <span>Pin a seal to the top of the shelf. Undo takes the star back off.</span>
+          </li>
+          <li>
+            <strong>Shelf</strong>
+            <span>Open a past card. Remove one, or clear all. Undo puts it back until the toast leaves.</span>
+          </li>
+          <li>
+            <strong>Filters</strong>
+            <span>All, sealed, and cracked. A vault link still packs every seal.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link packs the open card or the whole vault into <code>#v=</code> or <code>?v=</code>. Keep or Not now. A duplicate says it is already on this phone. Not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>spoiler-seal-v1</code>. Offline cache <code>spoiler-seal-v1</code>. No accounts, no score feed, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: live scores, league feeds, network apps, accounts, ads, or anything that phones home. Entertainment, and personal spoiler hygiene. Not affiliated with any league or network.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this vault.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They open the same seals. Later edits here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The seals are packed into the link itself (<code>#v=</code>, or <code>?v=</code> if you move the token into a query string). A sealed card still hides the result until it cracks.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="vault.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
