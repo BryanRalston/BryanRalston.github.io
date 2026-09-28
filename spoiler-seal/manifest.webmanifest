@@ -1,0 +1,18 @@
+{
+  "name": "Spoiler Seal",
+  "short_name": "Spoiler Seal",
+  "description": "Black out a score or an ending until you are ready to see it. On this device. Personal spoiler hygiene. Not affiliated with any league or network.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
