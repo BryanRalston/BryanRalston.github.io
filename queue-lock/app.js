@@ -516,7 +516,7 @@
       ? tally.active + " active · " + tally.done + " done"
       : "Nothing locked yet.";
     if (state.locks.length >= QueueLock.LOCK_CAP) {
-      sub += " This phone holds 24. Remove one to lock another.";
+      sub += ". This phone holds 24. Remove one to lock another.";
     }
     els.shelfSub.textContent = sub;
 
