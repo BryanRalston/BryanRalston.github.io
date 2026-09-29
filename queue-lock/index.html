@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070814" />
+  <meta name="description" content="Queue Lock — after a bad loss, lock yourself out of queueing until a cool-down ends. On this device. A self-control gag. Not a game launcher." />
+  <title>Queue Lock</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body data-view="shelf">
+  <a class="skip" href="#content">Skip to the lock</a>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Queue Lock cannot save on this device. Browser storage is blocked (private mode or a setting). Locks will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Queue Lock needs JavaScript to keep the cool-down. This page does not send data anywhere.</p>
+  </noscript>
+
+  <div id="announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">After a bad loss</p>
+          <h1>Queue Lock</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp-dot" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest" id="honest">
+      Name the game, pick a cool-down, and lock the queue before you click it again. On this device. A self-control gag. Not a game launcher. No accounts. Nothing phones home.
+    </p>
+
+    <section id="shareOffer" class="share-offer" hidden>
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">A copy, on this phone.</h2>
+      <p class="share-offer-lead" id="offerLead">Someone sent a cool-down. It is not live sync. Their break does not travel. This phone follows the unlock time.</p>
+      <div class="offer-face" id="offerFace"></div>
+      <p class="hint" id="offerHint">Not now drops the copy. The address bar is cleared on purpose, so a refresh will not ask again.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfView">
+      <section class="meter" id="meter" hidden aria-labelledby="meterLabel">
+        <div class="meter-chrome">
+          <span class="board-label">COOL-DOWN</span>
+          <span class="classified" id="meterClass">LOCKED FROM QUEUE</span>
+        </div>
+        <p class="digits" id="meterDigits" aria-hidden="true">—</p>
+        <h2 id="meterLabel">Locked from queue</h2>
+        <p class="meter-sub" id="meterSub"></p>
+        <button type="button" class="btn primary" id="btnOpenMeter">Open this lock</button>
+      </section>
+
+      <div class="toolbar" id="toolbar" hidden>
+        <button type="button" class="btn primary" id="btnAdd">Lock</button>
+        <button type="button" class="btn ghost" id="btnShareVault" disabled>Copy link</button>
+      </div>
+
+      <section aria-labelledby="listHeading">
+        <div class="panel-head">
+          <div>
+            <p class="kicker quiet">The shelf</p>
+            <h2 id="listHeading">Locks</h2>
+          </div>
+        </div>
+        <p class="panel-sub" id="shelfSub">Nothing locked yet.</p>
+        <div class="filters" id="filters" role="group" aria-label="Filter locks" hidden>
+          <button type="button" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" data-filter="active" aria-pressed="false">Active</button>
+          <button type="button" data-filter="done" aria-pressed="false">Done</button>
+        </div>
+        <div id="emptyState" class="empty">
+          <p class="empty-kicker">Queue is open</p>
+          <strong>Lock it before the next queue.</strong>
+          <p>Name the game or mode, mark what tilted you, and set a cool-down. This phone keeps the lock until the clock — or until you break it.</p>
+          <div class="empty-actions">
+            <button type="button" class="btn primary" id="btnEmptyAdd">Lock</button>
+            <button type="button" class="btn ghost" id="btnSample">Load a sample</button>
+          </div>
+        </div>
+        <div id="filterEmpty" class="empty compact" hidden>
+          <p class="empty-kicker" id="filterEmptyKicker">This shelf is clear</p>
+          <strong id="filterEmptyTitle">Nothing in this filter.</strong>
+          <p id="filterEmptyBody">The rest of the locks are still on this phone.</p>
+        </div>
+        <ul class="lock-list" id="list" hidden></ul>
+        <div class="vault-foot">
+          <button type="button" class="btn ghost" id="btnSampleShelf" hidden>Load a sample</button>
+          <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+        </div>
+      </section>
+    </div>
+
+    <section id="formPanel" hidden aria-labelledby="formHeading">
+      <form id="lockForm" autocomplete="off" novalidate>
+        <p class="kicker" id="formKicker">New lock</p>
+        <h2 id="formHeading">Lock the queue</h2>
+        <label for="fieldGame">Game / mode
+          <input id="fieldGame" name="game" type="text" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="Ranked, Arena, Competitive…" />
+        </label>
+        <fieldset>
+          <legend>What tilted you <span class="opt">optional</span></legend>
+          <div class="chips" id="reasonChips" role="group" aria-label="Tilt reasons">
+            <button type="button" data-reason="bad-call" aria-pressed="false">Bad call</button>
+            <button type="button" data-reason="lag" aria-pressed="false">Lag</button>
+            <button type="button" data-reason="cheese" aria-pressed="false">Cheese</button>
+            <button type="button" data-reason="self-destruct" aria-pressed="false">Self-destruct</button>
+            <button type="button" data-reason="teammates" aria-pressed="false">Teammates</button>
+            <button type="button" data-reason="just-salty" aria-pressed="false">Just salty</button>
+          </div>
+        </fieldset>
+        <label for="fieldNote">Note <span class="opt">optional</span>
+          <input id="fieldNote" name="note" type="text" maxlength="140" autocomplete="off" placeholder="What you need to hear before you queue again." />
+        </label>
+        <fieldset>
+          <legend>Cool-down</legend>
+          <div class="chips" id="presetChips" role="group" aria-label="Cool-down presets">
+            <button type="button" data-preset="5">+5m</button>
+            <button type="button" data-preset="15" aria-pressed="true">+15m</button>
+            <button type="button" data-preset="30">+30m</button>
+            <button type="button" data-preset="60">+60m</button>
+          </div>
+          <label for="fieldUnlock">Exact time
+            <input id="fieldUnlock" name="unlock" type="datetime-local" />
+          </label>
+        </fieldset>
+        <p class="hint">Until that minute this phone treats the queue as closed. If this tab is open when the clock hits, the lock opens on its own. Break the lock if you queue anyway — that is logged as broke. A time already past opens immediately.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnSave">Lock</button>
+          <button type="button" class="btn ghost wide" id="btnCancelForm">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="cardPanel" hidden aria-labelledby="cardLabel">
+      <div class="card-top">
+        <button type="button" class="text-btn" id="btnCardBack">Shelf</button>
+      </div>
+      <h2 class="sr-only" id="cardLabel">Locked card</h2>
+      <div id="lockCard" class="lock-card"></div>
+      <p class="hint">The card is the screenshot. A copied link follows the unlock time. If you already broke the lock, their copy stays locked until the clock. Not live sync. Not a game launcher.</p>
+      <div class="card-actions">
+        <button type="button" class="btn primary wide" id="btnBreak">Break the lock</button>
+        <button type="button" class="btn ghost" id="btnCardShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCardStar" aria-pressed="false">Star</button>
+        <button type="button" class="btn ghost danger" id="btnCardRemove">Remove</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Queue Lock</strong> · On this device. A snapshot link (<code>#q=</code> or <code>?q=</code>) is a copy, not live sync. The other phone follows the unlock time. A break does not travel. Entertainment, and a self-control gag. Not a game launcher. No accounts. Nothing phones home.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The locks stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>Lock</strong>
+            <span>Name the game or mode. Optional tilt chips: bad call, lag, cheese, self-destruct, teammates, just salty. Optional note. 24 locks on this phone. Lock stops when the shelf is full.</span>
+          </li>
+          <li>
+            <strong>Cool-down</strong>
+            <span>Presets are +5m, +15m, +30m, and +60m, or an exact minute. A time already past opens the queue immediately.</span>
+          </li>
+          <li>
+            <strong>LOCKED FROM QUEUE</strong>
+            <span>The card carries that stamp and a live countdown. It is the screenshot.</span>
+          </li>
+          <li>
+            <strong>Auto-unlock</strong>
+            <span>If this tab is open when the clock hits, the lock opens and the badge reads Waited. Coming back later does the same.</span>
+          </li>
+          <li>
+            <strong>Break the lock</strong>
+            <span>Ends the cool-down early and logs it as Broke, with the time. Undo puts the lock back while the cool-down is still ahead.</span>
+          </li>
+          <li>
+            <strong>Shelf</strong>
+            <span>Past locks show Waited or Broke. Star one to pin it. Remove one, or clear all. Undo puts it back until the toast leaves.</span>
+          </li>
+          <li>
+            <strong>Filters</strong>
+            <span>All, active, and done. A shelf link still packs every lock.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link packs the open card or the whole shelf into <code>#q=</code> or <code>?q=</code>. Their lock follows the unlock time. A break does not travel. Keep or Not now. A duplicate says it is already on this phone. Keep at the cap may evict the oldest lock, with Undo. Not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>Sample</strong>
+            <span>Load a sample drops a Ranked — Control lock with a 15 minute cool-down.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>queue-lock-v1</code>. Offline cache <code>queue-lock-v1</code>. No accounts, no launcher, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: a game launcher, matchmaking, accounts, ads, live sync, or anything that phones home. Entertainment, and a self-control gag.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this lock.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They follow the unlock time. If you already broke the lock, their copy stays locked until the clock. Later edits here do not move theirs.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The lock is packed into the link itself (<code>#q=</code>, or <code>?q=</code> if the token is in the query string). A break does not travel.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="lock.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
