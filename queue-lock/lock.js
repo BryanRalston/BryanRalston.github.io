@@ -2,10 +2,10 @@
   "use strict";
 
   const STORAGE_KEY = "queue-lock-v1";
+  const STORAGE_BACKUP_KEY = "queue-lock-v1-corrupt";
   const LOCK_CAP = 24;
   const GAME_MAX = 80;
   const NOTE_MAX = 140;
-  const SAMPLE_ID = "sample-ranked-control";
   const MAX_AHEAD_MS = 400 * 24 * 60 * 60 * 1000;
   const MIN_UNLOCK = Date.UTC(2020, 0, 1);
   const MAX_UNLOCK = Date.UTC(2100, 0, 1);
@@ -239,6 +239,7 @@
       brokeAt: brokeAt,
       waitedAt: broke ? 0 : normalizeWhen(raw.waitedAt),
       starred: raw.starred === true,
+      arrivedOpen: raw.arrivedOpen === true && !broke,
       created: created,
       updated: stamp(raw.updated != null ? raw.updated : created),
     };
@@ -260,6 +261,15 @@
 
   function emptyState() {
     return { v: 1, filter: "all", locks: [] };
+  }
+
+  function readStored(raw) {
+    if (raw == null || raw === "") return { corrupt: false, state: null, backup: "" };
+    try {
+      return { corrupt: false, state: normalizeState(JSON.parse(raw)), backup: "" };
+    } catch (_) {
+      return { corrupt: true, state: emptyState(), backup: String(raw) };
+    }
   }
 
   function normalizeFilter(value) {
@@ -299,8 +309,9 @@
         unlockAt: unlockAt,
         broke: false,
         brokeAt: 0,
-        waitedAt: opening ? at : 0,
+        waitedAt: opening ? unlockAt : 0,
         starred: false,
+        arrivedOpen: opening,
         created: at,
         updated: at,
       },
@@ -354,6 +365,7 @@
   }
 
   function withLock(lock, patch) {
+    const arrivedOpen = patch.arrivedOpen !== undefined ? patch.arrivedOpen === true : lock.arrivedOpen === true;
     return {
       id: lock.id,
       game: lock.game,
@@ -364,6 +376,7 @@
       brokeAt: patch.brokeAt,
       waitedAt: patch.waitedAt,
       starred: patch.starred,
+      arrivedOpen: patch.broke === true ? false : arrivedOpen,
       created: lock.created,
       updated: patch.updated,
     };
@@ -562,12 +575,12 @@
       brokeAt: name === "broke" ? lock.brokeAt : 0,
       waitedAt: name === "waited" ? (lock.waitedAt || lock.unlockAt) : 0,
       starred: lock.starred === true,
+      arrivedOpen: name === "waited" && lock.arrivedOpen === true,
     };
   }
 
   function sampleDraft(now) {
     return {
-      id: SAMPLE_ID,
       game: "Ranked — Control",
       reasons: ["lag", "bad-call"],
       note: "One more queue will not fix it.",
@@ -576,9 +589,6 @@
   }
 
   function loadSample(state, now) {
-    if (state.locks.some(function (lock) { return lock.id === SAMPLE_ID; })) {
-      return { ok: false, reason: "exists", state: state };
-    }
     return addLock(state, sampleDraft(now), now);
   }
 
@@ -608,6 +618,7 @@
       brokeAt: 0,
       waitedAt: 0,
       starred: false,
+      arrivedOpen: false,
       created: clean.created,
       updated: clean.updated,
     };
@@ -647,10 +658,18 @@
     return { v: 1, k: kind, locks: locks };
   }
 
-  function pickDropIndex(list, protectId) {
+  function canDrop(lock, now, protectId) {
+    if (!lock) return false;
+    if (protectId && lock.id === protectId) return false;
+    if (lock.starred) return false;
+    const name = phase(lock, now);
+    return name === "waited" || name === "broke";
+  }
+
+  function pickDropIndex(list, protectId, now) {
     let best = -1;
     for (let i = 0; i < list.length; i++) {
-      if (protectId && list[i].id === protectId) continue;
+      if (!canDrop(list[i], now, protectId)) continue;
       if (best < 0) {
         best = i;
         continue;
@@ -662,10 +681,24 @@
     return best;
   }
 
-  function keepShare(state, share, openId) {
+  function keptLock(lock, now) {
+    const at = stamp(now);
+    if (lock.unlockAt > at) return lock;
+    return withLock(lock, {
+      broke: false,
+      brokeAt: 0,
+      waitedAt: lock.unlockAt,
+      starred: false,
+      updated: at,
+      arrivedOpen: true,
+    });
+  }
+
+  function keepShare(state, share, openId, now) {
     if (!share || !Array.isArray(share.locks) || !share.locks.length) {
       return { ok: false, reason: "missing", state: state };
     }
+    const at = stamp(now);
     const have = Object.create(null);
     state.locks.forEach(function (lock) { have[lock.id] = true; });
     const fresh = [];
@@ -673,7 +706,7 @@
       const clean = sharedLock(lock);
       if (!clean || have[clean.id]) return;
       have[clean.id] = true;
-      fresh.push(clean);
+      fresh.push(keptLock(clean, at));
     });
     if (!fresh.length) return { ok: false, reason: "exists", state: state };
     const batch = fresh.slice(0, LOCK_CAP);
@@ -681,8 +714,7 @@
     const next = state.locks.slice();
     const dropped = [];
     while (next.length + batch.length > LOCK_CAP) {
-      let dropAt = pickDropIndex(next, protect);
-      if (dropAt < 0) dropAt = pickDropIndex(next, "");
+      const dropAt = pickDropIndex(next, protect, at);
       if (dropAt < 0) return { ok: false, reason: "cap", state: state };
       const victim = next[dropAt];
       const originalIndex = state.locks.findIndex(function (lock) { return lock.id === victim.id; });
@@ -745,10 +777,10 @@
 
   root.QueueLock = {
     STORAGE_KEY: STORAGE_KEY,
+    STORAGE_BACKUP_KEY: STORAGE_BACKUP_KEY,
     LOCK_CAP: LOCK_CAP,
     GAME_MAX: GAME_MAX,
     NOTE_MAX: NOTE_MAX,
-    SAMPLE_ID: SAMPLE_ID,
     MAX_AHEAD_MS: MAX_AHEAD_MS,
     REASON_ORDER: REASON_ORDER,
     reasonLabel: reasonLabel,
@@ -762,6 +794,7 @@
     presetUnlock: presetUnlock,
     emptyState: emptyState,
     normalizeState: normalizeState,
+    readStored: readStored,
     addLock: addLock,
     removeLock: removeLock,
     restoreLock: restoreLock,

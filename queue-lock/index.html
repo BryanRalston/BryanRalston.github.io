@@ -142,7 +142,7 @@
             <input id="fieldUnlock" name="unlock" type="datetime-local" />
           </label>
         </fieldset>
-        <p class="hint">Until that minute this phone treats the queue as closed. If this tab is open when the clock hits, the lock opens on its own. Break the lock if you queue anyway — that is logged as broke. A time already past opens immediately.</p>
+        <p class="hint">Until that time this phone treats the queue as closed. If this tab is open when the clock hits, the lock opens on its own. Break the lock if you queue anyway — that is logged as broke. A time already past opens immediately.</p>
         <p id="formError" class="form-error" hidden role="alert"></p>
         <div class="form-actions">
           <button type="submit" class="btn primary wide" id="btnSave">Lock</button>
@@ -157,7 +157,7 @@
       </div>
       <h2 class="sr-only" id="cardLabel">Locked card</h2>
       <div id="lockCard" class="lock-card"></div>
-      <p class="hint">The card is the screenshot. A copied link follows the unlock time. If you already broke the lock, their copy stays locked until the clock. Not live sync. Not a game launcher.</p>
+      <p class="hint">A copied link follows the unlock time. If you already broke the lock, their copy stays locked until the clock. Not live sync. Not a game launcher.</p>
       <div class="card-actions">
         <button type="button" class="btn primary wide" id="btnBreak">Break the lock</button>
         <button type="button" class="btn ghost" id="btnCardShare">Copy link</button>
@@ -182,11 +182,11 @@
           </li>
           <li>
             <strong>LOCKED FROM QUEUE</strong>
-            <span>The card carries that stamp and a live countdown. It is the screenshot.</span>
+            <span>The card carries that stamp and a live countdown.</span>
           </li>
           <li>
             <strong>Auto-unlock</strong>
-            <span>If this tab is open when the clock hits, the lock opens and the badge reads Waited. Coming back later does the same.</span>
+            <span>If this tab is open when the clock hits, the lock opens and the card reads Queue open. Coming back later does the same.</span>
           </li>
           <li>
             <strong>Break the lock</strong>
@@ -194,7 +194,7 @@
           </li>
           <li>
             <strong>Shelf</strong>
-            <span>Past locks show Waited or Broke. Star one to pin it. Remove one, or clear all. Undo puts it back until the toast leaves.</span>
+            <span>Past locks show Queue open or Lock broken. Star one to pin it. Remove a finished lock, or clear all. Undo puts it back until the toast leaves. Remove on an active lock counts as a break.</span>
           </li>
           <li>
             <strong>Filters</strong>
@@ -202,7 +202,7 @@
           </li>
           <li>
             <strong>Snapshot share</strong>
-            <span>Copy link packs the open card or the whole shelf into <code>#q=</code> or <code>?q=</code>. Their lock follows the unlock time. A break does not travel. Keep or Not now. A duplicate says it is already on this phone. Keep at the cap may evict the oldest lock, with Undo. Not live sync. Nothing is uploaded.</span>
+            <span>Copy link packs the open card or the whole shelf into <code>#q=</code> or <code>?q=</code>. Their lock follows the unlock time. A break does not travel. Keep or Not now. A duplicate says it is already on this phone. Keep at the cap drops the oldest finished, unstarred lock, with Undo. Active and starred locks stay. Not live sync. Nothing is uploaded.</span>
           </li>
           <li>
             <strong>Sample</strong>
@@ -210,7 +210,7 @@
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>queue-lock-v1</code>. Offline cache <code>queue-lock-v1</code>. No accounts, no launcher, no analytics.</span>
+            <span>Store <code>queue-lock-v1</code>. Offline cache <code>queue-lock-v2</code>. No accounts, no launcher, no analytics.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: a game launcher, matchmaking, accounts, ads, live sync, or anything that phones home. Entertainment, and a self-control gag.</p>

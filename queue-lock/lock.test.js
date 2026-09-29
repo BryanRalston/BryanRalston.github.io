@@ -34,6 +34,7 @@ function eq(a, b, message) {
 const NOW = Date.UTC(2026, 8, 29, 18, 0, 0);
 
 eq(QueueLock.STORAGE_KEY, "queue-lock-v1", "storage key");
+eq(QueueLock.STORAGE_BACKUP_KEY, "queue-lock-v1-corrupt", "corrupt backup key");
 eq(QueueLock.LOCK_CAP, 24, "cap");
 eq(QueueLock.formatCountdown(0), "00:00", "zero");
 eq(QueueLock.formatCountdown(1000), "00:01", "one second");
@@ -125,9 +126,11 @@ const past = QueueLock.addLock(QueueLock.emptyState(), {
   game: "Already over",
   unlockAt: NOW - 1000,
 }, NOW);
-eq(past.lock.waitedAt, NOW, "a past unlock records now");
+eq(past.lock.waitedAt, NOW - 1000, "a past unlock records the unlock time");
+eq(past.lock.arrivedOpen, true, "a past unlock did not wait on this phone");
 eq(QueueLock.phase(past.lock, NOW), "waited", "past opens as waited");
 eq(past.lock.broke, false, "past is not a break");
+eq(QueueLock.settleDue(past.state, NOW).opened.length, 0, "a past unlock does not toast later");
 
 const starred = QueueLock.setStar(state, "short", true, NOW + 40);
 assert(starred.ok, "star");
@@ -167,12 +170,14 @@ eq(QueueLock.loadSample(capped, NOW).reason, "cap", "sample blocked at cap");
 
 const sample = QueueLock.loadSample(QueueLock.emptyState(), NOW);
 assert(sample.ok, "sample");
-eq(sample.lock.id, QueueLock.SAMPLE_ID, "sample id");
+assert(sample.lock.id, "sample id");
 eq(sample.lock.game, "Ranked — Control", "sample game");
 eq(sample.lock.note, "One more queue will not fix it.", "sample note");
 eq(sample.lock.reasons.join(","), "bad-call,lag", "sample reasons");
 eq(QueueLock.phase(sample.lock, NOW), "locked", "sample locked");
-eq(QueueLock.loadSample(sample.state, NOW).reason, "exists", "sample once");
+const sampleAgain = QueueLock.loadSample(sample.state, NOW + 1);
+assert(sampleAgain.ok, "second sample");
+assert(sampleAgain.lock.id !== sample.lock.id, "each sample has its own id");
 
 const card = QueueLock.shareCard(state.locks.find((lock) => lock.id === gameId));
 eq(card.k, "card", "card kind");
@@ -204,8 +209,9 @@ eq(poisoned.locks[0].brokeAt, 0, "parse drops brokeAt");
 eq(poisoned.locks[0].waitedAt, 0, "parse drops waitedAt");
 eq(poisoned.locks[0].starred, false, "parse drops star");
 eq(QueueLock.phase(poisoned.locks[0], NOW + 1000), "locked", "poisoned share stays locked");
-const keptEarly = QueueLock.keepShare(QueueLock.emptyState(), poisoned);
+const keptEarly = QueueLock.keepShare(QueueLock.emptyState(), poisoned, "", NOW);
 eq(keptEarly.state.locks[0].broke, false, "keep drops broke");
+eq(keptEarly.state.locks[0].arrivedOpen, false, "future keep is not already open");
 
 const vaultPacked = QueueLock.shareVault(state);
 assert(vaultPacked.e.every((row) => row.broke === undefined && row.brokeAt === undefined), "vault share omits broke");
@@ -215,30 +221,97 @@ const mine = QueueLock.addLock(QueueLock.emptyState(), {
   game: "Mine",
   unlockAt: NOW + 1000,
 }, NOW).state;
-const kept = QueueLock.keepShare(mine, QueueLock.parseShare(vaultPacked));
+const kept = QueueLock.keepShare(mine, QueueLock.parseShare(vaultPacked), "", NOW);
 assert(kept.ok, "keep adds");
-eq(QueueLock.keepShare(kept.state, QueueLock.parseShare(card)).reason, "exists", "duplicate card");
+eq(QueueLock.keepShare(kept.state, QueueLock.parseShare(card), "", NOW).reason, "exists", "duplicate card");
 
 const extra = QueueLock.parseShare({
   v: 1,
   k: "card",
   e: [{ id: "new-lock", game: "New queue", unlockAt: NOW + 60000, created: NOW, updated: NOW }],
 });
-const madeRoom = QueueLock.keepShare(capped, extra);
-assert(madeRoom.ok, "keep at cap");
+const refusedActive = QueueLock.keepShare(capped, extra, "", NOW);
+eq(refusedActive.ok, false, "active shelf is not evicted");
+eq(refusedActive.reason, "cap", "cap when nothing finished can go");
+eq(refusedActive.state.locks.length, 24, "active shelf unchanged");
+assert(refusedActive.state.locks.some((lock) => lock.id === "n0"), "oldest active stays");
+
+const mixed = [];
+for (let i = 0; i < 22; i += 1) {
+  mixed.push({
+    id: "f" + i,
+    game: "Finished " + i,
+    unlockAt: NOW - 60 * 1000,
+    created: NOW + i,
+    updated: NOW + i,
+    waitedAt: NOW - 60 * 1000,
+  });
+}
+mixed.push({
+  id: "star-done",
+  game: "Starred done",
+  unlockAt: NOW - 60 * 1000,
+  created: NOW - 50,
+  updated: NOW,
+  waitedAt: NOW - 60 * 1000,
+  starred: true,
+});
+mixed.push({
+  id: "still-locked",
+  game: "Still locked",
+  unlockAt: NOW + 60 * 60 * 1000,
+  created: NOW - 80,
+  updated: NOW,
+  starred: true,
+});
+const mixedState = QueueLock.normalizeState({ v: 1, filter: "all", locks: mixed });
+eq(mixedState.locks.length, 24, "mixed shelf is full");
+const madeRoom = QueueLock.keepShare(mixedState, extra, "", NOW);
+assert(madeRoom.ok, "keep at cap drops a finished lock");
 eq(madeRoom.dropped.length, 1, "one eviction");
-eq(madeRoom.dropped[0].lock.id, "n0", "oldest evicted");
+eq(madeRoom.dropped[0].lock.id, "f0", "oldest finished unstarred evicted");
 eq(madeRoom.state.locks[0].id, "new-lock", "kept lock is first");
 eq(madeRoom.state.locks.length, 24, "cap holds");
-assert(!madeRoom.state.locks.some((lock) => lock.id === "n0"), "oldest is gone");
+assert(!madeRoom.state.locks.some((lock) => lock.id === "f0"), "oldest finished is gone");
+assert(madeRoom.state.locks.some((lock) => lock.id === "star-done"), "starred finished stays");
+assert(madeRoom.state.locks.some((lock) => lock.id === "still-locked"), "active lock stays");
 
-const protectedKeep = QueueLock.keepShare(capped, QueueLock.parseShare({
+const protectedKeep = QueueLock.keepShare(mixedState, QueueLock.parseShare({
   v: 1,
   k: "card",
   e: [{ id: "newer", game: "Newer", unlockAt: NOW + 60000, created: NOW, updated: NOW }],
-}), "n0");
-eq(protectedKeep.dropped[0].lock.id, "n1", "open lock is not the first eviction");
-assert(protectedKeep.state.locks.some((lock) => lock.id === "n0"), "open lock stays");
+}), "f0", NOW);
+eq(protectedKeep.dropped[0].lock.id, "f1", "open lock is not the first eviction");
+assert(protectedKeep.state.locks.some((lock) => lock.id === "f0"), "open lock stays");
+
+const onlyStarred = QueueLock.normalizeState({
+  v: 1,
+  filter: "all",
+  locks: mixed.map((lock) => Object.assign({}, lock, { starred: true })),
+});
+eq(QueueLock.keepShare(onlyStarred, extra, "", NOW).reason, "cap", "starred shelf is not evicted");
+
+const expiredShare = QueueLock.parseShare({
+  v: 1,
+  k: "card",
+  e: [{ id: "already-open", game: "Old queue", unlockAt: NOW - 60000, created: NOW - 120000, updated: NOW - 120000 }],
+});
+const keptOld = QueueLock.keepShare(QueueLock.emptyState(), expiredShare, "", NOW);
+assert(keptOld.ok, "keep an expired lock");
+eq(keptOld.state.locks[0].waitedAt, NOW - 60000, "expired import is already waited");
+eq(keptOld.state.locks[0].arrivedOpen, true, "expired import did not wait here");
+eq(keptOld.state.locks[0].broke, false, "expired import is not a break");
+eq(QueueLock.settleDue(keptOld.state, NOW + 1000).opened.length, 0, "expired import does not open again");
+assert(QueueLock.shareCard(keptOld.state.locks[0]).e[0].arrivedOpen === undefined, "share omits arrivedOpen");
+
+const corrupt = QueueLock.readStored("{not-json");
+eq(corrupt.corrupt, true, "bad json is corrupt");
+eq(corrupt.backup, "{not-json", "bad json is kept for backup");
+eq(corrupt.state.locks.length, 0, "corrupt read starts empty");
+const sound = QueueLock.readStored(JSON.stringify({ v: 1, filter: "active", locks: [] }));
+eq(sound.corrupt, false, "valid json is not corrupt");
+eq(sound.state.filter, "active", "valid json keeps the filter");
+eq(QueueLock.readStored("").corrupt, false, "empty storage is not corrupt");
 
 const cleared = QueueLock.clearLocks(state);
 eq(cleared.locks.length, 0, "clear");
@@ -284,7 +357,7 @@ async function roundTrip() {
   assert(html.indexOf("Lock stops when the shelf is full.") !== -1, "cap is up front");
   assert(app.indexOf('"#q="') !== -1 && app.indexOf('"q"') !== -1, "app reads hash and query");
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate copy");
-  assert(app.indexOf("The oldest lock made room.") !== -1, "evict copy");
+  assert(app.indexOf("A finished lock made room.") !== -1, "evict copy");
   assert(app.indexOf('"hashchange"') !== -1 && app.indexOf('"popstate"') !== -1, "later share navigation");
   const boot = app.slice(app.indexOf("async function boot"));
   assert(boot.indexOf("await pullShare()") !== -1 && boot.indexOf("await pullShare()") < boot.indexOf('addEventListener("hashchange"'), "listeners after first import");
@@ -292,9 +365,22 @@ async function roundTrip() {
   const capAt = openAddFn.indexOf("LOCK_CAP");
   const viewAt = openAddFn.indexOf('setView("form")');
   assert(capAt !== -1 && viewAt !== -1 && capAt < viewAt, "full shelf blocks the form");
-  assert(sw.indexOf('const CACHE = "queue-lock-v1"') !== -1, "cache name");
+  assert(sw.indexOf('const CACHE = "queue-lock-v2"') !== -1, "cache name");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");
+  assert(html.indexOf("queue-lock-v2") !== -1, "cache name in the feature map");
+  assert(html.indexOf("The card is the screenshot") === -1, "screenshot line is gone");
+  assert(html.indexOf("It is the screenshot") === -1, "feature map screenshot line is gone");
+  assert(app.indexOf("This counts as a break.") !== -1, "active remove counts as a break");
+  assert(app.indexOf("preserveUndo") !== -1, "automatic toast keeps an undo");
+  assert(app.indexOf("Unlocked ") !== -1, "arrived-open copy");
+  assert(app.indexOf("keepDraft") !== -1, "share keeps a half-filled draft");
+  assert(app.indexOf("STORAGE_BACKUP_KEY") !== -1, "corrupt value is backed up");
+  assert(app.indexOf("chosenUnlock") !== -1, "presets resolve when lock is pressed");
+  const tickFn = app.slice(app.indexOf("function tick"), app.indexOf("function scheduleTick"));
+  assert(tickFn.indexOf("preserveUndo") !== -1, "tick will not cover an undo toast");
+  const pullFn = app.slice(app.indexOf("async function pullShare"), app.indexOf("function onShareNav"));
+  assert(pullFn.indexOf('view === "form"') !== -1, "share on an open form stays put");
   assert(sw.indexOf("localStorage") === -1, "worker does not touch storage");
   assert(css.indexOf(".lock-card") !== -1, "lock card");
   assert(css.indexOf(".stamp-plate") !== -1, "stamp");
