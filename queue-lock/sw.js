@@ -1,4 +1,4 @@
-const CACHE = "queue-lock-v1";
+const CACHE = "queue-lock-v2";
 const ASSETS = [
   "./",
   "./index.html",

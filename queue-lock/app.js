@@ -21,6 +21,7 @@
     btnShareVault: document.getElementById("btnShareVault"),
     filters: document.getElementById("filters"),
     shelfSub: document.getElementById("shelfSub"),
+    btnSample: document.getElementById("btnSample"),
     emptyState: document.getElementById("emptyState"),
     filterEmpty: document.getElementById("filterEmpty"),
     filterEmptyKicker: document.getElementById("filterEmptyKicker"),
@@ -62,6 +63,9 @@
   let tripId = "";
   let pendingFocus = "";
   let shareImporting = false;
+  let presetKind = "";
+  let keepDraft = false;
+  let recoveredCorrupt = false;
 
   function reasonMessage(reason) {
     switch (reason) {
@@ -93,6 +97,7 @@
 
   function toast(message, options) {
     const opts = options || {};
+    if (opts.preserveUndo && undoBag) return;
     els.toastText.textContent = message;
     undoBag = opts.undo || null;
     els.toastUndo.hidden = !undoBag;
@@ -129,14 +134,24 @@
       failStorage();
       return null;
     }
+    let raw = null;
     try {
-      const raw = localStorage.getItem(QueueLock.STORAGE_KEY);
-      if (!raw) return null;
-      return QueueLock.normalizeState(JSON.parse(raw));
+      raw = localStorage.getItem(QueueLock.STORAGE_KEY);
     } catch (_) {
       failStorage();
       return null;
     }
+    const parsed = QueueLock.readStored(raw);
+    if (!parsed.corrupt) return parsed.state;
+    try {
+      localStorage.setItem(QueueLock.STORAGE_BACKUP_KEY, parsed.backup);
+      localStorage.setItem(QueueLock.STORAGE_KEY, JSON.stringify(parsed.state));
+    } catch (_) {
+      failStorage();
+      return null;
+    }
+    recoveredCorrupt = true;
+    return parsed.state;
   }
 
   function save() {
@@ -152,10 +167,6 @@
 
   function findLock(id) {
     return state.locks.find((lock) => lock.id === id) || null;
-  }
-
-  function hasSample() {
-    return state.locks.some((lock) => lock.id === QueueLock.SAMPLE_ID);
   }
 
   function setView(next) {
@@ -205,9 +216,26 @@
   }
 
   function pressPreset(kind) {
+    presetKind = kind;
     els.presetChips.querySelectorAll("[data-preset]").forEach((btn) => {
       btn.setAttribute("aria-pressed", btn.dataset.preset === kind ? "true" : "false");
     });
+  }
+
+  function chosenUnlock(now) {
+    switch (presetKind) {
+      case "5":
+      case "15":
+      case "30":
+      case "60":
+        return QueueLock.presetUnlock(presetKind, now);
+      case "":
+        return els.fieldUnlock.value ? new Date(els.fieldUnlock.value).getTime() : NaN;
+      default: {
+        const _never = presetKind;
+        throw new Error("Unknown preset " + _never);
+      }
+    }
   }
 
   function applyUnlock(ms, kind) {
@@ -226,18 +254,20 @@
       toast(reasonMessage("cap"));
       return;
     }
-    els.fieldGame.value = "";
-    els.fieldNote.value = "";
-    clearReasons();
+    if (!keepDraft) {
+      els.fieldGame.value = "";
+      els.fieldNote.value = "";
+      clearReasons();
+      applyUnlock(QueueLock.presetUnlock("15", Date.now()), "15");
+    }
+    keepDraft = false;
     hideFormError();
-    applyUnlock(QueueLock.presetUnlock("15", Date.now()), "15");
     setView("form");
     render();
     els.fieldGame.focus();
   }
 
-  function readDraft() {
-    const raw = els.fieldUnlock.value;
+  function readDraft(now) {
     const reasons = [];
     els.reasonChips.querySelectorAll("[data-reason]").forEach((btn) => {
       if (btn.getAttribute("aria-pressed") === "true") reasons.push(btn.dataset.reason);
@@ -246,7 +276,7 @@
       game: els.fieldGame.value,
       reasons: reasons,
       note: els.fieldNote.value,
-      unlockAt: raw ? new Date(raw).getTime() : NaN,
+      unlockAt: chosenUnlock(now),
     };
   }
 
@@ -306,6 +336,7 @@
       case "locked":
         return "Unlocks " + QueueLock.formatUnlock(face.unlockAt);
       case "waited":
+        if (face.arrivedOpen) return "Unlocked " + QueueLock.formatUnlock(face.unlockAt);
         return "Waited until " + QueueLock.formatUnlock(face.waitedAt || face.unlockAt);
       case "broke":
         return "Broke at " + QueueLock.formatUnlock(face.brokeAt);
@@ -337,9 +368,9 @@
       case "locked":
         return "Locked from queue. " + face.game + ". " + QueueLock.formatCountdown(face.unlockAt - now) + " left.";
       case "waited":
-        return "Queue open. " + face.game + ". Waited.";
+        return "Queue open. " + face.game + ".";
       case "broke":
-        return "Lock broken. " + face.game + ". Broke.";
+        return "Lock broken. " + face.game + ".";
       default: {
         const _never = face.phase;
         throw new Error("Unknown phase " + _never);
@@ -458,7 +489,6 @@
 
     const top = el("div", "row-top");
     top.append(el("span", "row-stamp", face.stamp));
-    if (face.badge) top.append(el("span", "badge " + face.phase, face.badge));
     if (face.starred) top.append(el("span", "star-mark", "★"));
     card.append(top);
     card.append(el("h3", "row-title", face.game));
@@ -505,7 +535,13 @@
     els.btnShareVault.disabled = !hasAny;
     els.filters.hidden = !hasAny;
     els.btnClear.hidden = !hasAny;
-    els.btnSampleShelf.hidden = !hasAny || hasSample();
+    const full = state.locks.length >= QueueLock.LOCK_CAP;
+    els.btnSampleShelf.hidden = !hasAny || full;
+    els.btnSampleShelf.disabled = full;
+    if (els.btnSample) {
+      els.btnSample.hidden = full;
+      els.btnSample.disabled = full;
+    }
     els.emptyState.hidden = hasAny;
     els.list.hidden = !visible.length;
     els.list.replaceChildren();
@@ -532,25 +568,22 @@
   }
 
   function readout(face, now) {
-    const node = el("p", "clock");
-    node.setAttribute("aria-hidden", "true");
     switch (face.phase) {
-      case "locked":
+      case "locked": {
+        const node = el("p", "clock");
+        node.setAttribute("aria-hidden", "true");
         node.textContent = QueueLock.formatCountdown(face.unlockAt - now);
         node.setAttribute("data-countdown", String(face.unlockAt));
-        break;
+        return node;
+      }
       case "waited":
-        node.textContent = "OPEN";
-        break;
       case "broke":
-        node.textContent = "BROKE";
-        break;
+        return null;
       default: {
         const _never = face.phase;
         throw new Error("Unknown phase " + _never);
       }
     }
-    return node;
   }
 
   function paintCard(now) {
@@ -582,11 +615,11 @@
     brand.prepend(lockGlyph());
     els.lockCard.append(brand);
     const chrome = el("div", "card-chrome");
-    if (face.badge) chrome.append(el("span", "badge " + face.phase, face.badge));
     if (face.starred) chrome.append(el("span", "star-mark", "★"));
     if (chrome.childNodes.length) els.lockCard.append(chrome);
     els.lockCard.append(stampPlate(face));
-    els.lockCard.append(readout(face, now));
+    const clock = readout(face, now);
+    if (clock) els.lockCard.append(clock);
     els.lockCard.append(el("h3", "card-title", face.game));
     const reasons = reasonRow(face.reasons);
     if (reasons) els.lockCard.append(reasons);
@@ -731,6 +764,12 @@
   }
 
   function onRemove(id) {
+    const current = findLock(id);
+    if (current && QueueLock.phase(current, Date.now()) === "locked") {
+      if (!window.confirm("This counts as a break.")) return;
+      onBreak(id);
+      return;
+    }
     const result = QueueLock.removeLock(state, id);
     if (!result.ok) {
       toast(reasonMessage(result.reason));
@@ -792,7 +831,7 @@
   function keepIncoming() {
     if (!incoming) return;
     const share = incoming;
-    const result = QueueLock.keepShare(state, share, cardId);
+    const result = QueueLock.keepShare(state, share, cardId, Date.now());
     incoming = null;
     if (!result.ok) {
       if (result.reason === "exists") {
@@ -808,6 +847,12 @@
         return;
       }
       render();
+      if (result.reason === "cap") {
+        const line = "This phone holds 24 locks. Active and starred locks stay. Remove a finished one to keep this.";
+        announce(line);
+        toast(line);
+        return;
+      }
       toast(reasonMessage(result.reason));
       return;
     }
@@ -825,9 +870,9 @@
     }
     render();
     const note = dropped.length === 1
-      ? "Kept. The oldest lock made room."
+      ? "Kept. A finished lock made room."
       : dropped.length > 1
-        ? "Kept. The oldest locks made room."
+        ? "Kept. Finished locks made room."
         : "Kept on this phone.";
     announce(note);
     const undo = dropped.length ? function undoKeep() {
@@ -975,7 +1020,8 @@
       const parsed = await tryImportShare();
       if (!parsed) return false;
       incoming = parsed;
-      if (view !== "shelf") setView("shelf");
+      if (view === "form") keepDraft = true;
+      else if (view !== "shelf") setView("shelf");
       announce("A shared cool-down is ready to keep on this phone.");
       return true;
     } finally {
@@ -1022,15 +1068,6 @@
   function loadSample() {
     const added = QueueLock.loadSample(state, Date.now());
     if (!added.ok) {
-      if (added.reason === "exists") {
-        cardId = QueueLock.SAMPLE_ID;
-        pendingFocus = "card";
-        setView("card");
-        render();
-        announce("Already on this phone.");
-        toast("Already on this phone.");
-        return;
-      }
       toast(reasonMessage(added.reason));
       return;
     }
@@ -1043,17 +1080,7 @@
     flash(added.lock.id);
     toast("Sample locked on this phone.", {
       undo() {
-        const removed = QueueLock.removeLock(state, added.lock.id);
-        if (!removed.ok) {
-          toast(reasonMessage(removed.reason));
-          return;
-        }
-        state = removed.state;
-        save();
-        cardId = "";
-        setView("shelf");
-        render();
-        toast("Sample removed.");
+        undoCreate(added.lock.id);
       },
     });
   }
@@ -1069,7 +1096,7 @@
       announce(sentence);
       tripId = last;
       render();
-      toast(result.opened.length === 1 ? "Cool-down ended." : result.opened.length + " cool-downs ended.");
+      toast(result.opened.length === 1 ? "Cool-down ended." : result.opened.length + " cool-downs ended.", { preserveUndo: true });
       window.setTimeout(() => {
         if (tripId !== last) return;
         tripId = "";
@@ -1157,8 +1184,8 @@
     els.lockForm.addEventListener("submit", (event) => {
       event.preventDefault();
       hideFormError();
-      const draft = readDraft();
       const now = Date.now();
+      const draft = readDraft(now);
       const result = QueueLock.addLock(state, draft, now);
       if (!result.ok) {
         showFormError(result.reason);
@@ -1186,22 +1213,37 @@
         }
       }
       flash(result.lock.id);
+      keepDraft = false;
       toast(face.phase === "locked" ? "Locked on this phone." : "That time already passed. Queue is open.", {
         undo() {
-          const removed = QueueLock.removeLock(state, result.lock.id);
-          if (!removed.ok) {
-            toast(reasonMessage(removed.reason));
-            return;
-          }
-          state = removed.state;
-          save();
-          cardId = "";
-          setView("shelf");
-          render();
-          toast("Lock undone.");
+          undoCreate(result.lock.id);
         },
       });
     });
+  }
+
+  function undoCreate(id) {
+    const lock = findLock(id);
+    if (!lock) {
+      toast(reasonMessage("missing"));
+      return;
+    }
+    if (QueueLock.phase(lock, Date.now()) === "locked") {
+      if (!window.confirm("This counts as a break.")) return;
+      onBreak(id);
+      return;
+    }
+    const removed = QueueLock.removeLock(state, id);
+    if (!removed.ok) {
+      toast(reasonMessage(removed.reason));
+      return;
+    }
+    state = removed.state;
+    save();
+    cardId = "";
+    setView("shelf");
+    render();
+    toast("Lock undone.");
   }
 
   async function boot() {
@@ -1216,6 +1258,7 @@
     wire();
     await pullShare();
     render();
+    if (recoveredCorrupt) toast("Saved locks could not be read. Started fresh on this phone.");
     scheduleTick();
     window.addEventListener("hashchange", onShareNav);
     window.addEventListener("popstate", onShareNav);
