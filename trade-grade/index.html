@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070814" />
+  <meta name="description" content="Trade Grade — fantasy trade roast booth. Name what you give and what you get, then get a seeded letter grade. Entertainment only. Not fantasy advice. Not betting. Stays on this device." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Trade Grade" />
+  <title>Trade Grade</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the booth</a>
+  <div class="yard" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Trade Grade cannot save on this device. Browser storage is blocked (private mode or a setting). The grades will not persist.
+  </div>
+  <noscript>
+    <p class="storage-fail">Trade Grade needs JavaScript to run the booth. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Fantasy booth</p>
+          <h1>Trade Grade</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Name the packages. Get a letter. Entertainment only. For the group chat. Not fantasy advice. Not betting. The same packages get the same card until you hit Re-grade.
+    </p>
+
+    <p class="sr-only" id="spoken" aria-live="polite"></p>
+
+    <section id="shareOffer" class="share-offer" hidden aria-labelledby="offerHeading">
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same roast, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a copy. It is not live sync. A re-grade on their phone does not change this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint">Keep adds that card on this phone. Not now drops the copy. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfBar" class="shelf-bar" hidden>
+      <button type="button" class="text-btn" id="btnLatest">Latest grade</button>
+      <p class="kicker quiet">From the shelf</p>
+    </div>
+
+    <section id="emptyHero" class="empty-hero" aria-labelledby="emptyHeading">
+      <p class="empty-kicker">The booth is dark</p>
+      <h2 id="emptyHeading">Two packages. One letter.</h2>
+      <p>Fantasy trade anxiety, played as a roast. Name what you give and what you get, then tap Grade. The booth stamps a letter and invents a reason. It is a costume on a coin, not a ranking.</p>
+    </section>
+
+    <article class="grade-card" id="gradeCard" hidden tabindex="-1" aria-labelledby="gradeHeading">
+      <div class="card-chrome">
+        <p class="kicker">The booth</p>
+        <div class="chrome-side">
+          <span class="star-pill" id="starPill" hidden>Starred</span>
+          <span class="stamp" id="stamp">Coin jersey</span>
+        </div>
+      </div>
+      <h2 class="sr-only" id="gradeHeading">No grade yet</h2>
+      <p class="letter" id="letterMark" data-band="c">—</p>
+      <p class="roast" id="roastLine"></p>
+      <div class="meter-row">
+        <div class="conf-lockup">
+          <p class="conf-num"><span id="confValue">0</span><span class="conf-unit">%</span></p>
+          <p class="conf-caption">theater</p>
+        </div>
+        <div
+          class="meter"
+          id="meter"
+          role="meter"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-valuetext="Entertainment confidence 0 percent. Not a projection."
+          aria-label="Entertainment confidence"
+        >
+          <span class="meter-fill" id="meterFill"></span>
+        </div>
+      </div>
+      <p class="meter-note">Entertainment meter. Not a projection. Not advice.</p>
+      <div class="exchange" id="exchange">
+        <div class="side give">
+          <p class="side-kicker">Give</p>
+          <p class="side-name" id="giveName"></p>
+        </div>
+        <p class="swap-mark" aria-hidden="true">↔</p>
+        <div class="side get">
+          <p class="side-kicker">Get</p>
+          <p class="side-name" id="getName"></p>
+        </div>
+      </div>
+      <p class="league-note" id="leagueNote" hidden></p>
+    </article>
+
+    <div class="actions" id="actionRow" hidden>
+      <button type="button" class="btn ghost" id="btnRegrade" aria-label="Re-grade, roll a new roast on the same letter">
+        Re-grade
+        <span class="btn-sub">New roast</span>
+      </button>
+      <button type="button" class="btn ghost" id="btnStar" aria-pressed="false">Star</button>
+      <button type="button" class="btn ghost" id="btnUndo" disabled>Undo</button>
+      <button type="button" class="btn primary" id="btnShare">Copy link</button>
+      <button type="button" class="btn ghost danger" id="btnRemove">Remove</button>
+    </div>
+
+    <section id="tradePanel" aria-labelledby="tradeHeading">
+      <form id="tradeForm" autocomplete="off" novalidate>
+        <p class="kicker" id="tradeKicker">The trade</p>
+        <h2 id="tradeHeading">Name the trade</h2>
+        <label for="fieldGive">What you give
+          <input id="fieldGive" name="give" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="next" placeholder="Ja'Marr Chase" />
+        </label>
+        <label for="fieldGet">What you get
+          <input id="fieldGet" name="get" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="next" placeholder="A flex dart and vibes" />
+        </label>
+        <label for="fieldNote">League / team <span class="opt">optional</span>
+          <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Work league · 12 team" />
+        </label>
+        <p class="hint">Give and get are required, and they have to differ. A league note rides along on the card. It does not change the letter. The same packages get the same roast until Re-grade.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnGrade">Grade</button>
+          <button type="button" class="btn ghost wide" id="btnSample">Load sample</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="historyPanel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The shelf</p>
+          <h2 id="historyHeading">Past grades</h2>
+        </div>
+        <button type="button" class="btn ghost" id="btnShareVault" disabled>Copy shelf link</button>
+      </div>
+      <p class="panel-sub" id="historySub">0 of 24 on this phone.</p>
+      <div class="filters" id="filters" role="group" aria-label="Filter grades" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="starred" aria-pressed="false">Starred</button>
+      </div>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">Nothing shelved</p>
+        <strong>The first grade lands here.</strong>
+      </div>
+      <div id="filterEmpty" class="empty compact" hidden>
+        <p class="empty-kicker">No stars</p>
+        <strong>Nothing starred.</strong>
+        <p>Star a grade to find it here. The rest are still on this phone.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+      <div class="history-foot">
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Trade Grade</strong> · On this device. A snapshot link (<code>#g=</code> or <code>?g=</code>) is a copy of a grade, not live sync. Entertainment only. For the group chat. Not fantasy advice. Not betting.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The grades stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>The trade</strong>
+            <span>What you give and what you get. A name or a package is required, and whitespace is trimmed. A league or team note is optional. The two sides have to differ. Markup and emoji stay as text.</span>
+          </li>
+          <li>
+            <strong>Grade</strong>
+            <span>A theatrical letter card. A+ through F, one roast line, a confidence meter, and the give ↔ get summary. The meter is entertainment theater, not a projection and not a model.</span>
+          </li>
+          <li>
+            <strong>Same pair</strong>
+            <span>The same give and get, once normalized, always get the same letter and the same roast. The league note does not move the grade. Grading that pair again brings the card back to the top.</span>
+          </li>
+          <li>
+            <strong>Re-grade</strong>
+            <span>A new seeded roast on that same letter. The star stays. Undo re-grade restores the previous line.</span>
+          </li>
+          <li>
+            <strong>Star</strong>
+            <span>Mark a grade you want on the starred filter. Undo star takes the mark off.</span>
+          </li>
+          <li>
+            <strong>Undo</strong>
+            <span>The Undo button takes back the last grade, re-grade, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a grade that had to make room.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Up to 24 grades on this phone. Filters are all and starred. Open one, remove one, or clear every grade. Undo puts them back until the toast leaves. A new grade at the cap drops the oldest unstarred grade. Starred grades stay.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link packs the open grade, including one opened from the shelf, into <code>#g=</code>. Copy shelf link packs every grade. <code>?g=</code> works if the token is in the query string. Opening it offers Keep or Not now. Keep does not copy the sender's star. A duplicate says Already on this phone. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>Load sample</strong>
+            <span>Ja'Marr Chase for a flex dart and vibes, so there is a card to look at without typing.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>trade-grade-v1</code>. Offline cache <code>trade-grade-v1</code>. The page is fetched from the network when you are online. If storage is blocked, a banner says so. No accounts, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: fantasy advice, betting, projections, news, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this grade.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They can keep the same card. Later re-grades here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The grade is packed into the link itself (<code>#g=</code>, or <code>?g=</code> if the token is moved into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="grade.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
