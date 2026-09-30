@@ -1,4 +1,4 @@
-const CACHE = "trade-grade-v1";
+const CACHE = "trade-grade-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -17,6 +17,10 @@ function isHtml(req) {
   if (req.mode === "navigate") return true;
   const accept = req.headers.get("accept") || "";
   return accept.indexOf("text/html") !== -1;
+}
+
+function isScriptOrStyle(url) {
+  return /\.(?:js|css)$/i.test(url.pathname);
 }
 
 async function networkFirst(req, cacheKey) {
@@ -49,6 +53,26 @@ async function cacheFirst(req, cacheKey) {
   return res;
 }
 
+async function staleWhileRevalidate(event, req, cacheKey) {
+  const cache = await caches.open(CACHE);
+  const hit = await cache.match(cacheKey);
+  const fetched = fetch(req).then(function (res) {
+    if (res && res.ok) {
+      cache.put(cacheKey, res.clone()).catch(function () {});
+    }
+    return res;
+  }).catch(function () {
+    return null;
+  });
+  if (hit) {
+    event.waitUntil(fetched);
+    return hit;
+  }
+  const res = await fetched;
+  if (res) return res;
+  throw new Error("miss");
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
@@ -75,6 +99,10 @@ self.addEventListener("fetch", (event) => {
   const cacheKey = pathKey(url);
   if (isHtml(req)) {
     event.respondWith(networkFirst(req, cacheKey));
+    return;
+  }
+  if (isScriptOrStyle(url)) {
+    event.respondWith(staleWhileRevalidate(event, req, cacheKey));
     return;
   }
   event.respondWith(cacheFirst(req, cacheKey));

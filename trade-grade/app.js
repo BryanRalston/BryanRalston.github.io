@@ -20,7 +20,7 @@
 
   function cacheEls() {
     [
-      "storageFail", "spoken", "shareOffer", "offerFace", "btnKeepShare", "btnDismissShare",
+      "storageFail", "storageCorrupt", "spoken", "shareOffer", "offerFace", "offerHint", "btnKeepShare", "btnDismissShare",
       "shelfBar", "btnLatest", "emptyHero", "gradeCard", "stamp", "starPill",
       "gradeHeading", "letterMark", "roastLine", "confValue", "meter", "meterFill",
       "exchange", "giveName", "getName", "leagueNote",
@@ -35,6 +35,7 @@
 
   function toast(msg, opts) {
     const options = opts || {};
+    if (toastBag && !options.undo && !options.important) return;
     els.toastText.textContent = msg;
     if (options.undo) {
       toastBag = options.undo;
@@ -121,14 +122,28 @@
   function load() {
     storageOk = probeStorage();
     els.storageFail.hidden = storageOk;
+    els.storageCorrupt.hidden = true;
     if (!storageOk) return TradeGrade.emptyState();
+    let raw = null;
     try {
-      const raw = localStorage.getItem(TradeGrade.STORAGE_KEY);
-      if (!raw) return TradeGrade.emptyState();
-      return TradeGrade.normalizeState(JSON.parse(raw));
+      raw = localStorage.getItem(TradeGrade.STORAGE_KEY);
     } catch (_) {
+      storageOk = false;
+      els.storageFail.hidden = false;
       return TradeGrade.emptyState();
     }
+    const parsed = TradeGrade.readStored(raw);
+    if (!parsed.corrupt) return parsed.state || TradeGrade.emptyState();
+    try {
+      localStorage.setItem(TradeGrade.STORAGE_BACKUP_KEY, parsed.backup);
+      localStorage.setItem(TradeGrade.STORAGE_KEY, JSON.stringify(parsed.state));
+    } catch (_) {
+      storageOk = false;
+      els.storageFail.hidden = false;
+      return parsed.state;
+    }
+    els.storageCorrupt.hidden = false;
+    return parsed.state;
   }
 
   function save() {
@@ -197,7 +212,7 @@
       return share;
     } catch (_) {
       cleanShareUrl();
-      toast("That snapshot could not be read.", { ms: 3200 });
+      toast("That snapshot could not be read.", { ms: 3200, important: true });
       return null;
     }
   }
@@ -212,7 +227,7 @@
       const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       els.shareOffer.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
     }).catch(function () {
-      toast("That snapshot could not be read.", { ms: 3200 });
+      toast("That snapshot could not be read.", { ms: 3200, important: true });
     });
     return shareChain;
   }
@@ -229,6 +244,30 @@
         throw new Error("Unknown share " + _never);
       }
     }
+  }
+
+  function dropPhrase(drops) {
+    if (drops === 1) return "drops your oldest unstarred";
+    return "drops your " + drops + " oldest unstarred";
+  }
+
+  function offerHint(share) {
+    const preview = TradeGrade.previewKeep(state, share);
+    let lead;
+    if (!preview.fresh) {
+      lead = "Already on this phone.";
+    } else if (!preview.adds) {
+      lead = "Starred grades fill this phone. Remove one to keep this.";
+    } else if (preview.adds < preview.offered && preview.drops) {
+      lead = "Adds " + preview.adds + " of " + preview.offered + ", " + dropPhrase(preview.drops) + ".";
+    } else if (preview.adds < preview.offered) {
+      lead = "Adds " + preview.adds + " of " + preview.offered + ".";
+    } else if (preview.drops) {
+      lead = "Adds " + preview.adds + ", " + dropPhrase(preview.drops) + ".";
+    } else {
+      lead = "Adds " + preview.adds + ".";
+    }
+    return lead + " Not now drops the copy. Refresh will not bring it back.";
   }
 
   function announce(card) {
@@ -361,7 +400,10 @@
 
   function render() {
     els.shareOffer.hidden = !incoming;
-    if (incoming) els.offerFace.textContent = offerLine(incoming);
+    if (incoming) {
+      els.offerFace.textContent = offerLine(incoming);
+      els.offerHint.textContent = offerHint(incoming);
+    }
     paintCard(current());
     paintHistory();
     paintTradeChrome();
@@ -400,7 +442,7 @@
         if (draft.cards.some(function (card) { return card.id === bag.cardId; })) {
           const removed = TradeGrade.removeCard(draft, bag.cardId);
           if (!removed.ok) {
-            toast(reasonMessage(removed.reason));
+            toast(reasonMessage(removed.reason), { important: true });
             return;
           }
           draft = removed.state;
@@ -413,7 +455,7 @@
             state = draft;
             save();
             render();
-            toast(reasonMessage(restored.reason));
+            toast(reasonMessage(restored.reason), { important: true });
             return;
           }
           draft = restored.state;
@@ -433,7 +475,7 @@
         forgetUndo(bag.cardId);
         const result = TradeGrade.putCard(state, bag.previous);
         if (!result.ok) {
-          toast(reasonMessage(result.reason));
+          toast(reasonMessage(result.reason), { important: true });
           return;
         }
         state = result.state;
@@ -463,10 +505,10 @@
     const result = TradeGrade.grade(state, readForm(), Date.now());
     if (!result.ok) {
       const msg = reasonMessage(result.reason);
-      if (result.reason === "cap") toast(msg, { ms: 4200 });
+      if (result.reason === "cap") toast(msg, { ms: 4200, important: true });
       else {
         showFormError(msg, result.reason);
-        toast(msg);
+        toast(msg, { important: true });
       }
       return;
     }
@@ -505,7 +547,7 @@
     if (!card) return;
     const result = TradeGrade.regrade(state, card.id, Date.now());
     if (!result.ok) {
-      toast(reasonMessage(result.reason));
+      toast(reasonMessage(result.reason), { important: true });
       return;
     }
     actionUndo = { action: "regrade", cardId: result.card.id, previous: result.previous, previousOpenId: "", dropped: [] };
@@ -520,7 +562,7 @@
     if (!card) return;
     const result = TradeGrade.setStarred(state, card.id, !card.starred, Date.now());
     if (!result.ok) {
-      toast(reasonMessage(result.reason));
+      toast(reasonMessage(result.reason), { important: true });
       return;
     }
     actionUndo = { action: "star", cardId: result.card.id, previous: result.previous, previousOpenId: "", dropped: [] };
@@ -533,7 +575,7 @@
   function removeCurrent(id) {
     const result = TradeGrade.removeCard(state, id);
     if (!result.ok) {
-      toast(reasonMessage(result.reason));
+      toast(reasonMessage(result.reason), { important: true });
       return;
     }
     const snapshot = result.removed;
@@ -548,7 +590,7 @@
       undo: function () {
         const restored = TradeGrade.restoreCard(state, snapshot, index, wasOpen);
         if (!restored.ok) {
-          toast(reasonMessage(restored.reason));
+          toast(reasonMessage(restored.reason), { important: true });
           return;
         }
         state = restored.state;
@@ -572,7 +614,7 @@
       ms: 8000,
       undo: function () {
         if (state.cards.length) {
-          toast("A new grade is already on this phone.");
+          toast("A new grade is already on this phone.", { important: true });
           return;
         }
         state = TradeGrade.restoreAll(state, previous, openId).state;
@@ -586,12 +628,11 @@
   function openFromShelf(id) {
     const result = TradeGrade.openCard(state, id);
     if (!result.ok) {
-      toast(reasonMessage(result.reason));
+      toast(reasonMessage(result.reason), { important: true });
       return;
     }
     state = result.state;
     save();
-    writeForm(result.state.cards.find(function (card) { return card.id === id; }));
     render();
     scrollCard();
   }
@@ -600,7 +641,7 @@
     const previousOpenId = state.openId;
     const result = TradeGrade.loadSample(state);
     if (!result.ok) {
-      toast(reasonMessage(result.reason));
+      toast(reasonMessage(result.reason), { important: true });
       return;
     }
     state = result.state;
@@ -634,13 +675,21 @@
     toast("Sample trade loaded.");
   }
 
+  function keptNote(result) {
+    const dropped = result.dropped.length;
+    if (result.added < result.offered) return "Kept " + result.added + " of " + result.offered + ".";
+    if (dropped === 1) return "Kept. The oldest grade made room.";
+    if (dropped > 1) return "Kept. Dropped your " + dropped + " oldest unstarred.";
+    return "Kept on this phone.";
+  }
+
   function keepIncoming() {
     if (!incoming) return;
     const share = incoming;
     const result = TradeGrade.keepShare(state, share);
-    incoming = null;
     if (!result.ok) {
       if (result.reason === "exists") {
+        incoming = null;
         if (result.card) {
           const opened = TradeGrade.openCard(state, result.card.id);
           if (opened.ok) state = opened.state;
@@ -653,21 +702,20 @@
       }
       render();
       if (result.reason === "cap") {
-        toast("This phone holds 24 grades. Starred grades stay. Remove one to keep this.", { ms: 4200 });
+        toast("Starred grades fill this phone. Remove one to keep this.", { ms: 4200, important: true });
         return;
       }
-      toast(reasonMessage(result.reason));
+      toast(reasonMessage(result.reason), { important: true });
       return;
     }
+    incoming = null;
     const addedIds = result.cards.map(function (card) { return card.id; });
     const dropped = result.dropped.slice();
     state = result.state;
     save();
-    const opened = state.cards.find(function (card) { return card.id === state.openId; });
-    if (opened) writeForm(opened);
     render();
     scrollCard();
-    const note = dropped.length ? "Kept. The oldest grade made room." : "Kept on this phone.";
+    const note = keptNote(result);
     toast(note, dropped.length ? {
       ms: 8000,
       undo: function () {
@@ -676,7 +724,7 @@
           if (!draft.cards.some(function (card) { return card.id === addedIds[i]; })) continue;
           const removed = TradeGrade.removeCard(draft, addedIds[i]);
           if (!removed.ok) {
-            toast(reasonMessage(removed.reason));
+            toast(reasonMessage(removed.reason), { important: true });
             return;
           }
           draft = removed.state;
@@ -688,7 +736,7 @@
             state = draft;
             save();
             render();
-            toast(reasonMessage(restored.reason));
+            toast(reasonMessage(restored.reason), { important: true });
             return;
           }
           draft = restored.state;
@@ -707,15 +755,20 @@
     toast("Snapshot dropped.");
   }
 
-  async function copyText(text) {
+  async function writeClipboard(text) {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
         return true;
       }
     } catch (_) {
-      /* fall through */
+      return false;
     }
+    return false;
+  }
+
+  async function copyText(text) {
+    if (await writeClipboard(text)) return true;
     try {
       els.shareUrlBox.focus();
       els.shareUrlBox.select();
@@ -727,7 +780,7 @@
 
   async function presentShare(payload, kind) {
     if (!payload) {
-      toast("That grade could not be packed.");
+      toast("That grade could not be packed.", { important: true });
       return;
     }
     try {
@@ -750,28 +803,43 @@
       if (typeof els.shareDialog.showModal === "function") {
         if (!els.shareDialog.open) els.shareDialog.showModal();
       } else {
-        toast("That snapshot could not be packed.");
+        toast("That snapshot could not be packed.", { important: true });
       }
     } catch (_) {
-      toast("That snapshot could not be packed.");
+      toast("That snapshot could not be packed.", { important: true });
     }
   }
 
   function shareVault() {
     if (!state.cards.length) {
-      toast("Grade something before you copy the shelf.");
+      toast("Grade something before you copy the shelf.", { important: true });
       return;
     }
     presentShare(TradeGrade.shareVault(state), "vault");
   }
 
-  function shareOpen() {
+  async function copyCardLink() {
     const card = current();
     if (!card) {
-      toast(reasonMessage("missing"));
+      toast(reasonMessage("missing"), { important: true });
       return;
     }
-    presentShare(TradeGrade.shareCard(card), "card");
+    const payload = TradeGrade.shareCard(card);
+    if (!payload) {
+      toast("That grade could not be packed.", { important: true });
+      return;
+    }
+    try {
+      const packed = await TradeGrade.compressPayload(JSON.stringify(payload));
+      const url = location.origin + location.pathname + HASH_PREFIX + packed;
+      if (await writeClipboard(url)) {
+        toast("Link copied.");
+        return;
+      }
+      await presentShare(payload, "card");
+    } catch (_) {
+      toast("That snapshot could not be packed.", { important: true });
+    }
   }
 
   function wire() {
@@ -789,7 +857,7 @@
       const card = current();
       if (card) removeCurrent(card.id);
     });
-    els.btnShare.addEventListener("click", shareOpen);
+    els.btnShare.addEventListener("click", copyCardLink);
     els.btnShareVault.addEventListener("click", shareVault);
     els.btnClear.addEventListener("click", clearAll);
     els.btnLatest.addEventListener("click", function () {
@@ -800,7 +868,7 @@
     els.btnDismissShare.addEventListener("click", dismissShare);
     els.btnCopyShare.addEventListener("click", async function () {
       const ok = await copyText(els.shareUrlBox.value);
-      toast(ok ? "Link copied." : "Select the link and copy it.");
+      toast(ok ? "Link copied." : "Select the link and copy it.", ok ? {} : { important: true });
     });
     els.btnCloseShare.addEventListener("click", function () {
       els.shareDialog.close();
