@@ -2,62 +2,144 @@
   "use strict";
 
   const STORAGE_KEY = "trade-grade-v1";
+  const STORAGE_BACKUP_KEY = "trade-grade-v1-corrupt";
   const HISTORY_CAP = 24;
   const GIVE_MAX = 80;
   const GET_MAX = 80;
   const NOTE_MAX = 80;
   const ROAST_MAX = 240;
-  const TAG_MAX = 24;
   const SALT_MAX = 9999;
   const SAMPLE_ID = "sample-chase-dart";
   const SAMPLE_AT = 1759017600000;
-  const LETTERS = ["A+", "A", "B+", "B", "C+", "C", "D", "F"];
+  const LETTERS = ["A+", "A", "B+", "C", "C-", "D-", "F"];
+  const CENTER = 3;
 
-  const GOOD = ["elite", "alpha", "stud", "wr1", "rb1", "qb1", "te1", "bellcow", "hammer", "smash", "workhorse"];
-  const BAD = ["dart", "darts", "stash", "handcuff", "lottery", "lotto", "kicker", "kickers", "defense", "dst", "streamer", "vibes", "handshake", "flyer"];
+  const WORD_HEAT = {
+    elite: 3,
+    elites: 3,
+    alpha: 3,
+    alphas: 3,
+    stud: 3,
+    studs: 3,
+    wr1: 3,
+    rb1: 3,
+    qb1: 3,
+    te1: 3,
+    bellcow: 3,
+    bellcows: 3,
+    hammer: 3,
+    hammers: 3,
+    smash: 3,
+    workhorse: 3,
+    workhorses: 3,
+    "1st": 4,
+    first: 2,
+    "2nd": 2,
+    second: 1,
+    pick: 1,
+    picks: 1,
+    qb: 1,
+    rb: 1,
+    wr: 1,
+    te: 1,
+    flex: -1,
+    "3rd": -1,
+    third: -1,
+    bench: -2,
+    benches: -2,
+    backup: -2,
+    backups: -2,
+    ir: -2,
+    injured: -2,
+    injury: -2,
+    wr2: -2,
+    rb2: -2,
+    wr3: -2,
+    rb3: -2,
+    qb2: -2,
+    te2: -2,
+    "4th": -2,
+    "5th": -2,
+    fourth: -2,
+    fifth: -2,
+    stash: -3,
+    stashes: -3,
+    handcuff: -3,
+    handcuffs: -3,
+    lottery: -3,
+    lotto: -3,
+    lottos: -3,
+    dart: -3,
+    darts: -3,
+    flyer: -3,
+    flyers: -3,
+    flier: -3,
+    fliers: -3,
+    streamer: -4,
+    streamers: -4,
+    vibes: -3,
+    handshake: -2,
+    scrub: -2,
+    scrubs: -2,
+    filler: -2,
+    fillers: -2,
+    defense: -6,
+    defenses: -6,
+    dst: -6,
+    def: -6,
+    kicker: -8,
+    kickers: -8,
+    k: -8,
+  };
+
+  const TAGS = {
+    "A+": ["FLEECE CARD", "GRAND LARCENY"],
+    "A": ["HEIST NIGHT", "CLEAN STEAL"],
+    "B+": ["SOLID COSTUME", "QUIET WIN"],
+    "C": ["COIN JERSEY", "EVEN STEVEN"],
+    "C-": ["THIN ICE", "SIDE EYE"],
+    "D-": ["DO NOT SEND", "WINCE CARD"],
+    "F": ["ROAST READY", "CATASTROPHE"],
+  };
+
+  const JOKE_TAGS = ["KEY SMASH", "NOT A ROSTER", "GARBAGE TIME"];
 
   const ROASTS = {
     "A+": [
       "{G} for {T}. The booth is filing this under grand larceny. Entertainment only.",
       "You gave {G} and came home with {T}. The other manager needs a moment.",
-      "Fleece theater: {T} arrives, {G} leaves, and the group chat owes you a statue.",
-      "{T} over {G}. This card is a victory lap, not a model.",
+      "Fleece theater: {G} leaves, {T} arrives, and the group chat owes you a statue.",
+      "You gave {G} and got {T}. This card is a victory lap, not a model.",
     ],
     "A": [
       "{G} out, {T} in. The booth clapped. It is still not advice.",
       "Winning the screenshot: you shipped {G} and pocketed {T}.",
-      "{T} for {G}. Call it a heist with a waiver wire.",
+      "You gave {G} and got {T}. Call it a heist with a waiver wire.",
       "The card says you cooked. {G} leaves, {T} stays. Not a ranking.",
     ],
     "B+": [
       "{G} for {T}. Respectable theater. The booth is only a little smug.",
-      "You did fine. {T} over {G}. Fine is not a projection.",
+      "You did fine giving {G} for {T}. Fine is not a projection.",
       "Solid costume: {G} walks, {T} starts the parade. Still a gag.",
-      "{T} looks like the better jersey. {G} can live in the group chat.",
-    ],
-    "B": [
-      "{G} for {T}. Even. The booth refuses to be impressed.",
-      "Fair on paper, loud in the chat. {G} out, {T} in.",
-      "Nobody got robbed. {T} for {G}. That is the whole roast.",
-      "A polite trade. {G} and {T} shook hands and the meter is a prop.",
-    ],
-    "C+": [
-      "{G} for {T}. Coin-flip energy with shoulder pads.",
-      "The booth shrugged. {G} leaves, {T} arrives, nobody learned anything.",
-      "Could go either way, which means the group chat will not. {G} for {T}.",
-      "Middle of the card. {T} over {G}. Bring snacks, not a spreadsheet.",
+      "You gave {G} and got {T}. Still a gag, not a ranking.",
     ],
     "C": [
-      "{G} for {T}. The booth smelled a side deal and still graded it for fun.",
-      "You can explain {T} for {G}. The explanation is the tell.",
-      "Lateral move, vertical feelings. {G} out, {T} in.",
-      "C for calm down. {G} and {T} are not a model.",
+      "{G} for {T}. The booth calls this a coin in shoulder pads.",
+      "You gave {G} and got {T}. The booth shrugged.",
+      "Even theater. {G} out, {T} in. Bring snacks, not a spreadsheet.",
+      "C for calm down. {G} and {T} shook hands. Not a model.",
     ],
-    "D": [
+    "C-": [
+      "{G} for {T}. The booth smelled a side deal and still graded it for fun.",
+      "You gave {G} and accepted {T}. The explanation will be the tell.",
+      "Thin ice. {G} out, {T} in. Not advice.",
+      "You gave {G} for {T}. The group chat is already squinting.",
+    ],
+    "D-": [
       "You shipped {G} for {T}. The group chat is already typing.",
       "{G} walks. {T} shows up in a costume. The booth is wincing.",
       "This is how screenshot bait is born. {G} for {T}.",
-      "D for do not send it. {G} out, {T} in. Not advice. A roast.",
+      "Do not send it. {G} out, {T} in. Not advice. A roast.",
     ],
     "F": [
       "{G} for {T}. The booth asked if this was a bit.",
@@ -67,56 +149,12 @@
     ],
   };
 
-  const REMATCH = {
-    "A+": [
-      "Re-grade, same heist. {G} for {T}. Still not a second opinion.",
-      "Fresh stamp on a fleece. {T} over {G}. The booth did not hire an analyst.",
-      "Another pass, same grand larceny costume. {G} out, {T} in.",
-      "The letter stayed. The roast got louder. {T} for {G}.",
-    ],
-    "A": [
-      "Re-grade energy. {G} for {T}. The clap is the same, the line is new.",
-      "Same win, new caption. {T} stays, {G} still walks.",
-      "The booth rerolled the joke, not the letter. {G} out, {T} in.",
-      "Still a heist. New roast. {T} for {G}. Not advice.",
-    ],
-    "B+": [
-      "Re-grade: still respectable. {G} for {T}. The smugness changed outfits.",
-      "Same fine trade, new sentence. {T} over {G}.",
-      "The letter held. The booth found a different compliment. {G} out, {T} in.",
-      "Fresh flavor on a solid card. {T} for {G}. Still a gag.",
-    ],
-    "B": [
-      "Re-grade, still even. {G} for {T}. The booth remains unimpressed.",
-      "New line, same handshake. {T} for {G}.",
-      "The letter did not move. The roast did. {G} out, {T} in.",
-      "Another polite take. {G} and {T}. The meter is still a prop.",
-    ],
-    "C+": [
-      "Re-grade shrug. {G} for {T}. Coin-flip, new costume.",
-      "Same middle, new mutter. {T} over {G}.",
-      "The booth flipped the sentence, not the grade. {G} out, {T} in.",
-      "Still a coin in shoulder pads. {G} for {T}.",
-    ],
-    "C": [
-      "Re-grade, still a side deal. {G} for {T}. New way to say it.",
-      "The letter stayed lateral. The roast did not. {T} for {G}.",
-      "Another explanation, same tell. {G} out, {T} in.",
-      "C again. Fresh wording. {G} and {T} are not a model.",
-    ],
-    "D": [
-      "Re-grade, same wince. {G} for {T}. The group chat is still typing.",
-      "New roast, same bad idea energy. {T} for {G}.",
-      "The letter held at a wince. {G} out, {T} in.",
-      "Do not send it, second take. {G} for {T}. Entertainment only.",
-    ],
-    "F": [
-      "Re-grade asked again if this was a bit. {G} for {T}.",
-      "Same punchline, new delivery. {T} for {G}.",
-      "The F stayed. The roast found a sharper stick. {G} out, {T} in.",
-      "Friends will still see this. New caption. {G} for {T}.",
-    ],
-  };
+  const JOKE_ROASTS = [
+    "{G} for {T}. The booth heard a keyboard and filed a joke grade.",
+    "You gave {G} and got {T}. Neither side is a roster. Keyboard grade.",
+    "Random letters. {G} out, {T} in. The keyboard is the whole bit.",
+    "The booth read {G} for {T} and stamped a joke. Entertainment only.",
+  ];
 
   function clampLine(value, max) {
     const cleaned = String(value == null ? "" : value)
@@ -161,14 +199,117 @@
     return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(Boolean);
   }
 
+  function pieceList(text) {
+    const lower = String(text || "").toLowerCase();
+    const parts = lower.split(/\s*(?:,|\+|&|\/|\band\b)\s*/);
+    const seen = Object.create(null);
+    const keys = [];
+    for (let i = 0; i < parts.length; i += 1) {
+      const key = parts[i].replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+      if (!key || seen[key]) continue;
+      seen[key] = true;
+      keys.push(key);
+    }
+    keys.sort();
+    return keys;
+  }
+
+  function packageKey(text) {
+    const pieces = pieceList(text);
+    if (pieces.length) return pieces.join(" | ");
+    return String(text || "").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+
+  function wordWeight(word) {
+    if (!Object.prototype.hasOwnProperty.call(WORD_HEAT, word)) return null;
+    return WORD_HEAT[word];
+  }
+
   function heat(text) {
     const words = tokens(text);
+    let nameish = 0;
+    for (let i = 0; i < words.length; i += 1) {
+      const word = words[i];
+      if (wordWeight(word) != null) continue;
+      if (word.length >= 4 && /[aeiou]/.test(word)) nameish += 1;
+    }
     let score = 0;
     for (let i = 0; i < words.length; i += 1) {
-      if (GOOD.indexOf(words[i]) !== -1) score += 3;
-      if (BAD.indexOf(words[i]) !== -1) score -= 3;
+      const word = words[i];
+      if (word === "k" && nameish > 0) continue;
+      const weight = wordWeight(word);
+      if (weight != null) score += weight;
     }
     return score;
+  }
+
+  function countSignal(giveText, getText) {
+    const diff = pieceList(giveText).length - pieceList(getText).length;
+    let stepped = diff * 2;
+    if (stepped > 8) stepped = 8;
+    if (stepped < -8) stepped = -8;
+    return stepped;
+  }
+
+  const KEY_ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+
+  function isKeyboardMash(word) {
+    if (word.length < 4) return false;
+    for (let i = 0; i < KEY_ROWS.length; i += 1) {
+      const row = KEY_ROWS[i];
+      if (row.indexOf(word) !== -1) return true;
+      let reversed = "";
+      for (let j = row.length - 1; j >= 0; j -= 1) reversed += row.charAt(j);
+      if (reversed.indexOf(word) !== -1) return true;
+    }
+    return false;
+  }
+
+  function isGibberish(word) {
+    if (wordWeight(word) != null) return false;
+    if (!/^[a-z]{4,}$/.test(word)) return false;
+    if (isKeyboardMash(word)) return true;
+    const vowels = (word.match(/[aeiou]/g) || []).length;
+    if (vowels === 0) return true;
+    if (word.length >= 5 && vowels * 5 < word.length) return true;
+    if (/^(.)\1+$/.test(word)) return true;
+    return false;
+  }
+
+  function isNonsense(text) {
+    const words = tokens(text);
+    const letters = [];
+    for (let i = 0; i < words.length; i += 1) {
+      if (/^[a-z]{4,}$/.test(words[i])) letters.push(words[i]);
+    }
+    if (!letters.length) return false;
+    let junk = 0;
+    for (let i = 0; i < letters.length; i += 1) {
+      if (isGibberish(letters[i])) junk += 1;
+    }
+    return junk > 0 && junk * 2 >= letters.length;
+  }
+
+  function packageLean(giveText, getText) {
+    let lean = heat(getText) - heat(giveText) + countSignal(giveText, getText);
+    if (isNonsense(giveText) && !isNonsense(getText)) lean += 8;
+    if (!isNonsense(giveText) && isNonsense(getText)) lean -= 8;
+    if (lean > 12) lean = 12;
+    if (lean < -12) lean = -12;
+    return lean;
+  }
+
+  function indexFor(lean, hash) {
+    const magnitude = Math.abs(lean);
+    const span = magnitude >= 8 ? 0 : magnitude >= 5 ? 1 : magnitude >= 3 ? 2 : 3;
+    const flavor = span === 0 ? 0 : (hash % (span * 2 + 1)) - span;
+    let steps = Math.round(lean / 2) + flavor;
+    if (steps > 3) steps = 3;
+    if (steps < -3) steps = -3;
+    let index = CENTER - steps;
+    if (index < 0) index = 0;
+    if (index > LETTERS.length - 1) index = LETTERS.length - 1;
+    return index;
   }
 
   function fill(line, give, get) {
@@ -189,41 +330,62 @@
     return out;
   }
 
-  function letterIndex(lean, pairHash) {
-    const steps = Math.min(4, Math.floor(Math.abs(lean) / 2));
-    const shift = lean < 0 ? -steps : steps;
-    let index = 4 - shift;
-    if (Math.abs(lean) < 3) index += (pairHash % 5) - 2;
-    if (index < 0) index = 0;
-    if (index > 7) index = 7;
-    return index;
+  function polish(line) {
+    const text = clampLine(line, ROAST_MAX);
+    if (!text) return text;
+    const first = text.charAt(0);
+    const upper = first.toUpperCase();
+    if (first === upper) return text;
+    return upper + text.slice(1);
   }
 
-  function tagFor(salt, lean) {
-    if (salt > 0) return "RE-GRADE";
-    if (lean >= 6) return "FLEECE CARD";
-    if (lean <= -6) return "ROAST READY";
-    if (Math.abs(lean) >= 3) return "PACKAGE HEAT";
-    return "COIN JERSEY";
-  }
-
-  function poolFor(letter, salt) {
-    const table = salt > 0 ? REMATCH : ROASTS;
+  function roastLine(letter, salt) {
+    let base;
     switch (letter) {
       case "A+":
       case "A":
       case "B+":
-      case "B":
-      case "C+":
       case "C":
-      case "D":
+      case "C-":
+      case "D-":
       case "F":
-        return table[letter];
+        base = ROASTS[letter][Math.abs(salt) % ROASTS[letter].length];
+        break;
       default: {
         const _never = letter;
         throw new Error("Unknown letter " + _never);
       }
     }
+    return salt > 0 ? "Another pass. " + base : base;
+  }
+
+  function jokeLine(salt) {
+    const base = JOKE_ROASTS[Math.abs(salt) % JOKE_ROASTS.length];
+    return salt > 0 ? "Another pass. " + base : base;
+  }
+
+  function tagFor(letter, saltHash) {
+    switch (letter) {
+      case "A+":
+      case "A":
+      case "B+":
+      case "C":
+      case "C-":
+      case "D-":
+      case "F":
+        return TAGS[letter][saltHash % TAGS[letter].length];
+      default: {
+        const _never = letter;
+        throw new Error("Unknown letter " + _never);
+      }
+    }
+  }
+
+  function meterFor(index, hash) {
+    const extreme = Math.abs(index - CENTER);
+    let confidence = 50 + extreme * 12 + (hash % 13);
+    if (confidence > 96) confidence = 96;
+    return confidence;
   }
 
   function bandFor(letter) {
@@ -232,12 +394,11 @@
       case "A":
         return "a";
       case "B+":
-      case "B":
         return "b";
-      case "C+":
       case "C":
+      case "C-":
         return "c";
-      case "D":
+      case "D-":
         return "d";
       case "F":
         return "f";
@@ -253,49 +414,40 @@
     const get = clampLine(getRaw, GET_MAX);
     const cleanSalt = normalizeSalt(salt);
     const usedSalt = cleanSalt == null ? 0 : cleanSalt;
-    const pairKey = give.toLowerCase() + "\n" + get.toLowerCase();
-    const pairHash = fnv1a(pairKey);
-    const saltHash = fnv1a(pairKey + "\n" + String(usedSalt));
-    const lean = heat(get) - heat(give);
-    const letter = LETTERS[letterIndex(lean, pairHash)];
-    const pool = poolFor(letter, usedSalt);
-    const roast = clampLine(fill(pool[saltHash % pool.length], give, get), ROAST_MAX);
-    let confidence = 64 + Math.min(24, Math.abs(lean) * 4) + (saltHash % 5);
-    if (confidence > 96) confidence = 96;
+    const giveKey = packageKey(give);
+    const getKey = packageKey(get);
+    const giveFirst = giveKey <= getKey;
+    const orderedFirst = giveFirst ? giveKey : getKey;
+    const orderedSecond = giveFirst ? getKey : giveKey;
+    const pairHash = fnv1a(orderedFirst + "\n" + orderedSecond);
+    const saltHash = fnv1a(orderedFirst + "\n" + orderedSecond + "\n" + String(usedSalt));
+    if (isNonsense(give) && isNonsense(get)) {
+      return {
+        letter: "C",
+        roast: polish(fill(jokeLine(usedSalt), give, get)),
+        confidence: 41 + (saltHash % 23),
+        tag: JOKE_TAGS[pairHash % JOKE_TAGS.length],
+        lean: 0,
+        hash: saltHash,
+      };
+    }
+    const firstText = giveFirst ? give : get;
+    const secondText = giveFirst ? get : give;
+    const lean = packageLean(firstText, secondText);
+    let index = indexFor(lean, pairHash);
+    if (!giveFirst) index = LETTERS.length - 1 - index;
+    const letter = LETTERS[index];
     return {
       letter: letter,
-      roast: roast,
-      confidence: confidence,
-      tag: tagFor(usedSalt, lean),
-      lean: lean,
+      roast: polish(fill(roastLine(letter, usedSalt), give, get)),
+      confidence: meterFor(index, saltHash),
+      tag: tagFor(letter, pairHash),
+      lean: giveFirst ? lean : -lean,
       hash: saltHash,
     };
   }
 
-  function alternateRoast(letter, salt, hash, give, get, previous) {
-    const pool = poolFor(letter, salt);
-    const start = hash % pool.length;
-    for (let step = 0; step < pool.length; step += 1) {
-      const line = clampLine(fill(pool[(start + step) % pool.length], give, get), ROAST_MAX);
-      if (line !== previous) return line;
-    }
-    return previous;
-  }
-
-  function isLetter(value) {
-    return LETTERS.indexOf(value) !== -1;
-  }
-
-  function callFieldsOk(letter, confidence, roast, tag) {
-    return isLetter(letter)
-      && Number.isInteger(confidence)
-      && confidence >= 50
-      && confidence <= 99
-      && !!roast
-      && !!tag;
-  }
-
-  function normalizeCard(raw) {
+  function normalizeCard(raw, fromShare) {
     if (!raw || typeof raw !== "object") return null;
     const id = clampLine(raw.id, 40);
     if (!/^[A-Za-z0-9_-]{2,40}$/.test(id)) return null;
@@ -303,31 +455,22 @@
     const get = clampLine(raw.get != null ? raw.get : raw.t, GET_MAX);
     const note = clampLine(raw.note != null ? raw.note : raw.n, NOTE_MAX);
     if (!give || !get) return null;
-    if (give.toLowerCase() === get.toLowerCase()) return null;
+    if (packageKey(give) === packageKey(get)) return null;
     const salt = normalizeSalt(raw.salt != null ? raw.salt : raw.sa);
     if (salt == null) return null;
-    let letter = raw.letter || raw.lt;
-    let confidence = Number(raw.confidence != null ? raw.confidence : raw.cf);
-    let roast = clampLine(raw.roast != null ? raw.roast : raw.rs, ROAST_MAX);
-    let tag = clampLine(raw.tag != null ? raw.tag : raw.tg, TAG_MAX);
-    if (!callFieldsOk(letter, confidence, roast, tag)) {
-      const call = callBooth(give, get, salt);
-      letter = call.letter;
-      confidence = call.confidence;
-      roast = call.roast;
-      tag = call.tag;
-    }
+    const call = callBooth(give, get, salt);
+    const starred = fromShare ? false : (raw.starred === true || raw.star === 1 || raw.star === true);
     return {
       id: id,
       give: give,
       get: get,
       note: note,
       salt: salt,
-      letter: letter,
-      confidence: confidence,
-      roast: roast,
-      tag: tag,
-      starred: raw.starred === true || raw.star === 1 || raw.star === true,
+      letter: call.letter,
+      confidence: call.confidence,
+      roast: call.roast,
+      tag: call.tag,
+      starred: starred,
       created: stampOf(raw.created != null ? raw.created : raw.cr),
       updated: stampOf(raw.updated != null ? raw.updated : raw.up),
     };
@@ -349,7 +492,7 @@
 
   function normalizeState(raw) {
     const state = emptyState();
-    if (!raw || typeof raw !== "object") return state;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return state;
     const list = Array.isArray(raw.cards) ? raw.cards : [];
     const seen = Object.create(null);
     for (let i = 0; i < list.length && state.cards.length < HISTORY_CAP; i += 1) {
@@ -365,15 +508,32 @@
     return state;
   }
 
+  function readStored(raw) {
+    if (raw == null || raw === "") return { corrupt: false, state: null, backup: "" };
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (_) {
+      return { corrupt: true, state: emptyState(), backup: String(raw) };
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return { corrupt: true, state: emptyState(), backup: String(raw) };
+    }
+    if (Object.prototype.hasOwnProperty.call(parsed, "cards") && !Array.isArray(parsed.cards)) {
+      return { corrupt: true, state: emptyState(), backup: String(raw) };
+    }
+    return { corrupt: false, state: normalizeState(parsed), backup: "" };
+  }
+
   function findIndex(cards, id) {
     return cards.findIndex(function (card) { return card.id === id; });
   }
 
   function findPair(cards, give, get) {
-    const left = give.toLowerCase();
-    const right = get.toLowerCase();
+    const left = packageKey(give);
+    const right = packageKey(get);
     return cards.find(function (card) {
-      return card.give.toLowerCase() === left && card.get.toLowerCase() === right;
+      return packageKey(card.give) === left && packageKey(card.get) === right;
     }) || null;
   }
 
@@ -434,7 +594,7 @@
     if (!give && !get) return "blank";
     if (!give) return "give";
     if (!get) return "get";
-    if (give.toLowerCase() === get.toLowerCase()) return "same";
+    if (packageKey(give) === packageKey(get)) return "same";
     return "";
   }
 
@@ -494,7 +654,6 @@
     return replaceCard(state, id, function (card) {
       const salt = card.salt + 1;
       const call = callBooth(card.give, card.get, salt);
-      const roast = alternateRoast(call.letter, salt, call.hash, card.give, card.get, card.roast);
       return {
         id: card.id,
         give: card.give,
@@ -503,7 +662,7 @@
         salt: salt,
         letter: call.letter,
         confidence: call.confidence,
-        roast: roast,
+        roast: call.roast,
         tag: call.tag,
         starred: card.starred,
         created: card.created,
@@ -671,7 +830,6 @@
       cf: card.confidence,
       rs: card.roast,
       tg: card.tag,
-      star: card.starred ? 1 : 0,
       cr: card.created,
       up: card.updated,
       g: card.give,
@@ -709,39 +867,75 @@
     const limit = kind === "card" ? 1 : HISTORY_CAP;
     const cards = [];
     for (let i = 0; i < raw.c.length && cards.length < limit; i += 1) {
-      const card = normalizeCard(raw.c[i]);
+      const card = normalizeCard(raw.c[i], true);
       if (card) cards.push(card);
     }
     if (!cards.length) return null;
     return { v: 1, k: kind, cards: cards };
   }
 
-  function keepShare(state, share) {
+  function freshCards(state, share) {
     const next = normalizeState(state);
-    if (!share || !Array.isArray(share.cards) || !share.cards.length) {
-      return { ok: false, reason: "missing", state: next };
-    }
+    const fresh = [];
+    if (!share || !Array.isArray(share.cards)) return { state: next, fresh: fresh };
     const haveId = Object.create(null);
     next.cards.forEach(function (card) { haveId[card.id] = true; });
-    const fresh = [];
     share.cards.forEach(function (card) {
-      const clean = normalizeCard(card);
+      const clean = normalizeCard(card, true);
       if (!clean || haveId[clean.id]) return;
+      const keyGive = packageKey(clean.give);
+      const keyGet = packageKey(clean.get);
       if (findPair(next.cards, clean.give, clean.get) || fresh.some(function (row) {
-        return row.give.toLowerCase() === clean.give.toLowerCase() && row.get.toLowerCase() === clean.get.toLowerCase();
+        return packageKey(row.give) === keyGive && packageKey(row.get) === keyGet;
       })) return;
       haveId[clean.id] = true;
       clean.starred = false;
       fresh.push(clean);
     });
-    if (!fresh.length) {
-      const existing = findIndex(next.cards, share.cards[0].id) >= 0
-        ? next.cards[findIndex(next.cards, share.cards[0].id)]
-        : findPair(next.cards, share.cards[0].give, share.cards[0].get);
+    return { state: next, fresh: fresh };
+  }
+
+  function planKeep(cards, freshCount) {
+    let droppable = 0;
+    for (let i = 0; i < cards.length; i += 1) {
+      if (!cards[i].starred) droppable += 1;
+    }
+    const free = Math.max(0, HISTORY_CAP - cards.length);
+    const capacity = Math.min(HISTORY_CAP, free + droppable);
+    const adds = Math.min(Math.max(0, freshCount), capacity);
+    const drops = adds > 0 ? Math.max(0, cards.length + adds - HISTORY_CAP) : 0;
+    return { adds: adds, drops: drops };
+  }
+
+  function previewKeep(state, share) {
+    const packed = freshCards(state, share);
+    const plan = planKeep(packed.state.cards, packed.fresh.length);
+    const offered = share && Array.isArray(share.cards) ? share.cards.length : 0;
+    return {
+      adds: plan.adds,
+      drops: plan.drops,
+      fresh: packed.fresh.length,
+      offered: offered,
+    };
+  }
+
+  function keepShare(state, share) {
+    const packed = freshCards(state, share);
+    const next = packed.state;
+    if (!share || !Array.isArray(share.cards) || !share.cards.length) {
+      return { ok: false, reason: "missing", state: next };
+    }
+    if (!packed.fresh.length) {
+      const first = share.cards[0];
+      const existing = first && findIndex(next.cards, first.id) >= 0
+        ? next.cards[findIndex(next.cards, first.id)]
+        : (first ? findPair(next.cards, first.give || first.g, first.get || first.t) : null);
       return { ok: false, reason: "exists", state: next, card: existing || null };
     }
-    const batch = fresh.slice(0, HISTORY_CAP);
-    const room = makeRoom(next.cards, batch.length, next.openId);
+    const plan = planKeep(next.cards, packed.fresh.length);
+    if (!plan.adds) return { ok: false, reason: "cap", state: next };
+    const batch = packed.fresh.slice(0, plan.adds);
+    const room = makeRoom(next.cards, batch.length, "");
     if (!room) return { ok: false, reason: "cap", state: next };
     next.cards = batch.concat(room.cards);
     next.openId = batch[0].id;
@@ -750,6 +944,8 @@
       state: next,
       cards: batch,
       dropped: room.dropped,
+      added: batch.length,
+      offered: share.cards.length,
     };
   }
 
@@ -807,6 +1003,7 @@
 
   root.TradeGrade = {
     STORAGE_KEY: STORAGE_KEY,
+    STORAGE_BACKUP_KEY: STORAGE_BACKUP_KEY,
     HISTORY_CAP: HISTORY_CAP,
     GIVE_MAX: GIVE_MAX,
     GET_MAX: GET_MAX,
@@ -816,6 +1013,7 @@
     emptyState: emptyState,
     normalizeState: normalizeState,
     normalizeCard: normalizeCard,
+    readStored: readStored,
     callBooth: callBooth,
     bandFor: bandFor,
     grade: grade,
@@ -835,6 +1033,7 @@
     shareCard: shareCard,
     shareVault: shareVault,
     parseShare: parseShare,
+    previewKeep: previewKeep,
     keepShare: keepShare,
     face: face,
     compressPayload: compressPayload,

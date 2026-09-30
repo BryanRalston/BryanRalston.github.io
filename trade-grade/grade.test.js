@@ -80,9 +80,29 @@ async function main() {
   assert(app.indexOf('"#g="') !== -1, "hash prefix");
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate toast");
   assert(app.indexOf("innerHTML") === -1, "no innerHTML");
-  assert(sw.indexOf('"trade-grade-v1"') !== -1, "sw cache");
+  assert(sw.indexOf('"trade-grade-v2"') !== -1, "sw cache");
+  assert(sw.indexOf("trade-grade-v1") === -1, "old sw cache is gone");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
-  assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");
+  assert(sw.indexOf("function staleWhileRevalidate") !== -1, "js and css revalidate");
+  assert(sw.indexOf("url.origin + url.pathname") !== -1, "cache key is the pathname");
+  assert(sw.indexOf("url.search") === -1, "query string is not part of the cache key");
+  assert(html.indexOf('id="storageCorrupt"') !== -1, "corrupt notice");
+  assert(html.indexOf("mirror letter") !== -1, "feature map names the mirror");
+  assert(html.indexOf("trade-grade-v2") !== -1, "feature map names the cache");
+  assert(html.indexOf("one tap") !== -1, "copy link is one tap");
+  assert(app.indexOf("STORAGE_BACKUP_KEY") !== -1, "corrupt value is backed up");
+  assert(app.indexOf("toastBag && !options.undo && !options.important") !== -1, "automatic toast keeps an undo");
+  assert(app.indexOf("function copyCardLink") !== -1, "card copy is direct");
+  assert(app.indexOf("Starred grades fill this phone. Remove one to keep this.") !== -1, "keep cap copy");
+  assert(app.indexOf("Remove one to keep this.") !== -1 && app.indexOf("This phone holds 24 grades. Starred grades stay. Remove one to keep this.") === -1, "old keep cap copy is gone");
+  const openFn = app.slice(app.indexOf("function openFromShelf"), app.indexOf("function loadSample"));
+  assert(openFn.indexOf("writeForm") === -1, "opening a shelf row keeps the draft");
+  const keepFn = app.slice(app.indexOf("function keepIncoming"), app.indexOf("function dismissShare"));
+  const capToast = keepFn.indexOf("Starred grades fill this phone");
+  assert(capToast !== -1, "keep can refuse");
+  assert(keepFn.slice(capToast, capToast + 160).indexOf("incoming = null") === -1, "cap refusal keeps the offer");
+  const copyFn = app.slice(app.indexOf("function copyCardLink"), app.indexOf("function wire"));
+  assert(copyFn.indexOf("writeClipboard") !== -1 && copyFn.indexOf("writeClipboard") < copyFn.indexOf("presentShare"), "clipboard before the dialog");
   assert(sw.indexOf("./grade.js") !== -1, "grade module cached");
   assert(manifest.indexOf('"Trade Grade"') !== -1, "manifest name");
   assert(css.indexOf("Russo One") !== -1, "display font");
@@ -98,20 +118,23 @@ async function main() {
   eq(once.confidence, twice.confidence, "stable confidence");
   eq(once.tag, twice.tag, "stable tag");
   eq(once.letter, "F", "sample is a roast");
-  eq(once.tag, "ROAST READY", "sample tag");
-  assert(once.confidence >= 88 && once.confidence <= 92, "theater confidence band");
+  assert(once.tag === "ROAST READY" || once.tag === "CATASTROPHE", "sample tag follows F");
+  assert(once.confidence >= 86 && once.confidence <= 96, "theater confidence band");
   assert(once.roast.indexOf("Ja'Marr Chase") !== -1, "roast names the give");
   assert(once.roast.indexOf("A flex dart and vibes") !== -1, "roast names the get");
+  assert(once.roast.toLowerCase().indexOf("a flex dart and vibes for ja'marr") === -1, "sample roast subject is the give");
   eq(TradeGrade.bandFor(once.letter), "f", "f band");
+  eq(TradeGrade.LETTERS[3], "C", "C is the mirror point");
 
   const againSalt = TradeGrade.callBooth(sample.give, sample.get, 3);
   eq(againSalt.letter, once.letter, "re-grade keeps the letter");
   assert(againSalt.roast !== once.roast, "re-grade changes the roast");
-  eq(againSalt.tag, "RE-GRADE", "re-grade tag");
+  assert(againSalt.tag !== "RE-GRADE", "re-grade stamp follows the letter");
+  assert(againSalt.tag === "ROAST READY" || againSalt.tag === "CATASTROPHE", "re-grade stamp is an F stamp");
 
   const flipped = TradeGrade.callBooth(sample.get, sample.give, 0);
-  eq(flipped.letter, "A", "the other direction is a fleece");
-  eq(flipped.tag, "FLEECE CARD", "fleece tag");
+  eq(flipped.letter, "A+", "the other direction is the mirror");
+  assert(flipped.tag === "FLEECE CARD" || flipped.tag === "GRAND LARCENY", "fleece tag");
   assert(flipped.roast !== once.roast, "direction changes the roast");
 
   const noted = TradeGrade.callBooth("Ada", "Bea", 0);
@@ -204,7 +227,8 @@ async function main() {
   eq(rerolled.card.letter, "F", "letter holds");
   eq(rerolled.card.salt, 1, "salt bumps");
   assert(rerolled.card.roast !== messy.card.roast, "new roast");
-  eq(rerolled.card.tag, "RE-GRADE");
+  assert(rerolled.card.tag !== "RE-GRADE", "regrade stamp follows the letter");
+  assert(rerolled.card.tag === "ROAST READY" || rerolled.card.tag === "CATASTROPHE", "regrade stamp is an F stamp");
   const undone = TradeGrade.putCard(rerolled.state, rerolled.previous);
   eq(undone.card.roast, messy.card.roast, "undo regrade");
   eq(undone.card.salt, 0);
@@ -250,7 +274,8 @@ async function main() {
   eq(parsed.cards[0].id, starred.card.id);
   eq(parsed.cards[0].letter, "F");
   eq(parsed.cards[0].roast, starred.card.roast);
-  eq(parsed.cards[0].starred, true, "share can record a star");
+  eq(parsed.cards[0].starred, false, "share does not carry a star");
+  assert(!Object.prototype.hasOwnProperty.call(payload.c[0], "star"), "link omits the star");
   assert(TradeGrade.parseShare(null) === null, "bad share");
   assert(TradeGrade.parseShare({ v: 1, k: "nope", c: [] }) === null, "wrong kind");
   eq(TradeGrade.face(parsed.cards[0]).indexOf("F · ") === 0, true, "face line");
@@ -260,7 +285,8 @@ async function main() {
   eq(kept.state.openId, parsed.cards[0].id);
   eq(kept.cards[0].starred, false, "keep drops the sender star");
   eq(kept.state.cards[0].starred, false);
-  eq(parsed.cards[0].starred, true, "the snapshot still records the star");
+  eq(parsed.cards[0].starred, false, "the unpacked snapshot is not starred");
+  eq(starred.card.starred, true, "the phone card still has its star");
   const dup = TradeGrade.keepShare(kept.state, parsed);
   eq(dup.ok, false);
   eq(dup.reason, "exists");
@@ -341,6 +367,201 @@ async function main() {
   eq(dirty.filter, "starred");
   eq(dirty.cards[0].give, "Ada");
   assert(TradeGrade.LETTERS.indexOf(dirty.cards[0].letter) !== -1, "recomputed letter");
+
+  function mirrorOf(letter) {
+    const index = TradeGrade.LETTERS.indexOf(letter);
+    return TradeGrade.LETTERS[TradeGrade.LETTERS.length - 1 - index];
+  }
+
+  function assertMirror(give, get) {
+    const forward = TradeGrade.callBooth(give, get, 0);
+    const back = TradeGrade.callBooth(get, give, 0);
+    eq(back.letter, mirrorOf(forward.letter), "mirror " + give + " / " + get);
+    eq(forward.confidence, back.confidence, "meter matches the mirror");
+  }
+
+  const low = TradeGrade.callBooth("Christian McCaffrey", "a kicker", 0);
+  eq(low.letter, "F", "a kicker grades low for the giver");
+  const high = TradeGrade.callBooth("a kicker", "Christian McCaffrey", 0);
+  eq(high.letter, "A+", "the flip is the mirror");
+  assert(high.roast.toLowerCase().indexOf("christian mccaffrey for a kicker") === -1, "kicker roast subject is the give");
+  assert(
+    high.roast.toLowerCase().indexOf("a kicker for christian mccaffrey") !== -1
+      || high.roast.toLowerCase().indexOf("you gave a kicker") !== -1,
+    "kicker roast leads with the give"
+  );
+  const kicked = TradeGrade.callBooth("two streamers", "Christian McCaffrey", 0);
+  assert(kicked.roast.charAt(0) === kicked.roast.charAt(0).toUpperCase(), "roast starts with a capital");
+  eq(TradeGrade.callBooth("Christian McCaffrey", "kickers", 0).letter, "F", "plural kickers count");
+  const streamed = TradeGrade.callBooth("Justin Jefferson", "two streamers and a kicker", 0);
+  eq(streamed.letter, "F", "streamers and a kicker grade low");
+  const pile = TradeGrade.callBooth("Christian McCaffrey", "Pollard, Boyd, Elliott, Wilson, and a dart", 0);
+  eq(pile.letter, "F", "five for one grades low");
+  eq(TradeGrade.callBooth("Pollard, Boyd, Elliott, Wilson, and a dart", "Christian McCaffrey", 0).letter, "A+", "consolidation mirrors");
+  const joke = TradeGrade.callBooth("asdf", "qwer", 0);
+  const jokeBack = TradeGrade.callBooth("qwer", "asdf", 0);
+  eq(joke.letter, "C", "nonsense gets the joke grade");
+  eq(jokeBack.letter, "C", "nonsense stays C both ways");
+  assert(joke.tag === "KEY SMASH" || joke.tag === "NOT A ROSTER" || joke.tag === "GARBAGE TIME", "joke stamp");
+  assert(joke.roast.toLowerCase().indexOf("keyboard") !== -1, "joke roast");
+  assert(TradeGrade.callBooth("Justin Jefferson", "CeeDee Lamb", 0).tag !== "KEY SMASH", "real names are not a keyboard");
+
+  const ordered = TradeGrade.grade(TradeGrade.emptyState(), { give: "Chase, Pollard", get: "Lamb" }, 50);
+  const reordered = TradeGrade.grade(ordered.state, { give: "Pollard + Chase", get: "Lamb" }, 51);
+  assert(reordered.already, "reordered package reopens the card");
+  eq(reordered.state.cards.length, 1, "one shelf row");
+  eq(reordered.card.id, ordered.card.id);
+  const slashed = TradeGrade.callBooth("Chase / Pollard", "Lamb", 0);
+  const amped = TradeGrade.callBooth("Pollard & Chase", "Lamb", 0);
+  const worded = TradeGrade.callBooth("Chase and Pollard", "Lamb", 0);
+  eq(slashed.letter, ordered.card.letter, "slash order matches");
+  eq(amped.letter, ordered.card.letter, "ampersand order matches");
+  eq(worded.letter, ordered.card.letter, "and order matches");
+  eq(slashed.confidence, ordered.card.confidence, "reorder keeps the meter");
+  eq(slashed.tag, ordered.card.tag, "reorder keeps the stamp");
+  eq(TradeGrade.grade(TradeGrade.emptyState(), { give: "Chase, Pollard", get: "Pollard and Chase" }, 52).reason, "same", "same names either way");
+
+  assertMirror("Christian McCaffrey", "a kicker");
+  assertMirror("Ja'Marr Chase", "A flex dart and vibes");
+  assertMirror("Chase, Pollard", "Lamb");
+  assertMirror("Patrick Mahomes", "a 1st round pick");
+  assertMirror("asdf", "qwer");
+
+  const names = [
+    "Christian McCaffrey", "Ja'Marr Chase", "Justin Jefferson", "Tyreek Hill", "CeeDee Lamb",
+    "Amon-Ra St. Brown", "Bijan Robinson", "Breece Hall", "Travis Kelce", "Patrick Mahomes",
+    "Josh Allen", "Jalen Hurts", "A.J. Brown", "Garrett Wilson", "Drake London", "Tony Pollard",
+  ];
+  const batch = [];
+  for (let i = 0; i < names.length; i += 1) {
+    for (let j = i + 1; j < names.length && batch.length < 40; j += 1) batch.push([names[i], names[j]]);
+  }
+  batch.push(
+    ["Christian McCaffrey", "Pollard, Boyd, Elliott, Wilson, and a dart"],
+    ["Chase, Pollard", "Lamb"],
+    ["Ja'Marr Chase", "a kicker"],
+    ["Justin Jefferson", "two streamers and a kicker"],
+    ["Patrick Mahomes", "a 1st round pick"],
+    ["CeeDee Lamb", "my bench WR2"],
+    ["Tyreek Hill", "a backup QB and a dart"],
+    ["Travis Kelce", "a 2nd and a handcuff"],
+    ["Josh Allen", "kickers and a dst"],
+    ["Bijan Robinson", "a flex dart and vibes"]
+  );
+  const dist = Object.create(null);
+  const meters = Object.create(null);
+  const stamps = Object.create(null);
+  batch.forEach(function (pair) {
+    const call = TradeGrade.callBooth(pair[0], pair[1], 0);
+    dist[call.letter] = (dist[call.letter] || 0) + 1;
+    meters[call.confidence] = true;
+    stamps[call.tag] = true;
+    assertMirror(pair[0], pair[1]);
+  });
+  const lettersHit = Object.keys(dist);
+  console.log("LETTER_DIST " + JSON.stringify(dist));
+  console.log("METERS " + Object.keys(meters).join(","));
+  console.log("STAMPS " + Object.keys(stamps).join(","));
+  assert(lettersHit.length >= 6, "batch spreads across letters, got " + lettersHit.join(" "));
+  assert(Object.keys(meters).length >= 5, "meters vary");
+  assert(Object.keys(stamps).length >= 4, "stamps vary");
+  assert(stamps["COIN JERSEY"] !== true || Object.keys(stamps).length > 1, "coin jersey is not the only stamp");
+
+  const forged = TradeGrade.parseShare({
+    v: 1,
+    k: "card",
+    c: [{
+      id: "forged-card",
+      g: "Tyler Boyd",
+      t: "Ja'Marr Chase",
+      sa: 0,
+      lt: "A+",
+      cf: 99,
+      rs: "Forged roast that is not ours.",
+      tg: "FAKE TAG",
+      star: 1,
+    }],
+  });
+  const honest = TradeGrade.callBooth("Tyler Boyd", "Ja'Marr Chase", 0);
+  eq(forged.cards[0].letter, honest.letter, "forged letter is recomputed");
+  eq(forged.cards[0].confidence, honest.confidence, "forged meter is recomputed");
+  eq(forged.cards[0].tag, honest.tag, "forged stamp is recomputed");
+  eq(forged.cards[0].roast, honest.roast, "forged roast is recomputed");
+  eq(forged.cards[0].starred, false, "forged star is dropped");
+  assert(forged.cards[0].confidence <= 96, "meter stays in range");
+  assert(forged.cards[0].roast.indexOf("Forged") === -1, "forged sentence is dropped");
+
+  let owned = TradeGrade.emptyState();
+  for (let i = 0; i < 22; i += 1) {
+    owned = TradeGrade.grade(owned, { give: "Own " + i, get: "Theirs " + i }, 5000 + i).state;
+  }
+  const vaultCards = [];
+  for (let i = 0; i < 5; i += 1) {
+    vaultCards.push({
+      id: "shelf-" + i,
+      g: "Shelf " + i,
+      t: "Other " + i,
+      sa: 0,
+      lt: "A+",
+      cf: 99,
+      rs: "Forged shelf roast.",
+      tg: "FAKE TAG",
+    });
+  }
+  const vaultShare = TradeGrade.parseShare({ v: 1, k: "vault", c: vaultCards });
+  const preview = TradeGrade.previewKeep(owned, vaultShare);
+  eq(preview.adds, 5, "offer adds five");
+  eq(preview.drops, 3, "offer drops the three oldest");
+  const keptVault = TradeGrade.keepShare(owned, vaultShare);
+  assert(keptVault.ok, "partial shelf fits");
+  eq(keptVault.dropped.length, 3, "three oldest leave");
+  eq(keptVault.dropped[0].card.give, "Own 0");
+  eq(keptVault.dropped[2].card.give, "Own 2");
+  eq(keptVault.state.cards.length, 24);
+  assert(keptVault.cards[0].roast.indexOf("Forged") === -1, "shelf import recomputes");
+
+  let phone = TradeGrade.emptyState();
+  for (let i = 0; i < 20; i += 1) {
+    phone = TradeGrade.grade(phone, { give: "Mine " + i, get: "Yours " + i }, 6000 + i).state;
+  }
+  const bigCards = [];
+  for (let i = 0; i < 24; i += 1) {
+    bigCards.push({ id: "big-" + i, g: "Big " + i, t: "Side " + i, sa: 0, lt: "C", cf: 60, rs: "x", tg: "COIN JERSEY" });
+  }
+  const bigShare = TradeGrade.parseShare({ v: 1, k: "vault", c: bigCards });
+  const bigPreview = TradeGrade.previewKeep(phone, bigShare);
+  eq(bigPreview.adds, 24, "a full shelf still fits by making room");
+  eq(bigPreview.drops, 20, "it tells you the cost");
+  const bigKept = TradeGrade.keepShare(phone, bigShare);
+  assert(bigKept.ok, "twenty grades do not refuse a shelf");
+  eq(bigKept.state.cards.length, 24);
+
+  let lockedShelf = TradeGrade.emptyState();
+  for (let i = 0; i < 24; i += 1) {
+    lockedShelf = TradeGrade.grade(lockedShelf, { give: "Star " + i, get: "Lock " + i }, 8000 + i).state;
+  }
+  lockedShelf.cards.forEach(function (card) {
+    lockedShelf = TradeGrade.setStarred(lockedShelf, card.id, true, 9000).state;
+  });
+  const blockedKeep = TradeGrade.keepShare(lockedShelf, vaultShare);
+  eq(blockedKeep.ok, false, "starred shelf refuses");
+  eq(blockedKeep.reason, "cap");
+  eq(blockedKeep.state.cards.length, 24, "refusal does not drop cards");
+
+  eq(TradeGrade.readStored("{oops").corrupt, true, "bad json is corrupt");
+  eq(TradeGrade.readStored("{oops").backup, "{oops");
+  eq(TradeGrade.readStored("null").corrupt, true, "null is corrupt");
+  eq(TradeGrade.readStored("[]").corrupt, true, "array is corrupt");
+  eq(TradeGrade.readStored('"str"').corrupt, true, "string is corrupt");
+  eq(TradeGrade.readStored('{"cards":"x"}').corrupt, true, "bad cards field is corrupt");
+  eq(TradeGrade.readStored("").corrupt, false, "empty storage is fresh");
+  eq(TradeGrade.readStored(null).corrupt, false, "missing storage is fresh");
+  const mixedSave = TradeGrade.readStored(JSON.stringify({
+    v: 1,
+    cards: [{ id: "ok-card", give: "Ada", get: "Bea", salt: 0 }, { id: "nope" }],
+  }));
+  eq(mixedSave.corrupt, false, "a mixed list is readable");
+  eq(mixedSave.state.cards.length, 1, "mixed list keeps the valid card");
 }
 
 main().catch(function (err) {

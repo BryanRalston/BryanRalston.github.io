@@ -25,6 +25,9 @@
   <div id="storageFail" class="storage-fail" hidden role="alert">
     Trade Grade cannot save on this device. Browser storage is blocked (private mode or a setting). The grades will not persist.
   </div>
+  <div id="storageCorrupt" class="storage-note" hidden role="status">
+    Saved grades could not be read. Started fresh, and the old value is backed up on this phone.
+  </div>
   <noscript>
     <p class="storage-fail">Trade Grade needs JavaScript to run the booth. This page does not send data anywhere.</p>
   </noscript>
@@ -55,7 +58,7 @@
       <h2 id="offerHeading">Same roast, this phone.</h2>
       <p class="share-offer-lead">Someone sent a copy. It is not live sync. A re-grade on their phone does not change this one.</p>
       <p class="offer-face" id="offerFace">—</p>
-      <p class="hint">Keep adds that card on this phone. Not now drops the copy. Refresh will not bring it back — the address bar is cleared on purpose.</p>
+      <p class="hint" id="offerHint">Keep adds what fits on this phone. Not now drops the copy. Refresh will not bring it back — the address bar is cleared on purpose.</p>
       <div class="offer-actions">
         <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
         <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
@@ -141,7 +144,7 @@
         <label for="fieldNote">League / team <span class="opt">optional</span>
           <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Work league · 12 team" />
         </label>
-        <p class="hint">Give and get are required, and they have to differ. A league note rides along on the card. It does not change the letter. The same packages get the same roast until Re-grade.</p>
+        <p class="hint">Give and get are required, and they have to differ. Reordering names inside a package does not make a new card. A league note rides along and does not change the letter. The reverse trade gets the mirror letter.</p>
         <p id="formError" class="form-error" hidden role="alert"></p>
         <div class="form-actions">
           <button type="submit" class="btn primary wide" id="btnGrade">Grade</button>
@@ -186,19 +189,19 @@
         <ul class="feature-list">
           <li>
             <strong>The trade</strong>
-            <span>What you give and what you get. A name or a package is required, and whitespace is trimmed. A league or team note is optional. The two sides have to differ. Markup and emoji stay as text.</span>
+            <span>What you give and what you get. A name or a package is required, and whitespace is trimmed. Split a package on commas, plus signs, ampersands, slashes, or the word and. Order inside a package does not matter, and the typed text stays on the card. A league or team note is optional. The two sides have to differ. Markup and emoji stay as text.</span>
           </li>
           <li>
             <strong>Grade</strong>
-            <span>A theatrical letter card. A+ through F, one roast line, a confidence meter, and the give ↔ get summary. The meter is entertainment theater, not a projection and not a model.</span>
+            <span>A theatrical letter card. A+ through F, one roast line, a stamp, a confidence meter, and the give ↔ get summary. Ordinary names can land anywhere on that scale. Package size, throw-in words, and picks move the letter. The stamp and the meter follow the letter. The reverse trade gets the mirror letter, and C stays C. Keyboard mash gets a joke grade. The meter is entertainment theater, not a projection and not a model.</span>
           </li>
           <li>
             <strong>Same pair</strong>
-            <span>The same give and get, once normalized, always get the same letter and the same roast. The league note does not move the grade. Grading that pair again brings the card back to the top.</span>
+            <span>The same packages, once each side is split, trimmed, lowercased, and sorted, share one card. Grading them again brings that card back, including a re-graded roast. The league note does not move the letter. The reverse package gets the mirror letter, so both sides cannot win.</span>
           </li>
           <li>
             <strong>Re-grade</strong>
-            <span>A new seeded roast on that same letter. The star stays. Undo re-grade restores the previous line.</span>
+            <span>A new roast on that same letter. The stamp stays with the letter. The star stays. Undo re-grade restores the previous line.</span>
           </li>
           <li>
             <strong>Star</strong>
@@ -206,15 +209,15 @@
           </li>
           <li>
             <strong>Undo</strong>
-            <span>The Undo button takes back the last grade, re-grade, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a grade that had to make room.</span>
+            <span>The Undo button takes back the last grade, re-grade, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a grade that had to make room. A later note does not cover a toast that still has Undo.</span>
           </li>
           <li>
             <strong>History</strong>
-            <span>Up to 24 grades on this phone. Filters are all and starred. Open one, remove one, or clear every grade. Undo puts them back until the toast leaves. A new grade at the cap drops the oldest unstarred grade. Starred grades stay.</span>
+            <span>Up to 24 grades on this phone. Filters are all and starred. Open one, remove one, or clear every grade. Opening a row does not replace what you are typing. Undo puts them back until the toast leaves. A new grade at the cap drops the oldest unstarred grade. Starred grades stay.</span>
           </li>
           <li>
             <strong>Snapshot share</strong>
-            <span>Copy link packs the open grade, including one opened from the shelf, into <code>#g=</code>. Copy shelf link packs every grade. <code>?g=</code> works if the token is in the query string. Opening it offers Keep or Not now. Keep does not copy the sender's star. A duplicate says Already on this phone. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+            <span>Copy link copies the open grade into <code>#g=</code> in one tap. Copy shelf link packs every grade. <code>?g=</code> works if the token is in the query string. The link does not carry the star. Opening it offers Keep or Not now. Keep recomputes the letter, stamp, meter, and roast from the packages. A shelf link keeps what fits. The offer says what it adds, and how many oldest unstarred grades it drops, before you tap. If nothing fits, the offer stays up. A duplicate says Already on this phone. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
           </li>
           <li>
             <strong>Load sample</strong>
@@ -222,7 +225,7 @@
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>trade-grade-v1</code>. Offline cache <code>trade-grade-v1</code>. The page is fetched from the network when you are online. If storage is blocked, a banner says so. No accounts, no analytics.</span>
+            <span>Store <code>trade-grade-v1</code>. Offline cache <code>trade-grade-v2</code>. The page is fetched from the network when you are online. Scripts and styles refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, the old value is backed up and a notice shows. No accounts, no analytics.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: fantasy advice, betting, projections, news, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>

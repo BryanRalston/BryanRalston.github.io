@@ -163,6 +163,18 @@ code {
   text-align: center;
 }
 
+.storage-note {
+  position: sticky;
+  top: 0;
+  z-index: 29;
+  background: #2a2416;
+  color: #ffe7b0;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 .top {
   display: flex;
   flex-wrap: wrap;
