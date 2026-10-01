@@ -148,7 +148,7 @@
         <label for="fieldNote">Week / league <span class="opt">optional</span>
           <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Week 4 · work league" />
         </label>
-        <p class="hint">The benched name and the points are required. A number or a rough range is enough. Who you started is optional. Word order inside a name does not make a new card. A week note rides along and does not change the bomb.</p>
+        <p class="hint">The benched name and the points are required. Enter a number or a range, like 38.4 or 30-40. none, bye, and zero count as 0. Who you started is optional. Word order inside a name does not make a new card. A week note rides along and does not change the bomb.</p>
         <p id="formError" class="form-error" hidden role="alert"></p>
         <div class="form-actions">
           <button type="submit" class="btn primary wide" id="btnBomb">Bomb</button>
@@ -193,19 +193,19 @@
         <ul class="feature-list">
           <li>
             <strong>The sit</strong>
-            <span>Who you benched is required. Who you started instead is optional. Points are a number or a rough range, and they are required. A week or league note is optional. Whitespace is trimmed. Word order inside a name does not matter, and the typed text stays on the card. Markup and emoji stay as text. The note does not move the energy.</span>
+            <span>Who you benched is required. Who you started instead is optional. Points are a number, a spelled-out number, or a rough range, and they are required. none, zilch, zero, DNP, bye, out, injured, and IR count as 0. A comma before one or two final digits is a decimal, so 12,5 is 12.5. Zero or below is a dud. Anything else asks you to enter a number and does not bomb. A week or league note is optional. Whitespace is trimmed. Names match with Unicode NFC and lowercase, so accents, non-Latin letters, and emoji stay. Word order inside a name does not matter. Markup stays text. The note does not move the energy. Bombing the same sit saves a newly typed week note.</span>
           </li>
           <li>
             <strong>Bomb</strong>
-            <span>A theatrical BOMB card. Energy from DUD through NUCLEAR, one roast line, a stamp, a fallout meter, the benched name, the points, and the starter when you named one. The same sit gets the same card. The stamp and the meter follow the points. The meter is entertainment theater, not a projection and not a model.</span>
+            <span>A theatrical BOMB card. Energy from DUD through NUCLEAR, one roast line, a stamp, a fallout meter, the benched name, the points, and the starter when you named one. The first roast follows the sit, so different sits get different lines and the same sit keeps its line. The card shows pts once for a number or a range. Typed words like points, pts, and pt are not repeated. Zero or below gets a you-dodged-it roast. If you name no starter, the roast says there is no alibi. The stamp and the meter follow the points. The meter is entertainment theater, not a projection and not a model.</span>
           </li>
           <li>
             <strong>Same sit</strong>
-            <span>The same benched name, starter, and points reading, once each name is split, trimmed, lowercased, and sorted, share one card. A range is the same forwards and backwards. About 32 and 32 share a card. Bombing them again brings that card back, including a re-bombed roast. The week note does not move the energy.</span>
+            <span>The same benched name, starter, and points reading share one card. Names are normalized with Unicode NFC and lowercase, not ASCII stripping, then split and sorted. Accented letters, non-Latin letters, and emoji stay, so they do not collapse into someone else's card. A range is the same forwards and backwards. About 32 and 32 share a card. The sign is part of the card, so -12 and 12 are different. Bombing them again brings that card back, including a re-bombed roast, and saves a newly typed week note. The week note does not move the energy.</span>
           </li>
           <li>
             <strong>Re-bomb</strong>
-            <span>A new roast on that same energy. The stamp stays with the energy. The fallout stays with the points. The star stays. Undo re-bomb restores the previous line.</span>
+            <span>A new roast on that same energy. It does not always open with the same phrase. The stamp stays with the energy. The fallout stays with the points. The star stays. Undo re-bomb restores the previous line.</span>
           </li>
           <li>
             <strong>Star</strong>
@@ -213,7 +213,7 @@
           </li>
           <li>
             <strong>Undo</strong>
-            <span>The Undo button takes back the last bomb, re-bomb, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a bomb that had to make room. A later note does not cover a toast that still has Undo.</span>
+            <span>The Undo button takes back the last bomb, re-bomb, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a bomb that had to make room. The toast Undo leaves as soon as it can no longer work, including after Load sample or a new bomb changes the shelf, and when the cap would block a restore. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
           </li>
           <li>
             <strong>History</strong>
@@ -229,7 +229,7 @@
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>bench-bomb-v1</code>. Offline cache <code>bench-bomb-v1</code>. The page is fetched from the network when you are online. Scripts and styles refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, the old value is backed up and a notice shows. No accounts, no analytics, no scoring API.</span>
+            <span>Store <code>bench-bomb-v1</code>. Offline cache <code>bench-bomb-v2</code>. The page is fetched from the network when you are online. Scripts and styles refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, the old value is backed up and a notice shows. No accounts, no analytics, no scoring API.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: fantasy advice, betting, money, projections, news, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
@@ -255,6 +255,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite">
     <span id="toastText"></span>
+    <span id="toastExtra" hidden></span>
     <button type="button" id="toastUndo" hidden>Undo</button>
   </div>
 
