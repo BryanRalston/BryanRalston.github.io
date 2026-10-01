@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#12080c" />
+  <meta name="description" content="Bench Bomb — fantasy bench regret board. Name the player you sat and the points they dropped. Entertainment only. Not fantasy advice. Not betting. Stays on this device." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Bench Bomb" />
+  <title>Bench Bomb</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the board</a>
+  <div class="yard" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Bench Bomb cannot save on this device. Browser storage is blocked (private mode or a setting). The bombs will not persist.
+  </div>
+  <div id="storageCorrupt" class="storage-note" hidden role="status">
+    Saved bombs could not be read. Started fresh, and the old value is backed up on this phone.
+  </div>
+  <noscript>
+    <p class="storage-fail">Bench Bomb needs JavaScript to run the board. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Fantasy regret</p>
+          <h1>Bench Bomb</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      You sat them. They went nuclear. Entertainment only. For the group chat. Not fantasy advice. Not betting. No money. The same sit gets the same bomb until you hit Re-bomb.
+    </p>
+
+    <p class="sr-only" id="spoken" aria-live="polite"></p>
+
+    <section id="shareOffer" class="share-offer" hidden aria-labelledby="offerHeading">
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same bomb, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a copy. It is not live sync. A re-bomb on their phone does not change this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint" id="offerHint">Keep adds what fits on this phone. Not now drops the copy. Already on this phone means the sit is here. Refresh will not bring a dropped copy back.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfBar" class="shelf-bar" hidden>
+      <button type="button" class="text-btn" id="btnLatest">Latest bomb</button>
+      <p class="kicker quiet">From the shelf</p>
+    </div>
+
+    <section id="emptyHero" class="empty-hero" aria-labelledby="emptyHeading">
+      <p class="empty-kicker">The bench is quiet</p>
+      <h2 id="emptyHeading">You sat them. They went nuclear.</h2>
+      <p>Name the player you benched, the points they dropped, and who you started if you want the alibi on the card. Tap Bomb. The board stamps a roast. It is a costume on a bad sit, not a ranking.</p>
+    </section>
+
+    <article class="bomb-card" id="bombCard" hidden tabindex="-1" aria-labelledby="bombHeading">
+      <div class="card-chrome">
+        <p class="kicker">The board</p>
+        <div class="chrome-side">
+          <span class="star-pill" id="starPill" hidden>Starred</span>
+          <span class="stamp" id="stamp">Bench bomb</span>
+        </div>
+      </div>
+      <h2 class="sr-only" id="bombHeading">No bomb yet</h2>
+      <p class="bomb-word" id="bombWord" data-band="nuclear">BOMB</p>
+      <p class="energy-mark" id="energyMark" data-band="nuclear">NUCLEAR</p>
+      <p class="points-figure" id="pointsFigure" data-long="false"><span id="pointsBig">0</span><span class="points-unit" id="pointsUnit"> pts</span></p>
+      <p class="roast" id="roastLine"></p>
+      <div class="meter-row">
+        <div class="conf-lockup">
+          <p class="conf-num"><span id="falloutValue">0</span><span class="conf-unit">%</span></p>
+          <p class="conf-caption">fallout</p>
+        </div>
+        <div
+          class="meter"
+          id="meter"
+          role="meter"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-valuetext="Fallout meter 0 percent. Entertainment only. Not a projection."
+          aria-label="Fallout meter"
+        >
+          <span class="meter-fill" id="meterFill"></span>
+        </div>
+      </div>
+      <p class="meter-note">Fallout meter. Entertainment only. Not a projection. Not advice.</p>
+      <div class="exchange" id="exchange">
+        <div class="side sat">
+          <p class="side-kicker">Benched</p>
+          <p class="side-name" id="satName"></p>
+        </div>
+        <div class="side start" id="startSide">
+          <p class="side-kicker">Started instead</p>
+          <p class="side-name" id="startName"></p>
+        </div>
+      </div>
+      <p class="league-note" id="leagueNote" hidden></p>
+    </article>
+
+    <div class="actions" id="actionRow" hidden>
+      <button type="button" class="btn ghost" id="btnRebomb" aria-label="Re-bomb, roll a new roast on the same energy">
+        Re-bomb
+        <span class="btn-sub">New roast</span>
+      </button>
+      <button type="button" class="btn ghost" id="btnStar" aria-pressed="false">Star</button>
+      <button type="button" class="btn ghost" id="btnUndo" disabled>Undo</button>
+      <button type="button" class="btn primary" id="btnShare">Copy link</button>
+      <button type="button" class="btn ghost danger" id="btnRemove">Remove</button>
+    </div>
+
+    <section id="sitPanel" aria-labelledby="sitHeading">
+      <form id="bombForm" autocomplete="off" novalidate>
+        <p class="kicker" id="sitKicker">The sit</p>
+        <h2 id="sitHeading">Name the sit</h2>
+        <label for="fieldSat">Who you benched
+          <input id="fieldSat" name="sat" type="text" maxlength="80" required autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Justin Jefferson" />
+        </label>
+        <label for="fieldStart">Who you started instead <span class="opt">optional</span>
+          <input id="fieldStart" name="start" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="A committee back" />
+        </label>
+        <label for="fieldPoints">Points they dropped
+          <input id="fieldPoints" name="points" type="text" maxlength="40" inputmode="text" required autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="38.4 or 30-40" />
+        </label>
+        <label for="fieldNote">Week / league <span class="opt">optional</span>
+          <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Week 4 · work league" />
+        </label>
+        <p class="hint">The benched name and the points are required. A number or a rough range is enough. Who you started is optional. Word order inside a name does not make a new card. A week note rides along and does not change the bomb.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnBomb">Bomb</button>
+          <button type="button" class="btn ghost wide" id="btnSample">Load sample</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="historyPanel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The shelf</p>
+          <h2 id="historyHeading">Past bombs</h2>
+        </div>
+        <button type="button" class="btn ghost" id="btnShareShelf" disabled>Copy shelf link</button>
+      </div>
+      <p class="panel-sub" id="historySub">0 of 24 on this phone.</p>
+      <div class="filters" id="filters" role="group" aria-label="Filter bombs" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="starred" aria-pressed="false">Starred</button>
+      </div>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">Nothing shelved</p>
+        <strong>The first bomb lands here.</strong>
+      </div>
+      <div id="filterEmpty" class="empty compact" hidden>
+        <p class="empty-kicker">No stars</p>
+        <strong>Nothing starred.</strong>
+        <p>Star a bomb to find it here. The rest are still on this phone.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+      <div class="history-foot">
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Bench Bomb</strong> · On this device. A snapshot link (<code>#n=</code> or <code>?n=</code>) is a copy of a bomb, not live sync. Entertainment only. For the group chat. Not fantasy advice. Not betting. No money.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The bombs stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>The sit</strong>
+            <span>Who you benched is required. Who you started instead is optional. Points are a number or a rough range, and they are required. A week or league note is optional. Whitespace is trimmed. Word order inside a name does not matter, and the typed text stays on the card. Markup and emoji stay as text. The note does not move the energy.</span>
+          </li>
+          <li>
+            <strong>Bomb</strong>
+            <span>A theatrical BOMB card. Energy from DUD through NUCLEAR, one roast line, a stamp, a fallout meter, the benched name, the points, and the starter when you named one. The same sit gets the same card. The stamp and the meter follow the points. The meter is entertainment theater, not a projection and not a model.</span>
+          </li>
+          <li>
+            <strong>Same sit</strong>
+            <span>The same benched name, starter, and points reading, once each name is split, trimmed, lowercased, and sorted, share one card. A range is the same forwards and backwards. About 32 and 32 share a card. Bombing them again brings that card back, including a re-bombed roast. The week note does not move the energy.</span>
+          </li>
+          <li>
+            <strong>Re-bomb</strong>
+            <span>A new roast on that same energy. The stamp stays with the energy. The fallout stays with the points. The star stays. Undo re-bomb restores the previous line.</span>
+          </li>
+          <li>
+            <strong>Star</strong>
+            <span>Mark a bomb you want on the starred filter. Undo star takes the mark off.</span>
+          </li>
+          <li>
+            <strong>Undo</strong>
+            <span>The Undo button takes back the last bomb, re-bomb, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a bomb that had to make room. A later note does not cover a toast that still has Undo.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Up to 24 bombs on this phone. Filters are all and starred. Open one, remove one, or clear every bomb. Opening a row does not replace what you are typing. Undo puts them back until the toast leaves. A new bomb at the cap drops the oldest unstarred bomb. Starred bombs stay. If every bomb is starred, the board refuses another.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link copies the open bomb into <code>#n=</code> in one tap. Copy shelf link packs every bomb. <code>?n=</code> works if the token is in the query string. The link does not carry the star. Opening it offers Keep or Not now. Keep recomputes the energy, stamp, meter, and roast from the sit. A shelf link keeps what fits. The offer says what it adds, and how many oldest unstarred bombs it drops, before you tap. If nothing fits, the offer stays up. A duplicate says Already on this phone. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>Load sample</strong>
+            <span>Justin Jefferson for 38.4, started a committee back, so there is a card to look at without typing.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>bench-bomb-v1</code>. Offline cache <code>bench-bomb-v1</code>. The page is fetched from the network when you are online. Scripts and styles refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, the old value is backed up and a notice shows. No accounts, no analytics, no scoring API.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: fantasy advice, betting, money, projections, news, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this bomb.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They can keep the same card. Later re-bombs here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The bomb is packed into the link itself (<code>#n=</code>, or <code>?n=</code> if the token is moved into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="bomb.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>

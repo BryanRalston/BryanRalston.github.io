@@ -1,0 +1,18 @@
+{
+  "name": "Bench Bomb",
+  "short_name": "Bench Bomb",
+  "description": "Fantasy bench regret board. Name the player you sat, see the bomb they dropped, and keep the roast on this device. Entertainment only. Not fantasy advice.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12080c",
+  "theme_color": "#12080c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
