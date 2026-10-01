@@ -28,40 +28,199 @@
       "You sat {S} and the damage was {P}. A dud, played loud. {I}",
       "False alarm. {S} put up {P}. The group chat can stand down. {I}",
       "{P} from {S}. That is a sparkler, not a bomb. {I}",
+      "{S} managed {P} on the pine. Dud. The lineup never felt it. {I}",
+      "You left {S} sitting and they returned {P}. A quiet dud. {I}",
+      "Bench dud. {S} at {P}. Not a story, just a sit. {I}",
+      "{P} from {S}. You can tell the group chat it was a dud. {I}",
+      "{S} posted {P} where nobody needed it. A dud with a name. {I}",
+      "Quiet bench. {S} and {P}. The booth already moved on. {I}",
+      "You sat {S}. {P} points. Dud, and the week kept walking. {I}",
+      "{P} from {S} on the pine. Nothing here is a bomb. {I}",
+      "Dud. {S} scraped together {P}. The booth shrugged. {I}",
+      "You sat {S}. {P} points. A dud, filed and forgotten. {I}",
+      "{S} at {P}. Dud energy. Nobody is clipping that. {I}",
+      "{P} from {S}. The bench stayed quiet, and so did the booth. {I}",
     ],
     SPARK: [
       "{S} dropped {P} on the pine. A spark, not a crater. {I}",
       "You sat {S}. {P} points. The booth called it a spark. {I}",
       "Bench spark. {S} went for {P}. Annoying, not historic. {I}",
       "{P} from {S} while you looked away. Small regret, real roast. {I}",
+      "{S} sparked {P} on the bench. A flicker, not a fire. {I}",
+      "You sat {S} and ate a spark of {P}. The week survived. {I}",
+      "Spark only. {S} put up {P}. Mention it, then let it go. {I}",
+      "{P} from {S}. The bench coughed. That is a spark. {I}",
+      "{S} at {P}. A spark on the pine, not a week-ender. {I}",
+      "You left {S} sitting. {P} points. The booth called it a spark. {I}",
+      "Small regret. {S} went for {P} and the lineup barely smoked. {I}",
+      "{P} from {S} on the bench. Spark, then back to the game. {I}",
+      "You sat {S} and got a spark back. {P} points. That is the whole story. {I}",
+      "{S} flickered for {P}. Spark, not a crater. {I}",
+      "Spark. {S} put {P} on the pine. Annoying in a small way. {I}",
+      "{P} from {S}. A spark the group chat will forget by Monday. {I}",
     ],
     BLAST: [
       "{S} blasted {P} on your bench. {I}",
       "You sat {S} and ate {P} points of silence. {I}",
       "Blast radius: {S}, {P}. The lineup feels it. {I}",
       "{P} from {S}. That start is going to get mentioned. {I}",
+      "{S} went for {P} on the bench. Blast, and the booth heard it. {I}",
+      "You sat {S}. {P} points. That is a blast, not a footnote. {I}",
+      "Bench blast. {S} dropped {P}. The group chat has a screenshot. {I}",
+      "{P} from {S} while the starter watched. Blast radius includes you. {I}",
+      "{S} put {P} on the pine. The booth felt the blast. {I}",
+      "You sat {S} and the bench answered with {P}. Blast. {I}",
+      "That is a blast. {S} at {P}, and the lineup is the punchline. {I}",
+      "{P} from {S}. Blast on the bench. The group chat is warming up. {I}",
+      "You sat {S}. The blast was {P}. The booth wrote it down. {I}",
+      "{S} unloaded {P} on the bench. Blast, full stop. {I}",
+      "Blast. {P} from {S}, and the lineup felt the shove. {I}",
+      "{S} at {P}. That is a blast with your fingerprints on it. {I}",
     ],
     CRATER: [
       "{S} cratered your week with {P}. {I}",
       "You sat {S}. {P} points. The booth heard the impact. {I}",
       "Crater sit. {S} went for {P}. Screenshot bait, entertainment only. {I}",
       "{P} from {S} on the bench. That is a hole in the lineup. {I}",
+      "{S} left a crater at {P}. The sit is the story. {I}",
+      "You sat {S} and the week fell in. {P} points. Crater. {I}",
+      "Crater. {S} put up {P} on the pine. The booth is not letting it go. {I}",
+      "{P} from {S}. That bench score is a crater with your name on it. {I}",
+      "{S} cratered it. {P} on the bench, and the lineup has a hole. {I}",
+      "You sat {S}. {P} points. Crater sit. The group chat will frame it. {I}",
+      "Impact crater: {S} for {P}. The booth heard it twice. {I}",
+      "{P} from {S} where you could not spend it. That is a crater. {I}",
+      "You sat {S} and opened a crater. {P} points. The booth flinched. {I}",
+      "{S} for {P}. Crater sit. The week has a hole in it. {I}",
+      "Crater. {P} from {S} on the pine. Screenshot bait. {I}",
+      "{S} cratered {P} onto the bench. The lineup is the joke. {I}",
     ],
     NUCLEAR: [
       "{S} went nuclear for {P} on your bench. {I}",
       "You sat {S}. {P} points. The group chat is already typing. {I}",
       "Nuclear sit. {S} dropped {P}. Entertainment only, and still brutal. {I}",
       "{P} from {S}, and they never saw the field. {I}",
+      "{S} went nuclear. {P} on the bench. The booth lost its voice. {I}",
+      "You sat {S} and they detonated for {P}. Nuclear, for the group chat. {I}",
+      "Nuclear. {S} put up {P} where you could not use it. {I}",
+      "{P} from {S} on the pine. That is a bench bomb. {I}",
+      "{S} for {P}. Nuclear sit. The screenshot is already ugly. {I}",
+      "You left {S} on the bench and they went nuclear for {P}. {I}",
+      "Bench bomb. {S} dropped {P}. The booth is still ringing. {I}",
+      "{P} from {S}. Nuclear, and the lineup never got a vote. {I}",
+      "You sat {S}. Nuclear. {P} points, and the group chat is feral. {I}",
+      "{S} detonated for {P} on the bench. Nuclear sit. {I}",
+      "Nuclear bomb. {P} from {S}. The booth is still on the floor. {I}",
+      "{S} went nuclear at {P}. You can hear the group chat from here. {I}",
     ],
   };
 
-  const POINT_WORDS = [
-    { re: /\b(?:goose|zero|nothing|blank|zip)\b/, value: 0 },
-    { re: /\b(?:few|handful|quiet|trickle)\b/, value: 7 },
-    { re: /\b(?:digits|decent|solid|double)\b/, value: 14 },
-    { re: /\b(?:big|huge|ton|boatload|pile|lot)\b/, value: 27 },
-    { re: /\b(?:nuclear|insane|monster|exploded|explosion|meltdown)\b/, value: 42 },
+  const DODGED = [
+    "You dodged it. {S} put up {P}. The bench did you a favor. {I}",
+    "{S} at {P}. You dodged it. The booth can sit down. {I}",
+    "Dodged. {S} finished at {P}. That sit was a save. {I}",
+    "You sat {S} and they scored {P}. You dodged it. {I}",
+    "{P} from {S}. You dodged a bomb that never armed. {I}",
+    "The bench held. {S} at {P}. You dodged it. {I}",
+    "You dodged it. {S} at {P} was not the explosion. {I}",
+    "{S} on the pine at {P}. You dodged it, and the group chat can wait. {I}",
+    "Save. {S} posted {P}. You dodged it. {I}",
+    "{P} from {S}. You dodged it, and the booth can unclench. {I}",
+    "You sat {S}. {P} points. You dodged it. {I}",
+    "Dodged bomb. {S} at {P}. The pine was the right chair. {I}",
+    "You dodged it. {P} from {S} never got into the lineup. {I}",
+    "{S} finished {P}. Dodged. The booth can breathe. {I}",
+    "Close call you won. {S} at {P}. You dodged it. {I}",
+    "{P} from {S}. You dodged it. That bench was a save. {I}",
   ];
+
+  const REBOMB_LEADS = [
+    "",
+    "Another detonation. ",
+    "The booth goes again. ",
+    "Same energy, new mouth. ",
+    "Take two. ",
+  ];
+
+  const ZERO_WORDS = {
+    none: true,
+    nada: true,
+    zilch: true,
+    zip: true,
+    dnp: true,
+    bye: true,
+    out: true,
+    inactive: true,
+    injured: true,
+    ir: true,
+    donut: true,
+    doughnut: true,
+    goose: true,
+    zero: true,
+    nothing: true,
+    blank: true,
+  };
+
+  const FILLER_WORDS = {
+    about: true,
+    around: true,
+    roughly: true,
+    approx: true,
+    approximately: true,
+    like: true,
+    some: true,
+    a: true,
+    an: true,
+    the: true,
+    of: true,
+    for: true,
+    just: true,
+    only: true,
+    maybe: true,
+    half: true,
+  };
+
+  const UNIT_WORDS = {
+    point: true,
+    points: true,
+    pts: true,
+    pt: true,
+    ppr: true,
+  };
+
+  const ONES = {
+    zero: 0,
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+    ten: 10,
+    eleven: 11,
+    twelve: 12,
+    thirteen: 13,
+    fourteen: 14,
+    fifteen: 15,
+    sixteen: 16,
+    seventeen: 17,
+    eighteen: 18,
+    nineteen: 19,
+  };
+
+  const TENS = {
+    twenty: 20,
+    thirty: 30,
+    forty: 40,
+    fifty: 50,
+    sixty: 60,
+    seventy: 70,
+    eighty: 80,
+    ninety: 90,
+  };
 
   function clampLine(value, max) {
     const cleaned = String(value == null ? "" : value)
@@ -103,30 +262,67 @@
   }
 
   function nameKey(text) {
-    const words = String(text || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .split(" ")
-      .filter(Boolean);
+    const normalized = String(text || "").normalize("NFC").toLowerCase().trim();
+    const words = normalized.split(/[^\p{L}\p{N}\p{Extended_Pictographic}]+/u).filter(Boolean);
+    if (!words.length) return normalized;
     words.sort();
     return words.join(" ");
   }
 
   function pointsToken(n) {
+    if (!Number.isFinite(n)) return "0";
     const rounded = Math.round(n * 10) / 10;
-    if (!Number.isFinite(rounded)) return "0";
+    if (Math.abs(rounded) >= 1000000) return rounded < 0 ? "-999" : "999";
     if (Math.abs(rounded - Math.round(rounded)) < 0.001) return String(Math.round(rounded));
-    return String(rounded);
+    const text = rounded.toFixed(1);
+    if (text.endsWith(".0")) return String(Math.round(rounded));
+    return text;
   }
 
-  function pointsReading(raw) {
-    const display = clampLine(raw, POINTS_MAX);
-    if (!display) return { display: "", value: null, key: "" };
-    const text = display.toLowerCase().replace(/(\d),(?=\d)/g, "$1");
-    const range = text.match(/(\d+(?:\.\d+)?)\s*(?:-|–|—|to)\s*(\d+(?:\.\d+)?)/);
+  function energyValue(n) {
+    if (n > 80) return 80;
+    return n;
+  }
+
+  function numberResult(n) {
+    const token = pointsToken(n);
+    return { display: token, value: energyValue(n), key: token, ok: true };
+  }
+
+  function normalizePointText(text) {
+    let next = String(text || "").toLowerCase().replace(/\u2212/g, "-");
+    next = next.replace(/(^|\s)[–—](?=\d)/g, "$1-");
+    next = next.replace(/\b(?:minus|negative)\b\s*/g, "-");
+    next = next.replace(/(\d),(\d{1,2})(?!\d)/g, "$1.$2");
+    next = next.replace(/(\d),(?=\d{3}(?!\d))/g, "$1");
+    return next;
+  }
+
+  function contentWords(text) {
+    return text.split(/[^a-z0-9]+/).filter(Boolean).filter(function (word) {
+      return !FILLER_WORDS[word] && !UNIT_WORDS[word];
+    });
+  }
+
+  function parseSpelled(words) {
+    if (!words.length || words.length > 2) return null;
+    if (words.length === 1) {
+      if (Object.prototype.hasOwnProperty.call(ONES, words[0])) return ONES[words[0]];
+      if (Object.prototype.hasOwnProperty.call(TENS, words[0])) return TENS[words[0]];
+      return null;
+    }
+    if (!Object.prototype.hasOwnProperty.call(TENS, words[0])) return null;
+    if (!Object.prototype.hasOwnProperty.call(ONES, words[1]) || ONES[words[1]] > 9) return null;
+    return TENS[words[0]] + ONES[words[1]];
+  }
+
+  function parseNumeric(text) {
+    if (!/\d/.test(text)) return null;
+    const range = text.match(/(?:^|[^\d.])(-?\d+(?:\.\d+)?)\s*(?:-|–|—|\bto\b)\s*(-?\d+(?:\.\d+)?)(?![\d.])/);
     if (range) {
       let low = Number(range[1]);
       let high = Number(range[2]);
+      if (!Number.isFinite(low) || !Number.isFinite(high)) return null;
       if (high < low) {
         const swap = low;
         low = high;
@@ -134,31 +330,43 @@
       }
       const mid = (low + high) / 2;
       return {
-        display: display,
-        value: mid,
+        display: pointsToken(low) + "-" + pointsToken(high),
+        value: energyValue(mid),
         key: pointsToken(low) + "-" + pointsToken(high),
+        ok: true,
       };
     }
-    const plus = text.match(/(\d+(?:\.\d+)?)\s*(?:\+(?!\d)|plus\b)/);
+    const plus = text.match(/(?:^|[^\d.])(-?\d+(?:\.\d+)?)\s*(?:\+(?!\d)|\bplus\b)/);
     if (plus) {
       const n = Number(plus[1]);
-      return { display: display, value: n + 4, key: pointsToken(n) + "+" };
+      if (!Number.isFinite(n)) return null;
+      return {
+        display: pointsToken(n) + "+",
+        value: energyValue(n + 4),
+        key: pointsToken(n) + "+",
+        ok: true,
+      };
     }
-    const num = text.match(/(\d+(?:\.\d+)?)/);
-    if (num) {
-      const n = Number(num[1]);
-      const capped = n > 80 ? 80 : n;
-      return { display: display, value: capped, key: pointsToken(n > 999 ? 999 : n) };
+    const num = text.match(/(?:^|[^\d.])(-?\d+(?:\.\d+)?)/);
+    if (!num) return null;
+    const n = Number(num[1]);
+    if (!Number.isFinite(n)) return null;
+    return numberResult(n);
+  }
+
+  function pointsReading(raw) {
+    const original = clampLine(raw, POINTS_MAX);
+    if (!original) return { display: "", value: null, key: "", ok: false };
+    const text = normalizePointText(original);
+    const numeric = parseNumeric(text);
+    if (numeric) return numeric;
+    const words = contentWords(text);
+    if (words.length && words.every(function (word) { return ZERO_WORDS[word] === true; })) {
+      return { display: "0", value: 0, key: "0", ok: true };
     }
-    const words = nameKey(text);
-    let value = null;
-    for (let i = 0; i < POINT_WORDS.length; i += 1) {
-      if (POINT_WORDS[i].re.test(text) && (value == null || POINT_WORDS[i].value > value)) {
-        value = POINT_WORDS[i].value;
-      }
-    }
-    if (value == null) value = fnv1a(words) % 41;
-    return { display: display, value: value, key: "w:" + words };
+    const spelled = parseSpelled(words);
+    if (spelled != null) return numberResult(spelled);
+    return { display: original, value: null, key: "", ok: false };
   }
 
   function energyIndex(value) {
@@ -180,7 +388,7 @@
   }
 
   function insteadClause(start) {
-    if (!start) return "No starter got named.";
+    if (!start) return "No alibi on file.";
     return "You started " + start + " instead.";
   }
 
@@ -209,8 +417,24 @@
     return out;
   }
 
+  function truncateAtWord(line, max) {
+    const chars = Array.from(line);
+    if (chars.length <= max) return chars.join("");
+    const ellipsis = "…";
+    const budget = max - Array.from(ellipsis).length;
+    if (budget < 1) return ellipsis;
+    let slice = chars.slice(0, budget).join("");
+    const lastSpace = slice.lastIndexOf(" ");
+    if (lastSpace >= 24) slice = slice.slice(0, lastSpace);
+    slice = slice.replace(/[\s,;:.!?—-]+$/g, "");
+    const out = slice + ellipsis;
+    if (Array.from(out).length <= max) return out;
+    return Array.from(slice).slice(0, budget).join("").replace(/[\s,;:.!?—-]+$/g, "") + ellipsis;
+  }
+
   function polish(line) {
-    const text = clampLine(line, ROAST_MAX);
+    const cleaned = String(line || "").replace(/[\u0000-\u001F\u007F]+/g, " ").replace(/\s+/g, " ").trim();
+    const text = truncateAtWord(cleaned, ROAST_MAX);
     if (!text) return text;
     const first = text.charAt(0);
     const upper = first.toUpperCase();
@@ -218,22 +442,38 @@
     return upper + text.slice(1);
   }
 
-  function roastLine(energy, salt) {
-    let base;
+  function roastPool(energy, dodged) {
+    if (dodged) return DODGED;
     switch (energy) {
       case "DUD":
       case "SPARK":
       case "BLAST":
       case "CRATER":
       case "NUCLEAR":
-        base = ROASTS[energy][Math.abs(salt) % ROASTS[energy].length];
-        break;
+        return ROASTS[energy];
       default: {
         const _never = energy;
         throw new Error("Unknown energy " + _never);
       }
     }
-    return salt > 0 ? "Another detonation. " + base : base;
+  }
+
+  function mixHash(hash) {
+    let x = hash >>> 0;
+    x ^= x >>> 16;
+    x = Math.imul(x, 0x7feb352d);
+    x ^= x >>> 15;
+    x = Math.imul(x, 0x846ca68b);
+    x ^= x >>> 16;
+    return x >>> 0;
+  }
+
+  function roastLine(energy, salt, pairHash, dodged) {
+    const pool = roastPool(energy, dodged);
+    const index = (mixHash(pairHash) + Math.abs(salt)) % pool.length;
+    const base = pool[index];
+    const lead = salt > 0 ? REBOMB_LEADS[Math.abs(salt) % REBOMB_LEADS.length] : "";
+    return lead + base;
   }
 
   function tagFor(energy, hash) {
@@ -274,13 +514,15 @@
     const sat = clampLine(satRaw, SAT_MAX);
     const start = clampLine(startRaw, START_MAX);
     const reading = pointsReading(pointsRaw);
+    if (!reading.ok) return null;
     const cleanSalt = normalizeSalt(salt);
     const usedSalt = cleanSalt == null ? 0 : cleanSalt;
     const pairHash = fnv1a(nameKey(sat) + "\n" + nameKey(start) + "\n" + reading.key);
+    const dodged = reading.value <= 0;
     const energy = ENERGIES[energyIndex(reading.value)];
     return {
       energy: energy,
-      roast: polish(fill(roastLine(energy, usedSalt), sat, start, reading.display || "a pile")),
+      roast: polish(fill(roastLine(energy, usedSalt, pairHash, dodged), sat, start, reading.display)),
       fallout: falloutFor(reading.value, pairHash),
       tag: tagFor(energy, pairHash),
       hash: pairHash,
@@ -297,12 +539,15 @@
     if (!/^[A-Za-z0-9_-]{2,40}$/.test(id)) return null;
     const sat = clampLine(raw.sat != null ? raw.sat : raw.s, SAT_MAX);
     const start = clampLine(raw.start != null ? raw.start : raw.w, START_MAX);
-    const points = clampLine(raw.points != null ? raw.points : raw.p, POINTS_MAX);
+    const pointsRaw = clampLine(raw.points != null ? raw.points : raw.p, POINTS_MAX);
     const note = clampLine(raw.note != null ? raw.note : raw.n, NOTE_MAX);
-    if (!sat || !points) return null;
+    const reading = pointsReading(pointsRaw);
+    if (!sat || !reading.ok) return null;
+    const points = reading.display;
     const salt = normalizeSalt(raw.salt != null ? raw.salt : raw.sa);
     if (salt == null) return null;
     const call = callBomb(sat, start, points, salt);
+    if (!call) return null;
     const starred = fromShare ? false : (raw.starred === true || raw.star === 1 || raw.star === true);
     return {
       id: id,
@@ -380,10 +625,8 @@
   }
 
   function liftCard(state, card) {
-    const idx = findIndex(state.cards, card.id);
-    if (idx > 0) {
-      state.cards = [card].concat(state.cards.filter(function (_, index) { return index !== idx; }));
-    }
+    const rest = state.cards.filter(function (row) { return row.id !== card.id; });
+    state.cards = [card].concat(rest);
     state.openId = card.id;
     return state;
   }
@@ -437,6 +680,7 @@
     if (!sit.sat && !sit.points) return "blank";
     if (!sit.sat) return "sat";
     if (!sit.points) return "points";
+    if (!pointsReading(sit.points).ok) return "number";
     return "";
   }
 
@@ -447,13 +691,32 @@
     if (reason) return { ok: false, reason: reason, state: next };
     const existing = findTrio(next.cards, sit.sat, sit.start, sit.points);
     if (existing) {
-      liftCard(next, existing);
-      return { ok: true, state: next, card: existing, already: true, dropped: [] };
+      let card = existing;
+      if (sit.note !== existing.note) {
+        card = {
+          id: existing.id,
+          sat: existing.sat,
+          start: existing.start,
+          points: existing.points,
+          note: sit.note,
+          salt: existing.salt,
+          energy: existing.energy,
+          fallout: existing.fallout,
+          roast: existing.roast,
+          tag: existing.tag,
+          starred: existing.starred,
+          created: existing.created,
+          updated: stampOf(now) || Date.now(),
+        };
+      }
+      liftCard(next, card);
+      return { ok: true, state: next, card: card, already: true, dropped: [] };
     }
     const room = makeRoom(next.cards, 1, "");
     if (!room) return { ok: false, reason: "cap", state: next };
     const when = stampOf(now) || Date.now();
     const call = callBomb(sit.sat, sit.start, sit.points, 0);
+    if (!call) return { ok: false, reason: "number", state: next };
     const card = normalizeCard({
       id: uid(when),
       sat: sit.sat,
@@ -497,6 +760,7 @@
     return replaceCard(state, id, function (card) {
       const salt = card.salt + 1;
       const call = callBomb(card.sat, card.start, card.points, salt);
+      if (!call) return null;
       return {
         id: card.id,
         sat: card.sat,

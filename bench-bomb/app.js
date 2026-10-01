@@ -10,6 +10,7 @@
   let incoming = null;
   let actionUndo = null;
   let toastBag = null;
+  let toastUndoMeta = null;
   let spokenKey = "";
   let wired = false;
   let shareChain = Promise.resolve();
@@ -29,20 +30,67 @@
       "bombForm", "sitKicker", "sitHeading",
       "fieldSat", "fieldStart", "fieldPoints", "fieldNote", "formError", "btnSample",
       "historySub", "filters", "historyEmpty", "filterEmpty", "historyList", "btnClear", "btnShareShelf",
-      "toast", "toastText", "toastUndo",
+      "toast", "toastText", "toastExtra", "toastUndo",
       "shareDialog", "shareTitle", "shareLead", "shareUrlBox", "btnCopyShare", "btnCloseShare",
     ].forEach(grab);
   }
 
+  function hideToastExtra() {
+    els.toastExtra.hidden = true;
+    els.toastExtra.textContent = "";
+  }
+
+  function undoToastWorks() {
+    if (!toastBag || !toastUndoMeta) return false;
+    const kind = toastUndoMeta.kind;
+    switch (kind) {
+      case "clear":
+        return state.cards.length === 0;
+      case "remove":
+        return state.cards.length < BenchBomb.HISTORY_CAP && !state.cards.some(function (card) {
+          return card.id === toastUndoMeta.cardId;
+        });
+      case "room":
+        return state.cards.some(function (card) { return card.id === toastUndoMeta.cardId; });
+      case "keep":
+        return toastUndoMeta.ids.every(function (id) {
+          return state.cards.some(function (card) { return card.id === id; });
+        });
+      default: {
+        const _never = kind;
+        throw new Error("Unknown undo toast " + _never);
+      }
+    }
+  }
+
+  function retireStaleUndo() {
+    if (!toastBag || undoToastWorks()) return;
+    toastBag = null;
+    toastUndoMeta = null;
+    els.toast.classList.remove("show");
+    els.toastUndo.hidden = true;
+    hideToastExtra();
+    clearTimeout(toast._t);
+  }
+
   function toast(msg, opts) {
     const options = opts || {};
-    if (toastBag && !options.undo && !options.important) return;
+    retireStaleUndo();
+    if (toastBag && !options.undo) {
+      els.toastExtra.hidden = false;
+      els.toastExtra.textContent = msg;
+      els.spoken.textContent = msg;
+      return;
+    }
     els.toastText.textContent = msg;
+    hideToastExtra();
     if (options.undo) {
       toastBag = options.undo;
+      toastUndoMeta = options.meta || null;
       els.toastUndo.hidden = false;
     } else {
       toastBag = null;
+      toastUndoMeta = null;
       els.toastUndo.hidden = true;
     }
     els.toast.classList.add("show");
@@ -50,7 +98,9 @@
     toast._t = setTimeout(function () {
       els.toast.classList.remove("show");
       toastBag = null;
+      toastUndoMeta = null;
       els.toastUndo.hidden = true;
+      hideToastExtra();
     }, options.ms || 2600);
   }
 
@@ -62,6 +112,8 @@
         return "Name who you benched.";
       case "points":
         return "Say how many points they dropped. A number or a rough range is enough.";
+      case "number":
+        return "Enter a number or a range, like 38.4 or 30-40.";
       case "cap":
         return "This phone holds 24 bombs. Starred bombs stay. Remove one to bomb another.";
       case "missing":
@@ -165,10 +217,10 @@
     if (reason === "sat" || reason === "blank") {
       els.fieldSat.setAttribute("aria-invalid", "true");
     }
-    if (reason === "points" || reason === "blank") {
+    if (reason === "points" || reason === "number" || reason === "blank") {
       els.fieldPoints.setAttribute("aria-invalid", "true");
     }
-    if (reason === "points") els.fieldPoints.focus();
+    if (reason === "points" || reason === "number") els.fieldPoints.focus();
     else if (reason === "sat" || reason === "blank") els.fieldSat.focus();
   }
 
@@ -521,11 +573,12 @@
     const result = BenchBomb.bomb(state, readForm(), Date.now());
     if (!result.ok) {
       const msg = reasonMessage(result.reason);
-      if (result.reason === "cap") toast(msg, { ms: 4200, important: true });
-      else {
+      if (result.reason === "blank" || result.reason === "sat" || result.reason === "points" || result.reason === "number") {
         showFormError(msg, result.reason);
-        toast(msg, { important: true });
+        if (!toastBag) toast(msg, { important: true });
+        return;
       }
+      toast(msg, { ms: result.reason === "cap" ? 4200 : 2600, important: true });
       return;
     }
     state = result.state;
@@ -551,6 +604,7 @@
       const bag = actionUndo;
       toast("Bombed. The oldest bomb made room.", {
         ms: 8000,
+        meta: { kind: "room", cardId: result.card.id },
         undo: function () { applyUndo(bag); },
       });
       return;
@@ -603,6 +657,7 @@
     render();
     toast("Removed " + snapshot.energy + " · " + snapshot.sat + ".", {
       ms: 8000,
+      meta: { kind: "remove", cardId: snapshot.id },
       undo: function () {
         const restored = BenchBomb.restoreCard(state, snapshot, index, wasOpen);
         if (!restored.ok) {
@@ -628,6 +683,7 @@
     render();
     toast("Cleared every bomb.", {
       ms: 8000,
+      meta: { kind: "clear" },
       undo: function () {
         if (state.cards.length) {
           toast("A new bomb is already on this phone.", { important: true });
@@ -684,6 +740,7 @@
       const bag = actionUndo;
       toast("Sample loaded. The oldest bomb made room.", {
         ms: 8000,
+        meta: { kind: "room", cardId: result.card.id },
         undo: function () { applyUndo(bag); },
       });
       return;
@@ -734,6 +791,7 @@
     const note = keptNote(result);
     toast(note, dropped.length ? {
       ms: 8000,
+      meta: { kind: "keep", ids: addedIds },
       undo: function () {
         let draft = state;
         for (let i = 0; i < addedIds.length; i += 1) {
@@ -892,8 +950,10 @@
     els.toastUndo.addEventListener("click", function () {
       const run = toastBag;
       toastBag = null;
+      toastUndoMeta = null;
       els.toast.classList.remove("show");
       els.toastUndo.hidden = true;
+      hideToastExtra();
       clearTimeout(toast._t);
       if (run) run();
     });

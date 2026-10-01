@@ -85,16 +85,24 @@ async function main() {
   assert(app.indexOf('const QUERY_KEY = "n"') !== -1, "query key");
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate toast");
   assert(app.indexOf("innerHTML") === -1, "no innerHTML");
-  assert(sw.indexOf('"bench-bomb-v1"') !== -1, "sw cache");
+  assert(sw.indexOf('"bench-bomb-v2"') !== -1, "sw cache");
+  assert(sw.indexOf('"bench-bomb-v1"') === -1, "old sw cache is gone");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("function staleWhileRevalidate") !== -1, "js and css revalidate");
   assert(sw.indexOf("url.origin + url.pathname") !== -1, "cache key is the pathname");
   assert(sw.indexOf("url.search") === -1, "query string is not part of the cache key");
   assert(html.indexOf('id="storageCorrupt"') !== -1, "corrupt notice");
-  assert(html.indexOf("bench-bomb-v1") !== -1, "feature map names the cache");
+  assert(html.indexOf("bench-bomb-v2") !== -1, "feature map names the cache");
+  assert(html.indexOf("Enter a number") !== -1, "points hint asks for a number");
   assert(html.indexOf("one tap") !== -1, "copy link is one tap");
   assert(app.indexOf("STORAGE_BACKUP_KEY") !== -1, "corrupt value is backed up");
-  assert(app.indexOf("toastBag && !options.undo && !options.important") !== -1, "automatic toast keeps an undo");
+  assert(app.indexOf("function retireStaleUndo") !== -1, "undo leaves when it cannot run");
+  assert(app.indexOf("toastExtra") !== -1, "confirmation shows beside a live undo");
+  assert(app.indexOf("if (!toastBag) toast(msg, { important: true });") !== -1, "form error does not cover undo");
+  assert(app.indexOf("No starter got named.") === -1, "app does not use the system starter line");
+  assert(read("bomb.js").indexOf("No starter got named.") === -1, "engine dropped the system starter line");
+  assert(read("bomb.js").indexOf("No alibi on file.") !== -1, "missing starter stays in voice");
+  assert(read("bomb.js").indexOf("% 41") === -1, "unknown points are not hashed into an energy");
   assert(app.indexOf("function copyCardLink") !== -1, "card copy is direct");
   assert(app.indexOf("Starred bombs fill this phone. Remove one to keep this.") !== -1, "keep cap copy");
   assert(app.indexOf("This phone holds 24 bombs. Starred bombs stay. Remove one to bomb another.") !== -1, "bomb cap copy");
@@ -124,7 +132,10 @@ async function main() {
   eq(once.energy, "NUCLEAR", "sample is nuclear");
   assert(once.tag === "NUCLEAR SIT" || once.tag === "BENCH BOMB", "sample stamp follows nuclear");
   assert(once.fallout >= 88 && once.fallout <= 96, "fallout band");
-  eq(once.roast, "Justin Jefferson went nuclear for 38.4 on your bench. You started A committee back instead.");
+  assert(once.roast.indexOf("Justin Jefferson") !== -1, "sample names the bench");
+  assert(once.roast.indexOf("38.4") !== -1, "sample names the points");
+  assert(once.roast.indexOf("You started A committee back instead.") !== -1, "sample names the starter");
+  assert(once.roast.indexOf("Another detonation.") !== 0, "first bomb is not a re-bomb lead");
   eq(BenchBomb.bandFor(once.energy), "nuclear", "nuclear band");
 
   const againSalt = BenchBomb.callBomb(sample.sat, sample.start, sample.points, 3);
@@ -132,7 +143,13 @@ async function main() {
   eq(againSalt.tag, once.tag, "re-bomb keeps the stamp");
   eq(againSalt.fallout, once.fallout, "re-bomb keeps the fallout");
   assert(againSalt.roast !== once.roast, "re-bomb changes the roast");
-  assert(againSalt.roast.indexOf("Another detonation.") === 0, "re-bomb announces itself");
+  const leadRoasts = [0, 1, 2, 3, 4].map(function (salt) {
+    return BenchBomb.callBomb(sample.sat, sample.start, sample.points, salt).roast;
+  });
+  const anotherCount = leadRoasts.filter(function (roast) {
+    return roast.indexOf("Another detonation.") === 0;
+  }).length;
+  assert(anotherCount >= 1 && anotherCount < leadRoasts.length, "re-bomb lead rotates");
 
   const noted = BenchBomb.callBomb("Ada", "", "12", 0);
   const withNote = BenchBomb.bomb(BenchBomb.emptyState(), {
@@ -168,7 +185,7 @@ async function main() {
   assert(sameAgain.ok && sameAgain.already, "order-normalized sit reopens");
   eq(sameAgain.state.cards.length, 1, "no duplicate card");
   eq(sameAgain.card.id, messy.card.id, "same card");
-  eq(sameAgain.card.note, sample.note, "reopen keeps the note");
+  eq(sameAgain.card.note, "dynasty", "same sit saves the new week note");
   eq(sameAgain.card.roast, once.roast);
 
   const ranged = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Ada", points: "30-40" }, 11);
@@ -188,22 +205,157 @@ async function main() {
   assert(safe.card.sat.indexOf("🔥") !== -1, "emoji kept");
   const long = BenchBomb.bomb(BenchBomb.emptyState(), {
     sat: "A".repeat(200) + "🔥",
-    points: "B".repeat(80),
+    points: "21",
   }, 13);
   eq(Array.from(long.card.sat).length, 80, "name capped by code point");
-  eq(Array.from(long.card.points).length, 40, "points capped");
-  assert(long.card.roast.length <= 240, "roast capped");
+  eq(BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Ada", points: "B".repeat(80) }, 14).reason, "number", "junk points do not bomb");
+  eq(BenchBomb.pointsReading("8".repeat(80)).display, "999", "a huge number stays a number");
+  const huge = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Ada", points: "8".repeat(80) }, 15);
+  assert(huge.ok, "huge number still bombs");
+  eq(huge.card.points, "999");
+  assert(huge.card.roast.length <= 240, "roast capped");
   eq(BenchBomb.normalizeCard({ id: "ok-id", sat: "Ada\u0000Bee", points: "9", salt: 0 }).sat, "Ada Bee", "control bytes collapse");
 
   eq(BenchBomb.callBomb("Zed", "", "0", 0).energy, "DUD", "zero is a dud");
+  assert(BenchBomb.callBomb("Zed", "", "0", 0).roast.toLowerCase().indexOf("dodged") !== -1, "zero dodged it");
   eq(BenchBomb.callBomb("Zed", "", "8", 0).energy, "SPARK", "eight is a spark");
   eq(BenchBomb.callBomb("Zed", "", "16", 0).energy, "BLAST", "sixteen is a blast");
   eq(BenchBomb.callBomb("Zed", "", "26", 0).energy, "CRATER", "twenty-six is a crater");
-  eq(BenchBomb.callBomb("Zed", "", "a ton", 0).energy, "CRATER", "a ton is a crater");
-  eq(BenchBomb.callBomb("Zed", "", "nuclear", 0).energy, "NUCLEAR", "the word nuclear is nuclear");
+  eq(BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Zed", points: "a ton" }, 1).reason, "number", "a ton is not a score");
+  eq(BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Zed", points: "nuclear" }, 1).reason, "number", "the word nuclear is not a score");
+  eq(BenchBomb.callBomb("Zed", "", "nuclear", 0), null, "unparsed points do not invent an energy");
   eq(BenchBomb.pointsReading("40+").key, "40+", "plus keeps its own key");
   eq(BenchBomb.pointsReading("40").key, "40");
   assert(BenchBomb.callBomb("Zed", "", "40+", 0).energy === "NUCLEAR", "plus runs hot");
+
+  ["none", "zilch", "zero", "DNP", "bye", "out", "injured", "IR", "nada", "zip"].forEach(function (word) {
+    const reading = BenchBomb.pointsReading(word);
+    eq(reading.ok, true, word + " parses");
+    eq(reading.display, "0", word + " displays as zero");
+    eq(reading.value, 0, word + " is zero");
+    const call = BenchBomb.callBomb("Aaron Rodgers", "", word, 0);
+    eq(call.energy, "DUD", word + " is a dud");
+    assert(call.roast.toLowerCase().indexOf("dodged") !== -1, word + " dodged it");
+    assert(call.roast.indexOf(word) === -1, word + " is not pasted into the roast");
+  });
+  eq(BenchBomb.pointsReading("thirty-two").display, "32", "thirty-two");
+  eq(BenchBomb.pointsReading("thirty two").key, "32", "thirty two");
+  eq(BenchBomb.callBomb("Zed", "", "thirty-two", 0).energy, "NUCLEAR", "thirty-two is nuclear");
+  eq(BenchBomb.pointsReading("twelve").display, "12");
+  eq(BenchBomb.pointsReading("12,5").display, "12.5", "comma decimal");
+  eq(BenchBomb.pointsReading("12,5").key, "12.5");
+  eq(BenchBomb.callBomb("Zed", "", "12,5", 0).energy, "SPARK", "12,5 is a spark");
+  eq(BenchBomb.pointsReading("12,50").display, "12.5");
+  eq(BenchBomb.pointsReading("1,234").display, "1234", "thousands comma");
+  eq(BenchBomb.pointsReading("38 points").display, "38");
+  eq(BenchBomb.pointsReading("38 points").key, "38");
+  eq(BenchBomb.pointsReading("38.4 pts").display, "38.4");
+  eq(BenchBomb.pointsReading("40 pt").display, "40");
+  const unitCard = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Jaxon Smith-Njigba", points: "38 points" }, 8);
+  eq(unitCard.card.points, "38", "unit words leave the card");
+  assert(unitCard.card.roast.indexOf("points points") === -1, "roast does not double the unit");
+  eq(BenchBomb.pointsReading("minus 8").display, "-8");
+  eq(BenchBomb.pointsReading("negative 12").key, "-12");
+  eq(BenchBomb.pointsReading("−40").key, "-40", "unicode minus");
+  const dodged = BenchBomb.callBomb("Puka Nacua", "Romeo Doubs", "-40", 0);
+  eq(dodged.energy, "DUD", "negative forty is a dud");
+  assert(dodged.roast.toLowerCase().indexOf("dodged") !== -1, "negative forty dodged it");
+  assert(dodged.roast.indexOf("-40") !== -1, "the sign stays on the card");
+  const hot = BenchBomb.callBomb("Puka Nacua", "Romeo Doubs", "40", 0);
+  eq(hot.energy, "NUCLEAR");
+  const forty = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Puka Nacua", start: "Romeo Doubs", points: "40" }, 3);
+  const minusForty = BenchBomb.bomb(forty.state, { sat: "Puka Nacua", start: "Romeo Doubs", points: "-40" }, 4);
+  assert(minusForty.ok && !minusForty.already, "the sign is part of the card");
+  eq(minusForty.state.cards.length, 2);
+  const dozen = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Puka Nacua", points: "12" }, 5);
+  const minusDozen = BenchBomb.bomb(dozen.state, { sat: "Puka Nacua", points: "-12" }, 6);
+  assert(!minusDozen.already, "-12 is not 12");
+  eq(minusDozen.card.energy, "DUD");
+  eq(dozen.card.energy, "SPARK");
+  ["nonsense", "idk lol", "two TDs", "!!!", "🔥"].forEach(function (word) {
+    eq(BenchBomb.pointsReading(word).ok, false, word + " does not parse");
+    const refused = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "Zed", points: word }, 1);
+    eq(refused.reason, "number", word + " does not bomb");
+    eq(refused.state.cards.length, 0, word + " adds nothing");
+  });
+  const quiet = BenchBomb.callBomb("Zed", "", "4", 0);
+  assert(quiet.roast.indexOf("No starter got named.") === -1, "system starter line is gone");
+  assert(quiet.roast.indexOf("No alibi on file.") !== -1, "missing starter is in voice");
+  let cutRoast = "";
+  for (let salt = 0; salt < 12; salt += 1) {
+    const roast = BenchBomb.callBomb(("River ").repeat(20), ("Stone ").repeat(20), "35", salt).roast;
+    assert(Array.from(roast).length <= 240, "long roast stays capped");
+    if (roast.endsWith("…")) cutRoast = roast;
+  }
+  assert(cutRoast, "a long roast is cut");
+  assert(cutRoast.indexOf(" …") === -1, "ellipsis is not its own word");
+  const stem = cutRoast.slice(0, -1);
+  assert(/\S$/.test(stem), "ellipsis follows a word");
+  assert(stem.indexOf(" ") !== -1, "the cut keeps more than one word");
+  function roastBody(roast) {
+    return roast.replace(/^(?:Another detonation\. |The booth goes again\. |Same energy, new mouth\. |Take two\. )/, "");
+  }
+  ["3", "8", "16", "26", "35", "-4"].forEach(function (points) {
+    const bodies = Object.create(null);
+    for (let salt = 0; salt < 48; salt += 1) {
+      const call = BenchBomb.callBomb("Same Sit", "Starter", points, salt);
+      eq(call.energy, BenchBomb.callBomb("Same Sit", "Starter", points, 0).energy, "salt keeps energy");
+      bodies[roastBody(call.roast)] = true;
+    }
+    assert(Object.keys(bodies).length >= 8, "pool for " + points + " has " + Object.keys(bodies).length);
+  });
+  const spreadNames = [
+    "Ja'Marr Chase",
+    "Justin Jefferson",
+    "CeeDee Lamb",
+    "Tyreek Hill",
+    "Amon-Ra St. Brown",
+    "Bijan Robinson",
+    "Breece Hall",
+    "Saquon Barkley",
+    "Puka Nacua",
+    "A.J. Brown",
+  ];
+  const firstLines = Object.create(null);
+  spreadNames.forEach(function (name, index) {
+    const a = BenchBomb.callBomb(name, "A flex", "35", 0);
+    const b = BenchBomb.callBomb(name, "A flex", "35", 0);
+    eq(a.roast, b.roast, name + " stays put");
+    eq(a.energy, "NUCLEAR", name);
+    const rolled = BenchBomb.callBomb(name, "A flex", "35", 1);
+    eq(rolled.energy, "NUCLEAR", name + " re-bomb");
+    assert(rolled.roast !== a.roast, name + " re-bomb changes the line");
+    const stored = BenchBomb.normalizeCard({
+      id: "spread-" + index,
+      sat: name,
+      start: "A flex",
+      points: "35",
+      salt: 0,
+    });
+    eq(stored.roast, a.roast, name + " reloads the same line");
+    firstLines[a.roast.split(name).join("{S}")] = true;
+  });
+  assert(Object.keys(firstLines).length >= 6, "ten sits spread the first roast, got " + Object.keys(firstLines).length);
+  eq(BenchBomb.nameKey("José Ramírez"), BenchBomb.nameKey("Jose\u0301 Rami\u0301rez"), "nfc folds combining marks");
+  assert(BenchBomb.nameKey("José Ramírez") !== BenchBomb.nameKey("Jos Ram Rez"), "accents stay in the key");
+  assert(BenchBomb.nameKey("🔥") !== BenchBomb.nameKey("💀"), "emoji stay in the key");
+  assert(BenchBomb.nameKey("Алексей") !== "" && BenchBomb.nameKey("Алексей") !== BenchBomb.nameKey("Борис"), "cyrillic stays");
+  eq(BenchBomb.nameKey("Алексей"), BenchBomb.nameKey("алексей"));
+  const fire = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "🔥", points: "30" }, 1);
+  const skull = BenchBomb.bomb(fire.state, { sat: "💀", points: "30" }, 2);
+  assert(skull.ok && !skull.already, "emoji names do not share a card");
+  eq(skull.state.cards.length, 2);
+  const jose = BenchBomb.bomb(BenchBomb.emptyState(), { sat: "José Ramírez", points: "20" }, 1);
+  const asciiJose = BenchBomb.bomb(jose.state, { sat: "Jos Ram Rez", points: "20" }, 2);
+  assert(asciiJose.ok && !asciiJose.already, "ascii guess is a different card");
+  const joseAgain = BenchBomb.bomb(asciiJose.state, { sat: "Ramírez José", points: "20" }, 3);
+  assert(joseAgain.already, "accented word order still matches");
+  const legacyNone = BenchBomb.normalizeCard({ id: "legacy-none", s: "Aaron Rodgers", p: "none", sa: 0 });
+  eq(legacyNone.points, "0", "old none link is recomputed");
+  eq(legacyNone.energy, "DUD");
+  const legacyComma = BenchBomb.normalizeCard({ id: "legacy-comma", s: "Tank Bigsby", p: "12,5", sa: 0 });
+  eq(legacyComma.points, "12.5", "old comma link is recomputed");
+  eq(legacyComma.energy, "SPARK");
 
   let shelf = BenchBomb.emptyState();
   for (let i = 0; i < 24; i += 1) {
