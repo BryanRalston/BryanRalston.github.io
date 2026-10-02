@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c1210" />
+  <meta name="description" content="Parlay Autopsy — the slip is dead. Name the legs, mark what killed it, and get a theatrical cause of death. Entertainment only. Not betting advice. Stays on this device." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Parlay Autopsy" />
+  <title>Parlay Autopsy</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the slab</a>
+  <div class="yard" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Parlay Autopsy cannot save on this device. Browser storage is blocked (private mode or a setting). The autopsies will not persist.
+  </div>
+  <div id="storageCorrupt" class="storage-note" hidden role="status">
+    Saved autopsies could not be read. Started fresh, and the old value is backed up on this phone.
+  </div>
+  <noscript>
+    <p class="storage-fail">Parlay Autopsy needs JavaScript to run the slab. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Postmortem theater</p>
+          <h1>Parlay Autopsy</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      The slip is dead. Entertainment only. Not betting advice. Not a book. No real money. The same legs and the same killers get the same autopsy until you hit Re-autopsy.
+    </p>
+
+    <p class="sr-only" id="spoken" aria-live="polite"></p>
+
+    <section id="shareOffer" class="share-offer" hidden aria-labelledby="offerHeading">
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same autopsy, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a copy. It is not live sync. A re-autopsy on their phone does not change this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint" id="offerHint">Keep adds what fits on this phone. Not now drops the copy. Already on this phone means the slip is here. Refresh will not bring a dropped copy back.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfBar" class="shelf-bar" hidden>
+      <button type="button" class="text-btn" id="btnLatest">Latest autopsy</button>
+      <p class="kicker quiet">From the shelf</p>
+    </div>
+
+    <section id="emptyHero" class="empty-hero" aria-labelledby="emptyHeading">
+      <p class="empty-kicker">The slab is clear</p>
+      <h2 id="emptyHeading">The slip is dead.</h2>
+      <p>Name two to six legs. American odds if you have them, or just the names. Mark the leg that killed it. Tap Autopsy. The slab stamps a cause of death. It is a costume on a dead ticket, not a book.</p>
+    </section>
+
+    <article class="autopsy-card" id="autopsyCard" hidden tabindex="-1" aria-labelledby="autopsyHeading">
+      <div class="card-chrome">
+        <p class="kicker">The slab</p>
+        <div class="chrome-side">
+          <span class="star-pill" id="starPill" hidden>Starred</span>
+          <span class="stamp" id="stamp">Last leg</span>
+        </div>
+      </div>
+      <h2 class="sr-only" id="autopsyHeading">No autopsy yet</h2>
+      <p class="autopsy-word" id="autopsyWord" data-band="last">AUTOPSY</p>
+      <p class="cause-kicker">Cause of death</p>
+      <p class="cause-mark" id="causeMark" data-band="last">LAST LEG</p>
+      <p class="slip-count" id="slipCount"></p>
+      <p class="roast" id="roastLine"></p>
+      <div class="meter-row">
+        <div class="conf-lockup">
+          <p class="conf-num"><span id="corpseValue">0</span><span class="conf-unit">%</span></p>
+          <p class="conf-caption">corpse</p>
+        </div>
+        <div
+          class="meter"
+          id="meter"
+          role="meter"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-valuetext="Corpse meter 0 percent. Entertainment only. Not a probability. Not betting advice."
+          aria-label="Corpse meter"
+        >
+          <span class="meter-fill" id="meterFill"></span>
+        </div>
+      </div>
+      <p class="meter-note">Corpse meter. Entertainment only. Not a probability. Not betting advice.</p>
+      <ul class="leg-list" id="legList"></ul>
+      <p class="league-note" id="leagueNote" hidden></p>
+    </article>
+
+    <div class="actions" id="actionRow" hidden>
+      <button type="button" class="btn ghost" id="btnReautopsy" aria-label="Re-autopsy, roll a new roast on the same stamp">
+        Re-autopsy
+        <span class="btn-sub">New roast</span>
+      </button>
+      <button type="button" class="btn ghost" id="btnStar" aria-pressed="false">Star</button>
+      <button type="button" class="btn ghost" id="btnUndo" disabled>Undo</button>
+      <button type="button" class="btn primary" id="btnShare">Copy link</button>
+      <button type="button" class="btn ghost danger" id="btnRemove">Remove</button>
+    </div>
+
+    <section id="slipPanel" aria-labelledby="slipHeading">
+      <form id="slipForm" autocomplete="off" novalidate>
+        <p class="kicker" id="slipKicker">The slip</p>
+        <h2 id="slipHeading">Name the legs</h2>
+        <div id="legEditor">
+          <div class="leg-row" data-leg="0">
+            <div class="leg-top">
+              <p class="leg-index">Leg 1</p>
+              <button type="button" class="text-btn leg-remove" hidden>Remove</button>
+            </div>
+            <label>Name
+              <input class="leg-name" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Bills moneyline" />
+            </label>
+            <div class="leg-meta">
+              <label>American odds <span class="opt">optional</span>
+                <input class="leg-odds" type="text" maxlength="16" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="-110" />
+              </label>
+              <label class="kill">
+                <input class="leg-kill" type="checkbox" />
+                <span>Killed it</span>
+              </label>
+            </div>
+          </div>
+          <div class="leg-row" data-leg="1">
+            <div class="leg-top">
+              <p class="leg-index">Leg 2</p>
+              <button type="button" class="text-btn leg-remove" hidden>Remove</button>
+            </div>
+            <label>Name
+              <input class="leg-name" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Mahomes anytime TD" />
+            </label>
+            <div class="leg-meta">
+              <label>American odds <span class="opt">optional</span>
+                <input class="leg-odds" type="text" maxlength="16" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="+180" />
+              </label>
+              <label class="kill">
+                <input class="leg-kill" type="checkbox" />
+                <span>Killed it</span>
+              </label>
+            </div>
+          </div>
+          <div class="leg-row" data-leg="2" hidden>
+            <div class="leg-top">
+              <p class="leg-index">Leg 3</p>
+              <button type="button" class="text-btn leg-remove" hidden>Remove</button>
+            </div>
+            <label>Name
+              <input class="leg-name" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Over 48.5" />
+            </label>
+            <div class="leg-meta">
+              <label>American odds <span class="opt">optional</span>
+                <input class="leg-odds" type="text" maxlength="16" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="-105" />
+              </label>
+              <label class="kill">
+                <input class="leg-kill" type="checkbox" />
+                <span>Killed it</span>
+              </label>
+            </div>
+          </div>
+          <div class="leg-row" data-leg="3" hidden>
+            <div class="leg-top">
+              <p class="leg-index">Leg 4</p>
+              <button type="button" class="text-btn leg-remove" hidden>Remove</button>
+            </div>
+            <label>Name
+              <input class="leg-name" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Celtics spread" />
+            </label>
+            <div class="leg-meta">
+              <label>American odds <span class="opt">optional</span>
+                <input class="leg-odds" type="text" maxlength="16" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="-120" />
+              </label>
+              <label class="kill">
+                <input class="leg-kill" type="checkbox" />
+                <span>Killed it</span>
+              </label>
+            </div>
+          </div>
+          <div class="leg-row" data-leg="4" hidden>
+            <div class="leg-top">
+              <p class="leg-index">Leg 5</p>
+              <button type="button" class="text-btn leg-remove" hidden>Remove</button>
+            </div>
+            <label>Name
+              <input class="leg-name" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Player prop" />
+            </label>
+            <div class="leg-meta">
+              <label>American odds <span class="opt">optional</span>
+                <input class="leg-odds" type="text" maxlength="16" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="+150" />
+              </label>
+              <label class="kill">
+                <input class="leg-kill" type="checkbox" />
+                <span>Killed it</span>
+              </label>
+            </div>
+          </div>
+          <div class="leg-row" data-leg="5" hidden>
+            <div class="leg-top">
+              <p class="leg-index">Leg 6</p>
+              <button type="button" class="text-btn leg-remove" hidden>Remove</button>
+            </div>
+            <label>Name
+              <input class="leg-name" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Anytime scorer" />
+            </label>
+            <div class="leg-meta">
+              <label>American odds <span class="opt">optional</span>
+                <input class="leg-odds" type="text" maxlength="16" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="+220" />
+              </label>
+              <label class="kill">
+                <input class="leg-kill" type="checkbox" />
+                <span>Killed it</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions slim">
+          <button type="button" class="btn ghost wide" id="btnAddLeg">Add leg</button>
+        </div>
+        <label for="fieldNote">Note <span class="opt">optional</span>
+          <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Sunday slate · group chat" />
+        </label>
+        <p class="hint">Two to six legs. Odds are optional American prices, like -110 or +180. Leave odds empty to file a name only. Mark at least one leg that killed it. Word order inside a name, and the order of the legs, do not make a second card. A note rides along and does not move the stamp.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnAutopsy">Autopsy</button>
+          <button type="button" class="btn ghost wide" id="btnSample">Load sample</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="historyPanel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The shelf</p>
+          <h2 id="historyHeading">Past autopsies</h2>
+        </div>
+        <button type="button" class="btn ghost" id="btnShareShelf" disabled>Copy shelf link</button>
+      </div>
+      <p class="panel-sub" id="historySub">0 of 24 on this phone.</p>
+      <div class="filters" id="filters" role="group" aria-label="Filter autopsies" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="starred" aria-pressed="false">Starred</button>
+      </div>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">Nothing shelved</p>
+        <strong>The first autopsy lands here.</strong>
+      </div>
+      <div id="filterEmpty" class="empty compact" hidden>
+        <p class="empty-kicker">No stars</p>
+        <strong>Nothing starred.</strong>
+        <p>Star an autopsy to find it here. The rest are still on this phone.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+      <div class="history-foot">
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Parlay Autopsy</strong> · On this device. A snapshot link (<code>#a=</code> or <code>?a=</code>) is a copy of an autopsy, not live sync. Entertainment only. Not betting advice. Not a book. No real money.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The autopsies stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>The slip</strong>
+            <span>Two to six legs. A name is required on each leg you keep. American odds are optional, like -110 or +180. Leave the odds box empty for a name only. Unsigned 180 is +180. A unicode minus counts. Prices from 100 through 100000 are read. Anything else, including a percent or a fraction, asks you to fix the odds and does not cut. Mark the leg or legs that killed it. At least one kill mark is required. A note is optional. Whitespace is trimmed. Names match with Unicode NFC and lowercase, so accents, non-Latin letters, and emoji stay. Word order inside a name does not matter. Markup stays text.</span>
+          </li>
+          <li>
+            <strong>Autopsy</strong>
+            <span>A theatrical AUTOPSY card. A cause-of-death stamp, one roast line, a tag, a corpse meter, and the legs. DEAD is the leg you marked. CASHED is the rest of the story you told. The page does not know the result. The first roast follows the slip, so the same legs and killers keep their line. The meter is entertainment theater, not a probability and not a model.</span>
+          </li>
+          <li>
+            <strong>The stamp</strong>
+            <span>LAST LEG, MIDDLE BLEED, TOTAL COLLAPSE, NEAR MISS, or ONE-TICK. It is seeded from the legs you typed the first time. Every leg dead is TOTAL COLLAPSE. Exactly one killer whose American price sits from -130 through -100 or +100 through +130 is ONE-TICK, even if that leg is last. A cashed -110 does not move the stamp. Exactly one killer in the last spot, outside that juice band, is LAST LEG. Exactly one killer in the first spot is NEAR MISS. Exactly one killer in the middle is MIDDLE BLEED. All but one dead is NEAR MISS. Several killers, with the last leg among them and more than one survivor, is LAST LEG. Several killers while the last leg cashed is MIDDLE BLEED.</span>
+          </li>
+          <li>
+            <strong>Same slip</strong>
+            <span>Legs are order-normalized for the match. Names are split, lowercased, and sorted, then the legs themselves are sorted with their odds and kill marks. The same legs and the same killers share one card, including a re-autopsied roast. The first typed order keeps the stamp. A later reorder reopens that card and can save a new note. The note does not move the stamp. A different killer, or a different price, is a different corpse.</span>
+          </li>
+          <li>
+            <strong>Re-autopsy</strong>
+            <span>A new roast on that same stamp. It does not always open with the same phrase. The tag stays with the stamp. The corpse meter stays. The star stays. Undo re-autopsy restores the previous line.</span>
+          </li>
+          <li>
+            <strong>Star</strong>
+            <span>Mark an autopsy you want on the starred filter. Undo star takes the mark off.</span>
+          </li>
+          <li>
+            <strong>Undo</strong>
+            <span>The Undo button takes back the last autopsy, re-autopsy, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does an autopsy that had to make room. The toast Undo leaves as soon as it can no longer work, including after Load sample or a new autopsy changes the shelf, and when the cap would block a restore. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Up to 24 autopsies on this phone. Filters are all and starred. Open one, remove one, or clear every autopsy. Opening a row does not replace what you are typing. Undo puts them back until the toast leaves. A new autopsy at the cap drops the oldest unstarred autopsy. Starred autopsies stay. If every autopsy is starred, the slab refuses another.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link copies the open autopsy into <code>#a=</code> in one tap. Copy shelf link packs every autopsy. <code>?a=</code> works if the token is in the query string. The link does not carry the star. Opening it offers Keep or Not now. Keep recomputes the stamp, tag, meter, and roast from the legs, so a forged line does not survive. A shelf link keeps what fits. The offer says what it adds, and how many oldest unstarred autopsies it drops, before you tap. If nothing fits, the offer stays up. A duplicate says Already on this phone. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>Load sample</strong>
+            <span>Bills moneyline -150, Over 48.5 -110, and Mahomes anytime TD +180 as the killer, so there is a LAST LEG card to look at without typing.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>parlay-autopsy-v1</code>. Offline cache <code>parlay-autopsy-v1</code>. The page is fetched from the network when you are online. Scripts and styles refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, the old value is backed up and a notice shows. No accounts, no odds feed, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: betting advice, a book, real money, a pre-bet calculator, live odds, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this autopsy.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They can keep the same card. Later re-autopsies here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The autopsy is packed into the link itself (<code>#a=</code>, or <code>?a=</code> if the token is moved into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <span id="toastExtra" hidden></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="autopsy.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    }
+  </script>
+</body>
+</html>
