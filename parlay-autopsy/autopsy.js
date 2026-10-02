@@ -25,64 +25,84 @@
 
   const ROASTS = {
     "LAST LEG": [
-      "{K} closed the slip. {C} Last leg.",
-      "The ticket died on {K}. {C}",
-      "Last leg. {K} flatlined. {C}",
-      "{K} wrote the ending. {C}",
-      "Buzzer death. {K} never cashed. {C}",
-      "{C} {K} still killed the ticket.",
-      "Frame {K}. {C} The slip is a corpse.",
-      "{K} at the end of a {N}-leg slip. {C}",
-      "Final cut: {K}. {C}",
-      "The last name on the slip was {K}. {C}",
+      { fit: "single", line: "The ticket died on {K}. {C}" },
+      { fit: "single", line: "Last leg. {K} flatlined. {C}" },
+      { fit: "single", line: "Buzzer death. {K} never cashed. {C}" },
+      { fit: "single", line: "{C} {K} still killed the ticket." },
+      { fit: "single", line: "{K} at the end of a {N}-leg slip. {C}" },
+      { fit: "single", line: "{K} never cashed. {C} Last leg." },
+      { fit: "single", line: "One killer. {K} ended a {N}-leg slip. {C}" },
+      { fit: "single", line: "{C} The corpse is {K}." },
+      { fit: "position", line: "Final cut: {P}. {C}" },
+      { fit: "position", line: "The last name on the slip was {P}. {C}" },
+      { fit: "position", line: "{P} closed the slip. {C}" },
+      { fit: "position", line: "{P} wrote the ending. {C}" },
+      { fit: "multi", line: "{K} killed it. {P} closed the slip." },
+      { fit: "multi", line: "{D} dead on a {N}-leg slip. Final cut: {P}." },
+      { fit: "multi", line: "The last name on the slip was {P}. The dead list is {K}." },
+      { fit: "multi", line: "{K} took the ticket down. {P} wrote the ending." },
+      { fit: "multi", line: "Several legs died. {P} was the buzzer." },
+      { fit: "multi", line: "{C} Still dead: {K}. The ending was {P}." },
+      { fit: "multi", line: "Not one killer. {K}. {P} finished it." },
+      { fit: "multi", line: "{P} at the end of a {N}-leg slip. {K} never cashed." },
     ],
     "MIDDLE BLEED": [
-      "{K} bled out in the middle. {C}",
-      "Middle bleed. {K} opened the wound. {C}",
-      "{K} died between the cashed legs. {C}",
-      "Gut shot. {K} in the middle of {N}. {C}",
-      "{C} {K} still emptied the ticket.",
-      "The middle of the slip was {K}. {C}",
-      "{K} took the ticket with them. {C}",
-      "Not the opener. Not the closer. {K}. {C}",
-      "Middle of the pile: {K}. {C}",
-      "{D} dead in the middle of the story. {K}. {C}",
+      { fit: "single", line: "{K} died between the cashed legs. {C}" },
+      { fit: "single", line: "Not the opener. Not the closer. {K}. {C}" },
+      { fit: "single", line: "{C} {K} still emptied the ticket." },
+      { fit: "single", line: "{K} took the ticket with them. {C}" },
+      { fit: "single", line: "One killer, parked in the middle. {K}. {C}" },
+      { fit: "single", line: "The wound was {K}, with cashed legs on both sides. {C}" },
+      { fit: "single", line: "{K} was the only leg that died. It sat in the middle. {C}" },
+      { fit: "single", line: "Middle bleed on {K}. Everyone else cashed. {C}" },
+      { fit: "position", line: "Middle of the pile: {P}. {C}" },
+      { fit: "position", line: "{P} bled out in the middle. {C}" },
+      { fit: "position", line: "Gut shot. {P} in the middle of {N}. {C}" },
+      { fit: "position", line: "The middle of the slip was {P}. {C}" },
+      { fit: "multi", line: "{K} killed it. Middle of the pile: {P}." },
+      { fit: "multi", line: "{D} dead on a {N}-leg slip. {C}" },
+      { fit: "multi", line: "{K} emptied the ticket. {C}" },
+      { fit: "multi", line: "The last leg cashed. {K} did not." },
+      { fit: "multi", line: "{P} bled out in the middle. The dead list is {K}." },
+      { fit: "multi", line: "Middle bleed. {K} took the slip. {C}" },
+      { fit: "multi", line: "{C} The damage was {K}." },
+      { fit: "multi", line: "{K} on a {N}-leg slip. The closer cashed." },
     ],
     "TOTAL COLLAPSE": [
-      "Total collapse. {K}. Nobody cashed a {N}-leg slip.",
-      "{K} all flatlined. Total collapse.",
-      "No survivors. {K}.",
-      "Every leg died. {K}.",
-      "Full wipe. {N} legs, {D} dead. {K}.",
-      "The whole ticket face-planted. {K}.",
-      "Nothing cashed. {K} took the slip with them.",
-      "Total collapse on {K}.",
-      "{N} names. Zero pulse. {K}.",
-      "The slab has no survivor. {K}.",
+      { fit: "multi", line: "Total collapse. {K}. Nobody cashed a {N}-leg slip." },
+      { fit: "multi", line: "{K} all flatlined. Total collapse." },
+      { fit: "multi", line: "No survivors. {K}." },
+      { fit: "multi", line: "Every leg died. {K}." },
+      { fit: "multi", line: "Full wipe. {N} legs, {D} dead. {K}." },
+      { fit: "multi", line: "The whole ticket face-planted. {K}." },
+      { fit: "multi", line: "Nothing cashed. {K} took the slip with them." },
+      { fit: "multi", line: "Total collapse on {K}." },
+      { fit: "multi", line: "{N} names. Zero pulse. {K}." },
+      { fit: "multi", line: "The slab has no survivor. {K}." },
     ],
     "NEAR MISS": [
-      "Near miss. {K} died. {C}",
-      "{C} {K} still buried the ticket.",
-      "Almost. Then {K}. {C}",
-      "One breath short. {K} killed it. {C}",
-      "Near miss on a {N}-leg slip. {K}. {C}",
-      "{K} kept this from cashing. {C}",
-      "The rest lived. {K} did not. {C}",
-      "Close enough to sting. {K}. {C}",
-      "Near miss. The corpse is {K}. {C}",
-      "{C} The killer was {K}.",
+      { fit: "single", line: "Near miss. {K} died. {C}" },
+      { fit: "single", line: "{C} {K} still buried the ticket." },
+      { fit: "single", line: "The opener died. {K}. {C}" },
+      { fit: "single", line: "One breath short. {K} killed it. {C}" },
+      { fit: "single", line: "Near miss on a {N}-leg slip. {K}. {C}" },
+      { fit: "single", line: "{K} kept this from cashing. {C}" },
+      { fit: "single", line: "The rest lived. {K} did not. {C}" },
+      { fit: "single", line: "Close enough to sting. {K}. {C}" },
+      { fit: "single", line: "Near miss. The corpse is {K}. {C}" },
+      { fit: "single", line: "{C} The killer was {K}." },
     ],
     "ONE-TICK": [
-      "{K} was one tick from living. {C}",
-      "One tick. {K} died inside the juice. {C}",
-      "The number was right there. {K} still died. {C}",
-      "Juice-band death. {K}. {C}",
-      "One tick on {K}. {C}",
-      "{K} lost by a tick, not a mile. {C}",
-      "Photo finish, wrong side. {K}. {C}",
-      "One tick. A {N}-leg slip ended on {K}. {C}",
-      "{C} {K} was the coin-flip that landed dead.",
-      "The price was close. {K} was not lucky. {C}",
+      { fit: "single", line: "{K} was one tick from living. {C}" },
+      { fit: "single", line: "One tick. {K} died inside the juice. {C}" },
+      { fit: "single", line: "The number was right there. {K} still died. {C}" },
+      { fit: "single", line: "Juice-band death. {K}. {C}" },
+      { fit: "single", line: "One tick on {K}. {C}" },
+      { fit: "single", line: "{K} lost by a tick, not a mile. {C}" },
+      { fit: "single", line: "Photo finish, wrong side. {K}. {C}" },
+      { fit: "single", line: "One tick. A {N}-leg slip died on {K}. {C}" },
+      { fit: "single", line: "{C} {K} was the coin-flip that landed dead." },
+      { fit: "single", line: "The price was close. {K} was not lucky. {C}" },
     ],
   };
 
@@ -134,27 +154,41 @@
   }
 
   function nameKey(text) {
-    const normalized = String(text || "").normalize("NFC").toLowerCase().trim();
-    const words = normalized.split(/[^\p{L}\p{N}\p{Extended_Pictographic}]+/u).filter(Boolean);
-    if (!words.length) return normalized;
-    words.sort();
-    return words.join(" ");
+    const normalized = String(text || "")
+      .normalize("NFC")
+      .toLowerCase()
+      .trim()
+      .replace(/\u2212/g, "-")
+      .replace(/[–—]/g, "-");
+    const tokens = [];
+    const re = /[+-]?\d+(?:\.\d+)?\+?|\p{Extended_Pictographic}|[\p{L}\p{N}]+/gu;
+    let match;
+    while ((match = re.exec(normalized))) tokens.push(match[0]);
+    if (!tokens.length) return normalized;
+    tokens.sort();
+    return tokens.join(" ");
+  }
+
+  function oddsResult(ok, display, value, implied) {
+    return { ok: ok, display: display, value: value, implied: implied };
   }
 
   function parseOdds(raw) {
     const cleaned = clampLine(raw, ODDS_MAX);
-    if (!cleaned) return { ok: true, display: "", value: null };
-    const text = cleaned.replace(/\u2212/g, "-").replace(/[–—]/g, "-").replace(/\s+/g, "");
+    if (!cleaned) return oddsResult(true, "", null, false);
+    const text = cleaned.replace(/\u2212/g, "-").replace(/[–—]/g, "-");
+    if (/\s/.test(text)) return oddsResult(false, "", null, false);
+    if (/^(?:even|ev)$/i.test(text)) return oddsResult(true, "+100", 100, false);
     const match = text.match(/^([+-])?(\d+)$/);
-    if (!match) return { ok: false, display: "", value: null };
-    if (match[2].length > 6) return { ok: false, display: "", value: null };
+    if (!match) return oddsResult(false, "", null, false);
+    if (match[2].length > 6) return oddsResult(false, "", null, false);
     const magnitude = parseInt(match[2], 10);
     if (!Number.isFinite(magnitude) || magnitude < 100 || magnitude > 100000) {
-      return { ok: false, display: "", value: null };
+      return oddsResult(false, "", null, false);
     }
     const value = (match[1] === "-" ? -1 : 1) * magnitude;
     const display = value > 0 ? "+" + String(value) : String(value);
-    return { ok: true, display: display, value: value };
+    return oddsResult(true, display, value, !match[1]);
   }
 
   function inJuice(value) {
@@ -228,39 +262,19 @@
     if (killers.length === 1 && killers[0] === n - 1) return "LAST LEG";
     if (killers.length === 1 && killers[0] === 0) return "NEAR MISS";
     if (killers.length === 1) return "MIDDLE BLEED";
-    if (killers.length === n - 1) return "NEAR MISS";
     if (killers[killers.length - 1] === n - 1) return "LAST LEG";
     return "MIDDLE BLEED";
   }
 
-  function meterFor(cause, legs, hash) {
-    let base;
-    switch (cause) {
-      case "TOTAL COLLAPSE":
-        base = 86;
-        break;
-      case "LAST LEG":
-        base = 74;
-        break;
-      case "MIDDLE BLEED":
-        base = 62;
-        break;
-      case "ONE-TICK":
-        base = 58;
-        break;
-      case "NEAR MISS":
-        base = 46;
-        break;
-      default: {
-        const _never = cause;
-        throw new Error("Unknown cause " + _never);
-      }
-    }
+  function meterFor(legs, hash) {
+    const n = legs.length;
+    const dead = deadCount(legs);
     let long = 0;
     for (let i = 0; i < legs.length; i += 1) {
       if (legs[i].killer && legs[i].oddsValue != null && legs[i].oddsValue >= 300) long += 1;
     }
-    let meter = base + (hash % 7) + Math.min(6, long * 3);
+    const share = n ? Math.round((dead * 100) / n) : 0;
+    let meter = share + (hash % 7) + Math.min(6, long * 3);
     if (meter > 96) meter = 96;
     if (meter < 8) meter = 8;
     return meter;
@@ -303,7 +317,7 @@
     return dead;
   }
 
-  function fill(line, killers, cashed, count, dead) {
+  function fill(line, killers, cashed, count, dead, positional) {
     let out = "";
     for (let i = 0; i < line.length; i += 1) {
       const token = line.slice(i, i + 3);
@@ -324,6 +338,11 @@
       }
       if (token === "{D}") {
         out += String(dead);
+        i += 2;
+        continue;
+      }
+      if (token === "{P}") {
+        out += positional;
         i += 2;
         continue;
       }
@@ -387,10 +406,72 @@
     return LEADS[Math.abs(salt) % LEADS.length];
   }
 
-  function roastLine(cause, salt, hash) {
+  function positionNames(cause, legs) {
+    const names = [];
+    const n = legs.length;
+    switch (cause) {
+      case "LAST LEG":
+        if (legs[n - 1].killer) names.push(legs[n - 1].name);
+        break;
+      case "MIDDLE BLEED":
+        for (let i = 1; i < n - 1; i += 1) {
+          if (legs[i].killer) names.push(legs[i].name);
+        }
+        break;
+      case "NEAR MISS":
+        if (legs[0].killer) names.push(legs[0].name);
+        break;
+      case "ONE-TICK":
+        for (let i = 0; i < n; i += 1) {
+          if (legs[i].killer) names.push(legs[i].name);
+        }
+        break;
+      case "TOTAL COLLAPSE":
+        break;
+      default: {
+        const _never = cause;
+        throw new Error("Unknown cause " + _never);
+      }
+    }
+    return names;
+  }
+
+  function lineFits(entry, legs, cause) {
+    const dead = deadCount(legs);
+    switch (entry.fit) {
+      case "single":
+        return dead === 1;
+      case "position":
+        return positionNames(cause, legs).length > 0;
+      case "multi":
+        if (dead < 2) return false;
+        if (entry.line.indexOf("{P}") !== -1 && positionNames(cause, legs).length === 0) return false;
+        return true;
+      default: {
+        const _never = entry.fit;
+        throw new Error("Unknown roast fit " + _never);
+      }
+    }
+  }
+
+  function fittingLines(cause, legs) {
     const pool = roastPool(cause);
+    const fitting = [];
+    for (let i = 0; i < pool.length; i += 1) {
+      if (lineFits(pool[i], legs, cause)) fitting.push(pool[i]);
+    }
+    return fitting;
+  }
+
+  function roastLine(cause, salt, hash, legs) {
+    const pool = fittingLines(cause, legs);
+    if (!pool.length) throw new Error("Empty roast pool for " + cause);
     const index = (mixHash(hash) + Math.abs(salt)) % pool.length;
     return pool[index];
+  }
+
+  function roastFits(cause) {
+    return roastPool(cause).map(function (entry) { return entry.fit; });
   }
 
   function tagFor(cause, hash) {
@@ -433,13 +514,15 @@
     const hash = fnv1a(slipKey(legs));
     const killers = killerClause(legs);
     const cashed = cashedClause(legs);
+    const positional = joinNames(positionNames(cause, legs));
+    const picked = roastLine(cause, salt, hash, legs);
     const roast = polish(
-      leadFor(salt) + fill(roastLine(cause, salt, hash), killers, cashed, legs.length, deadCount(legs))
+      leadFor(salt) + fill(picked.line, killers, cashed, legs.length, deadCount(legs), positional)
     );
     return {
       cause: cause,
       roast: roast,
-      meter: meterFor(cause, legs, hash),
+      meter: meterFor(legs, hash),
       tag: tagFor(cause, hash),
       hash: hash,
     };
@@ -540,7 +623,18 @@
     if (Object.prototype.hasOwnProperty.call(parsed, "cards") && !Array.isArray(parsed.cards)) {
       return { corrupt: true, state: emptyState(), backup: String(raw) };
     }
+    if (storedCardFailed(parsed)) {
+      return { corrupt: true, state: emptyState(), backup: String(raw) };
+    }
     return { corrupt: false, state: normalizeState(parsed), backup: "" };
+  }
+
+  function storedCardFailed(parsed) {
+    const list = Array.isArray(parsed.cards) ? parsed.cards : [];
+    for (let i = 0; i < list.length; i += 1) {
+      if (!normalizeCard(list[i])) return true;
+    }
+    return false;
   }
 
   function findIndex(cards, id) {
@@ -969,7 +1063,19 @@
       dropped: room.dropped,
       added: batch.length,
       offered: share.cards.length,
+      fresh: packed.fresh.length,
     };
+  }
+
+  function keptLine(added, offered, fresh, dropped) {
+    const already = offered - fresh;
+    if (already > 0 && added === fresh) {
+      return "Kept " + added + " new, " + already + " already here.";
+    }
+    if (added < offered) return "Kept " + added + " of " + offered + ".";
+    if (dropped === 1) return "Kept. The oldest autopsy made room.";
+    if (dropped > 1) return "Kept. Dropped your " + dropped + " oldest unstarred.";
+    return "Kept on this phone.";
   }
 
   function face(card) {
@@ -1045,6 +1151,8 @@
     prepareSlip: prepareSlip,
     parseOdds: parseOdds,
     nameKey: nameKey,
+    roastFits: roastFits,
+    keptLine: keptLine,
     slipKey: slipKey,
     causeOf: causeOf,
     bandFor: bandFor,

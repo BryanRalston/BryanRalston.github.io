@@ -65,8 +65,11 @@
         return state.cards.length < ParlayAutopsy.HISTORY_CAP && !state.cards.some(function (card) {
           return card.id === toastUndoMeta.cardId;
         });
-      case "room":
-        return state.cards.some(function (card) { return card.id === toastUndoMeta.cardId; });
+      case "room": {
+        const card = state.cards.find(function (row) { return row.id === toastUndoMeta.cardId; });
+        if (!card || card.starred || card.salt > 0) return false;
+        return true;
+      }
       case "keep":
         return toastUndoMeta.ids.every(function (id) {
           return state.cards.some(function (card) { return card.id === id; });
@@ -128,7 +131,7 @@
       case "name":
         return "Name that leg, or clear the odds and the kill mark.";
       case "odds":
-        return "American odds look like -110 or +180. Leave the box empty for a name only.";
+        return "American odds look like -110, +180, or EVEN. Leave the box empty for a name only.";
       case "killer":
         return "Mark the leg that killed it.";
       case "many":
@@ -284,19 +287,36 @@
     }
   }
 
+  function clearEmptyAutopsyHash() {
+    try {
+      const url = new URL(location.href);
+      if ((url.hash || "").indexOf(HASH_PREFIX) !== 0) return;
+      url.hash = "";
+      history.replaceState(null, "", url.pathname + url.search);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   async function tryImportShare() {
     const hash = location.hash || "";
     let token = "";
+    let fromHash = false;
     if (hash.indexOf(HASH_PREFIX) === 0) {
+      fromHash = true;
       try {
         token = decodeURIComponent(hash.slice(HASH_PREFIX.length));
       } catch (_) {
         token = hash.slice(HASH_PREFIX.length);
       }
-    } else {
-      token = new URLSearchParams(location.search).get(QUERY_KEY) || "";
+      if (!String(token).trim()) {
+        clearEmptyAutopsyHash();
+        fromHash = false;
+        token = "";
+      }
     }
-    if (!token) return null;
+    if (!fromHash) token = new URLSearchParams(location.search).get(QUERY_KEY) || "";
+    if (!String(token).trim()) return null;
     try {
       const json = await ParlayAutopsy.decompressPayload(token);
       const share = ParlayAutopsy.parseShare(JSON.parse(json));
@@ -576,6 +596,32 @@
       row.querySelector(".leg-remove").hidden = n <= 2;
     });
     els.btnAddLeg.disabled = n >= ParlayAutopsy.LEG_MAX;
+    refreshOddsHints();
+  }
+
+  function refreshOddsHints() {
+    legRows().forEach(function (row, index) {
+      const input = row.querySelector(".leg-odds");
+      if (!input) return;
+      let hint = row.querySelector(".odds-read");
+      if (!hint) {
+        hint = document.createElement("span");
+        hint.className = "odds-read";
+        hint.id = "odds-read-" + index;
+        hint.hidden = true;
+        const meta = row.querySelector(".leg-meta");
+        if (meta) meta.insertAdjacentElement("afterend", hint);
+        else input.insertAdjacentElement("afterend", hint);
+      }
+      const parsed = ParlayAutopsy.parseOdds(input.value);
+      if (parsed.ok && parsed.implied && parsed.display) {
+        hint.hidden = false;
+        hint.textContent = "read as " + parsed.display;
+      } else {
+        hint.hidden = true;
+        hint.textContent = "";
+      }
+    });
   }
 
   function writeForm(card) {
@@ -690,7 +736,7 @@
     }
     state = result.state;
     save();
-    writeForm(result.card);
+    if (!result.already) writeForm(result.card);
     const dropped = result.dropped || [];
     if (!result.already) {
       actionUndo = {
@@ -856,11 +902,7 @@
   }
 
   function keptNote(result) {
-    const dropped = result.dropped.length;
-    if (result.added < result.offered) return "Kept " + result.added + " of " + result.offered + ".";
-    if (dropped === 1) return "Kept. The oldest autopsy made room.";
-    if (dropped > 1) return "Kept. Dropped your " + dropped + " oldest unstarred.";
-    return "Kept on this phone.";
+    return ParlayAutopsy.keptLine(result.added, result.offered, result.fresh, result.dropped.length);
   }
 
   function keepIncoming() {
@@ -1065,8 +1107,14 @@
     wired = true;
 
     els.slipForm.addEventListener("submit", onAutopsy);
-    els.slipForm.addEventListener("input", hideFormError);
-    els.slipForm.addEventListener("change", hideFormError);
+    els.slipForm.addEventListener("input", function () {
+      hideFormError();
+      refreshOddsHints();
+    });
+    els.slipForm.addEventListener("change", function () {
+      hideFormError();
+      refreshOddsHints();
+    });
     els.btnSample.addEventListener("click", loadSample);
     els.btnAddLeg.addEventListener("click", addLeg);
     els.btnReautopsy.addEventListener("click", onReautopsy);

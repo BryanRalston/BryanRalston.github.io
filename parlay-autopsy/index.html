@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="app.css?v=2" />
 </head>
 <body>
   <a class="skip" href="#content">Skip to the slab</a>
@@ -244,7 +244,7 @@
         <label for="fieldNote">Note <span class="opt">optional</span>
           <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Sunday slate · group chat" />
         </label>
-        <p class="hint">Two to six legs. Odds are optional American prices, like -110 or +180. Leave odds empty to file a name only. Mark at least one leg that killed it. Word order inside a name, and the order of the legs, do not make a second card. A note rides along and does not move the stamp.</p>
+        <p class="hint">Two to six legs. Odds are optional American prices, like -110, +180, or EVEN. Unsigned 180 is read as +180. A space between digits does not count. Leave odds empty to file a name only. Mark at least one leg that killed it. Word order inside a name does not matter, but a signed number stays whole, so Chiefs -3.5 and Chiefs +3.5 are different legs. Leg order does not make a second card. A note rides along and does not move the stamp.</p>
         <p id="formError" class="form-error" hidden role="alert"></p>
         <div class="form-actions">
           <button type="submit" class="btn primary wide" id="btnAutopsy">Autopsy</button>
@@ -289,19 +289,19 @@
         <ul class="feature-list">
           <li>
             <strong>The slip</strong>
-            <span>Two to six legs. A name is required on each leg you keep. American odds are optional, like -110 or +180. Leave the odds box empty for a name only. Unsigned 180 is +180. A unicode minus counts. Prices from 100 through 100000 are read. Anything else, including a percent or a fraction, asks you to fix the odds and does not cut. Mark the leg or legs that killed it. At least one kill mark is required. A note is optional. Whitespace is trimmed. Names match with Unicode NFC and lowercase, so accents, non-Latin letters, and emoji stay. Word order inside a name does not matter. Markup stays text.</span>
+            <span>Two to six legs. A name is required on each leg you keep. American odds are optional, like -110, +180, EVEN, or EV. Leave the odds box empty for a name only. Unsigned 180 is read as +180, and the odds box says so. EVEN and EV are +100. A unicode minus counts. Prices from 100 through 100000 are read. Anything else, including a percent, a fraction, or digits split by a space, asks you to fix the odds and does not cut. Mark the leg or legs that killed it. At least one kill mark is required. A note is optional. Whitespace around a price is trimmed. Names match with Unicode NFC and lowercase, so accents, non-Latin letters, and emoji stay. Word order inside a name does not matter. A signed number and its decimal stay one token, and a trailing plus stays, so Chiefs -3.5, Chiefs +3.5, Over 48.5, and Over 5.48 are different legs. Markup stays text.</span>
           </li>
           <li>
             <strong>Autopsy</strong>
-            <span>A theatrical AUTOPSY card. A cause-of-death stamp, one roast line, a tag, a corpse meter, and the legs. DEAD is the leg you marked. CASHED is the rest of the story you told. The page does not know the result. The first roast follows the slip, so the same legs and killers keep their line. The meter is entertainment theater, not a probability and not a model.</span>
+            <span>A theatrical AUTOPSY card. A cause-of-death stamp, one roast line, a tag, a corpse meter, and the legs. DEAD is the leg you marked. CASHED is the rest of the story you told. The page does not know the result. The first roast follows the slip, so the same legs and killers keep their line. A line is used only when it fits: one killer, the killer in that spot, or several killers. The corpse meter follows the share of legs that died, plus a small wobble and a long-shot bump. More dead legs do not lower it. It is entertainment theater, not a probability and not a model.</span>
           </li>
           <li>
             <strong>The stamp</strong>
-            <span>LAST LEG, MIDDLE BLEED, TOTAL COLLAPSE, NEAR MISS, or ONE-TICK. It is seeded from the legs you typed the first time. Every leg dead is TOTAL COLLAPSE. Exactly one killer whose American price sits from -130 through -100 or +100 through +130 is ONE-TICK, even if that leg is last. A cashed -110 does not move the stamp. Exactly one killer in the last spot, outside that juice band, is LAST LEG. Exactly one killer in the first spot is NEAR MISS. Exactly one killer in the middle is MIDDLE BLEED. All but one dead is NEAR MISS. Several killers, with the last leg among them and more than one survivor, is LAST LEG. Several killers while the last leg cashed is MIDDLE BLEED.</span>
+            <span>LAST LEG, MIDDLE BLEED, TOTAL COLLAPSE, NEAR MISS, or ONE-TICK. It is seeded from the legs you typed the first time. Every leg dead is TOTAL COLLAPSE. Exactly one killer whose American price sits from -130 through -100 or +100 through +130 is ONE-TICK, even if that leg is last. A cashed -110 does not move the stamp. NEAR MISS is exactly one killer in the first spot, outside that juice band. It is not used when two or more legs died. Exactly one killer in the last spot, outside that juice band, is LAST LEG. Exactly one killer in the middle is MIDDLE BLEED. Two or more killers, with the last leg among them, is LAST LEG. That includes all but one dead when the last leg died. Two or more killers while the last leg cashed is MIDDLE BLEED. That includes all but one dead when the last leg cashed. The corpse meter follows the share of legs that died, plus a small wobble and a long-shot bump, so more dead legs do not lower it for the same leg count. It is entertainment, not a probability.</span>
           </li>
           <li>
             <strong>Same slip</strong>
-            <span>Legs are order-normalized for the match. Names are split, lowercased, and sorted, then the legs themselves are sorted with their odds and kill marks. The same legs and the same killers share one card, including a re-autopsied roast. The first typed order keeps the stamp. A later reorder reopens that card and can save a new note. The note does not move the stamp. A different killer, or a different price, is a different corpse.</span>
+            <span>Legs are order-normalized for the match. Names keep signed numbers and decimals whole, then the words are lowercased and sorted, then the legs themselves are sorted with their odds and kill marks. The same legs and the same killers share one card, including a re-autopsied roast. The first typed order keeps the stamp. A later reorder reopens that card and can save a new note. The form keeps what you just typed. The note does not move the stamp. A different killer, a different price, or the other side of a spread is a different corpse.</span>
           </li>
           <li>
             <strong>Re-autopsy</strong>
@@ -313,7 +313,7 @@
           </li>
           <li>
             <strong>Undo</strong>
-            <span>The Undo button takes back the last autopsy, re-autopsy, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does an autopsy that had to make room. The toast Undo leaves as soon as it can no longer work, including after Load sample or a new autopsy changes the shelf, and when the cap would block a restore. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
+            <span>The Undo button takes back the last autopsy, re-autopsy, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does an autopsy that had to make room. That room Undo leaves once the new card is starred or re-autopsied. The toast Undo leaves as soon as it can no longer work, including after Load sample or a new autopsy changes the shelf, and when the cap would block a restore. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
           </li>
           <li>
             <strong>History</strong>
@@ -321,7 +321,7 @@
           </li>
           <li>
             <strong>Snapshot share</strong>
-            <span>Copy link copies the open autopsy into <code>#a=</code> in one tap. Copy shelf link packs every autopsy. <code>?a=</code> works if the token is in the query string. The link does not carry the star. Opening it offers Keep or Not now. Keep recomputes the stamp, tag, meter, and roast from the legs, so a forged line does not survive. A shelf link keeps what fits. The offer says what it adds, and how many oldest unstarred autopsies it drops, before you tap. If nothing fits, the offer stays up. A duplicate says Already on this phone. The address bar is cleared on purpose. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+            <span>Copy link copies the open autopsy into <code>#a=</code> in one tap. Copy shelf link packs every autopsy. <code>?a=</code> works if the token is in the query string. The link does not carry the star. Opening it offers Keep or Not now. Keep recomputes the stamp, tag, meter, and roast from the legs, so a forged line does not survive. A shelf link keeps what fits. The offer says what it adds, and how many oldest unstarred autopsies it drops, before you tap. If nothing fits, the offer stays up. A duplicate says Already on this phone. A keep that finds some already here says how many were new and how many were already here. An empty <code>#a=</code> is cleared. The address bar is cleared on purpose after a real token too. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
           </li>
           <li>
             <strong>Load sample</strong>
@@ -329,7 +329,7 @@
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>parlay-autopsy-v1</code>. Offline cache <code>parlay-autopsy-v1</code>. The page is fetched from the network when you are online. Scripts and styles refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, the old value is backed up and a notice shows. No accounts, no odds feed, no analytics.</span>
+            <span>Store <code>parlay-autopsy-v1</code>. Offline cache <code>parlay-autopsy-v2</code>. The page is fetched from the network when you are online. Scripts and styles carry <code>?v=</code> and refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, including a card that fails validation, the old value is backed up and a notice shows. No accounts, no odds feed, no analytics.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: betting advice, a book, real money, a pre-bet calculator, live odds, live scores, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
@@ -359,11 +359,11 @@
     <button type="button" id="toastUndo" hidden>Undo</button>
   </div>
 
-  <script src="autopsy.js"></script>
-  <script src="app.js"></script>
+  <script src="autopsy.js?v=2"></script>
+  <script src="app.js?v=2"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js").catch(function () {});
+      navigator.serviceWorker.register("./sw.js?v=2").catch(function () {});
     }
   </script>
 </body>
