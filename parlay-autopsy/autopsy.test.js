@@ -89,7 +89,14 @@ async function main() {
   assert(html.indexOf("#a=") !== -1, "hash documented");
   assert(html.indexOf("?a=") !== -1, "query documented");
   assert(html.indexOf('id="storageCorrupt"') !== -1, "corrupt notice");
-  assert(html.indexOf("parlay-autopsy-v1") !== -1, "feature map names the cache");
+  assert(html.indexOf("parlay-autopsy-v1") !== -1, "feature map names the store");
+  assert(html.indexOf(">parlay-autopsy-v2<") !== -1, "feature map names the cache");
+  assert(html.indexOf('href="app.css?v=2"') !== -1, "style version");
+  assert(html.indexOf('src="autopsy.js?v=2"') !== -1, "engine version");
+  assert(html.indexOf('src="app.js?v=2"') !== -1, "app version");
+  assert(html.indexOf("All but one dead is NEAR MISS") === -1, "near miss is not all but one");
+  assert(html.indexOf("NEAR MISS is exactly one killer") !== -1, "near miss rule");
+  assert(html.toLowerCase().indexOf("read as +180") !== -1, "unsigned odds hint is documented");
   assert(html.indexOf("one tap") !== -1, "copy link is one tap");
   assert(html.indexOf("LAST LEG") !== -1, "stamp names");
   assert(html.indexOf("ONE-TICK") !== -1, "one tick named");
@@ -100,7 +107,8 @@ async function main() {
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate toast");
   assert(app.indexOf("innerHTML") === -1, "no innerHTML");
   assert(read("autopsy.js").indexOf("innerHTML") === -1, "engine has no innerHTML");
-  assert(sw.indexOf('"parlay-autopsy-v1"') !== -1, "sw cache");
+  assert(sw.indexOf('"parlay-autopsy-v2"') !== -1, "sw cache");
+  assert(sw.indexOf("parlay-autopsy-v1") === -1, "storage key is not the cache");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("function staleWhileRevalidate") !== -1, "js and css revalidate");
   assert(sw.indexOf("url.origin + url.pathname") !== -1, "cache key is the pathname");
@@ -110,6 +118,10 @@ async function main() {
   assert(app.indexOf("toastExtra") !== -1, "confirmation shows beside a live undo");
   assert(app.indexOf("if (!toastBag) toast(msg, { important: true });") !== -1, "form error does not cover undo");
   assert(app.indexOf("function copyCardLink") !== -1, "card copy is direct");
+  assert(app.indexOf("if (!card || card.starred || card.salt > 0) return false;") !== -1, "room undo retires after star or re-autopsy");
+  assert(app.indexOf("if (!result.already) writeForm(result.card);") !== -1, "duplicate keeps the typed slip");
+  assert(app.indexOf("clearEmptyAutopsyHash") !== -1, "empty hash is cleared");
+  assert(app.indexOf('hint.textContent = "read as " + parsed.display;') !== -1, "unsigned odds hint");
   assert(app.indexOf("Starred autopsies fill this phone. Remove one to keep this.") !== -1, "keep cap copy");
   assert(app.indexOf("This phone holds 24 autopsies. Starred slips stay. Remove one to cut another.") !== -1, "autopsy cap copy");
   assert(app.indexOf('els.btnKeepShare.textContent = preview.fresh ? "Keep on this phone" : "Already on this phone"') !== -1, "already button");
@@ -138,7 +150,7 @@ async function main() {
   eq(once.tag, twice.tag, "stable tag");
   eq(once.cause, "LAST LEG", "sample is last leg");
   assert(once.tag === "BUZZER DEATH" || once.tag === "FINAL CUT", "sample tag follows last leg");
-  assert(once.meter >= 74 && once.meter <= 80, "corpse band");
+  assert(once.meter >= 33 && once.meter <= 39, "one of three sits on the dead share");
   assert(once.roast.indexOf("Mahomes anytime TD") !== -1, "sample names the killer");
   assert(once.roast.indexOf("cashed") !== -1, "sample names the cashed legs");
   assert(once.roast.indexOf("The slab goes again.") !== 0, "first autopsy is not a re-autopsy lead");
@@ -187,7 +199,7 @@ async function main() {
     leg("A", "", true),
     leg("B", "", true),
     leg("C", "", false),
-  ], 0).cause, "NEAR MISS", "one survivor is a near miss");
+  ], 0).cause, "MIDDLE BLEED", "all but one, last cashed, is a middle bleed");
   eq(ParlayAutopsy.callAutopsy([
     leg("A", "", true),
     leg("B", "", true),
@@ -213,7 +225,15 @@ async function main() {
   eq(ParlayAutopsy.parseOdds("50").ok, false, "short price refused");
   eq(ParlayAutopsy.parseOdds("50%").ok, false, "percent refused");
   eq(ParlayAutopsy.parseOdds("1/2").ok, false, "fraction refused");
-  eq(ParlayAutopsy.parseOdds("even").ok, false);
+  eq(ParlayAutopsy.parseOdds("even").ok, true);
+  eq(ParlayAutopsy.parseOdds("EVEN").display, "+100", "EVEN is +100");
+  eq(ParlayAutopsy.parseOdds("ev").value, 100, "EV is +100");
+  eq(ParlayAutopsy.parseOdds("EVEN").implied, false, "EVEN is not an unsigned guess");
+  eq(ParlayAutopsy.parseOdds("180").display, "+180");
+  eq(ParlayAutopsy.parseOdds("180").implied, true, "unsigned odds are marked");
+  eq(ParlayAutopsy.parseOdds("+180").implied, false, "a typed sign is not a guess");
+  eq(ParlayAutopsy.parseOdds("1 80").ok, false, "spaced digits are not joined");
+  eq(ParlayAutopsy.parseOdds("- 110").ok, false, "a space after the sign is not joined");
 
   const noted = ParlayAutopsy.autopsy(ParlayAutopsy.emptyState(), slip(sample.legs, "sunday note"), 5);
   assert(noted.ok, "sample cuts");
@@ -304,6 +324,11 @@ async function main() {
 
   eq(ParlayAutopsy.nameKey("José Ramírez"), ParlayAutopsy.nameKey("Jose\u0301 Rami\u0301rez"), "nfc folds combining marks");
   assert(ParlayAutopsy.nameKey("José Ramírez") !== ParlayAutopsy.nameKey("Jos Ram Rez"), "accents stay in the key");
+  assert(ParlayAutopsy.nameKey("Chiefs -3.5") !== ParlayAutopsy.nameKey("Chiefs +3.5"), "spread signs stay");
+  assert(ParlayAutopsy.nameKey("Over 48.5") !== ParlayAutopsy.nameKey("Over 5.48"), "decimals stay whole");
+  assert(ParlayAutopsy.nameKey("Kelce 50+") !== ParlayAutopsy.nameKey("Kelce 50"), "a trailing plus stays");
+  eq(ParlayAutopsy.nameKey("Over 48.5"), ParlayAutopsy.nameKey("48.5 Over"), "word order still folds");
+  eq(ParlayAutopsy.nameKey("Chiefs \u22123.5"), ParlayAutopsy.nameKey("Chiefs -3.5"), "unicode minus in a name");
   const fire = ParlayAutopsy.autopsy(ParlayAutopsy.emptyState(), slip([
     leg("🔥", "", false),
     leg("Closer", "", true),
@@ -607,8 +632,162 @@ async function main() {
       { id: "nope" },
     ],
   }));
-  eq(mixedSave.corrupt, false, "a mixed list is readable");
-  eq(mixedSave.state.cards.length, 1, "mixed list keeps the valid card");
+  eq(mixedSave.corrupt, true, "a card that fails validation makes the save corrupt");
+  eq(mixedSave.backup.indexOf("ok-card") !== -1, true, "the raw save is kept for backup");
+  eq(mixedSave.state.cards.length, 0, "a failed card is not dropped quietly");
+  const rawOdds = JSON.stringify({
+    v: 1,
+    cards: [
+      { id: "ok-card", legs: [leg("Ada", "", false), leg("Bee", "", true)], salt: 0 },
+      { id: "bad-odds", legs: [leg("Ada", "1.91", true), leg("Bee", "-110", false)], salt: 0 },
+    ],
+  });
+  const badOdds = ParlayAutopsy.readStored(rawOdds);
+  eq(badOdds.corrupt, true, "decimal odds in storage are corrupt");
+  eq(badOdds.backup, rawOdds, "backup is the raw saved value");
+  const dupIds = ParlayAutopsy.readStored(JSON.stringify({
+    v: 1,
+    cards: [
+      { id: "ok-card", legs: [leg("Ada", "", false), leg("Bee", "", true)], salt: 0 },
+      { id: "ok-card", legs: [leg("Cee", "", false), leg("Dee", "", true)], salt: 0 },
+    ],
+  }));
+  eq(dupIds.corrupt, false, "a repeated id is not a corrupt card");
+  eq(dupIds.state.cards.length, 1, "a repeated id keeps the first card");
+
+  const minusSpread = ParlayAutopsy.autopsy(ParlayAutopsy.emptyState(), slip([
+    leg("Chiefs -3.5", "-110", true),
+    leg("Over 47.5", "-110", false),
+  ]), 30);
+  const plusSpread = ParlayAutopsy.autopsy(minusSpread.state, slip([
+    leg("Chiefs +3.5", "-110", true),
+    leg("Over 47.5", "-110", false),
+  ]), 31);
+  assert(plusSpread.ok && !plusSpread.already, "the other side of a spread is a new corpse");
+  eq(plusSpread.state.cards.length, 2, "both sides stay on the shelf");
+  eq(plusSpread.card.legs[0].name, "Chiefs +3.5", "the typed plus side is what gets saved");
+  const decimalTwin = ParlayAutopsy.autopsy(plusSpread.state, slip([
+    leg("Chiefs -3.5", "-110", true),
+    leg("Over 5.48", "-110", false),
+  ]), 32);
+  assert(decimalTwin.ok && !decimalTwin.already, "48.5 and 5.48 do not collide");
+
+  eq(ParlayAutopsy.keptLine(23, 24, 23, 0), "Kept 23 new, 1 already here.");
+  eq(ParlayAutopsy.keptLine(23, 24, 24, 0), "Kept 23 of 24.");
+  eq(ParlayAutopsy.keptLine(4, 4, 4, 1), "Kept. The oldest autopsy made room.");
+  eq(ParlayAutopsy.keptLine(1, 1, 1, 0), "Kept on this phone.");
+
+  ["LAST LEG", "MIDDLE BLEED", "TOTAL COLLAPSE"].forEach(function (cause) {
+    const multi = ParlayAutopsy.roastFits(cause).filter(function (fit) { return fit === "multi"; }).length;
+    assert(multi >= 8, cause + " has " + multi + " multi-killer lines");
+  });
+  ParlayAutopsy.CAUSES.forEach(function (cause) {
+    ParlayAutopsy.roastFits(cause).forEach(function (fit) {
+      assert(fit === "single" || fit === "position" || fit === "multi", cause + " fit " + fit);
+    });
+  });
+
+  const slotNames = ["LegOpener", "LegSecond", "LegThird", "LegFourth", "LegFifth", "LegCloser"];
+  function slotLegs(n, mask, odds) {
+    const legs = [];
+    for (let i = 0; i < n; i += 1) {
+      const killer = (mask & (1 << i)) !== 0;
+      legs.push(leg(slotNames[i], killer ? (odds || "") : "", killer));
+    }
+    return legs;
+  }
+  function assertRoastHonest(legs, roast) {
+    assert(roast.indexOf("{") === -1, "template leak: " + roast);
+    assert(roast.indexOf("Frame ") === -1, "frame line: " + roast);
+    assert(roast.toLowerCase().indexOf("in the middle of the story") === -1, roast);
+    const killers = legs.filter(function (row) { return row.killer; });
+    if (killers.length >= 2) {
+      assert(!/almost|one breath short|close enough|the rest lived/i.test(roast), roast);
+    }
+    const last = legs[legs.length - 1];
+    roast.split(/(?<=[.!])/).forEach(function (sentence) {
+      const namedKillers = legs.filter(function (row) {
+        return row.killer && sentence.indexOf(row.name) !== -1;
+      });
+      if (/last name on the slip|closed the slip|wrote the ending|final cut|buzzer|the ending was|finished it|at the end of/i.test(sentence)) {
+        namedKillers.forEach(function (row) {
+          assert(row === last, "last-slot line named " + row.name + " in: " + sentence + " / " + roast);
+        });
+      }
+      if (/not the opener/i.test(sentence)) assert(!legs[0].killer, "claims the opener lived: " + roast);
+      if (/not the closer/i.test(sentence)) assert(!last.killer, "claims the closer lived: " + roast);
+      if (/the closer cashed|the last leg cashed|the last leg lived/i.test(sentence)) {
+        assert(!last.killer, "says the closer cashed: " + roast);
+      }
+      if (/middle of the pile|bled out in the middle|in the middle|between the cashed|middle of the slip|parked in the middle|middle bleed on/i.test(sentence)) {
+        namedKillers.forEach(function (row) {
+          const idx = legs.indexOf(row);
+          assert(idx > 0 && idx < legs.length - 1, "middle line named " + row.name + " in: " + sentence);
+        });
+      }
+    });
+  }
+  for (let n = 2; n <= 6; n += 1) {
+    const byDead = [];
+    const total = 1 << n;
+    for (let mask = 1; mask < total; mask += 1) {
+      const plain = slotLegs(n, mask, "");
+      const juicy = slotLegs(n, mask, "+300");
+      const plainCall = ParlayAutopsy.callAutopsy(plain, 0);
+      const juicyCall = ParlayAutopsy.callAutopsy(juicy, 0);
+      let dead = 0;
+      for (let i = 0; i < n; i += 1) if (mask & (1 << i)) dead += 1;
+      if (!byDead[dead]) byDead[dead] = { min: plainCall.meter, max: plainCall.meter };
+      byDead[dead].min = Math.min(byDead[dead].min, plainCall.meter, juicyCall.meter);
+      byDead[dead].max = Math.max(byDead[dead].max, plainCall.meter, juicyCall.meter);
+      if (dead === n) eq(plainCall.cause, "TOTAL COLLAPSE", n + " all dead");
+      else if (dead === 1 && (mask & 1) && !(mask & (1 << (n - 1)))) eq(plainCall.cause, "NEAR MISS", "single opener");
+      else if (dead >= 2 && (mask & (1 << (n - 1)))) eq(plainCall.cause, "LAST LEG", "multi last");
+      else if (dead >= 2) eq(plainCall.cause, "MIDDLE BLEED", "multi with the last alive");
+      for (let salt = 0; salt < 24; salt += 1) {
+        const roast = ParlayAutopsy.callAutopsy(plain, salt).roast;
+        assertRoastHonest(plain, roast);
+        if (dead >= 2) {
+          const again = ParlayAutopsy.callAutopsy(juicy, salt).roast;
+          assertRoastHonest(juicy, again);
+        }
+      }
+    }
+    let prevMax = -1;
+    for (let dead = 1; dead <= n; dead += 1) {
+      assert(byDead[dead].min >= prevMax, "meter dropped at " + dead + "/" + n + " min " + byDead[dead].min + " after " + prevMax);
+      prevMax = byDead[dead].max;
+    }
+  }
+  eq(ParlayAutopsy.callAutopsy([
+    leg("A", "", true),
+    leg("B", "", true),
+    leg("C", "", true),
+    leg("D", "", true),
+    leg("E", "", true),
+    leg("F", "", false),
+  ], 0).cause, "MIDDLE BLEED", "five of six, last alive");
+  eq(ParlayAutopsy.callAutopsy([
+    leg("A", "", false),
+    leg("B", "", true),
+    leg("C", "", true),
+    leg("D", "", true),
+    leg("E", "", true),
+    leg("F", "", true),
+  ], 0).cause, "LAST LEG", "five of six, last dead");
+  const heavy = ParlayAutopsy.callAutopsy([
+    leg("A", "", true),
+    leg("B", "", true),
+    leg("C", "", true),
+    leg("D", "", true),
+    leg("E", "", true),
+    leg("F", "", false),
+  ], 0);
+  const light = ParlayAutopsy.callAutopsy([
+    leg("A", "", false),
+    leg("B", "+300", true),
+  ], 0);
+  assert(heavy.meter > light.meter, "five dead of six outranks one dead of two");
 
   const maxed = ParlayAutopsy.reautopsy(
     ParlayAutopsy.normalizeState({

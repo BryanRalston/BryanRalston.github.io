@@ -1,4 +1,4 @@
-const CACHE = "parlay-autopsy-v1";
+const CACHE = "parlay-autopsy-v2";
 const ASSETS = [
   "./",
   "./index.html",
