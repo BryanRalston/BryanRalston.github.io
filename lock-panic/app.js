@@ -9,6 +9,7 @@
   let state = LockPanic.emptyState();
   let incoming = null;
   let actionUndo = null;
+  let clearHold = null;
   let toastBag = null;
   let toastUndoMeta = null;
   let spokenKey = "";
@@ -99,11 +100,13 @@
     els.toast.classList.add("show");
     clearTimeout(toast._t);
     toast._t = setTimeout(function () {
+      const kind = toastUndoMeta && toastUndoMeta.kind;
       els.toast.classList.remove("show");
       toastBag = null;
       toastUndoMeta = null;
       els.toastUndo.hidden = true;
       hideToastExtra();
+      if (kind === "clear" && state.cards.length === 0) clearHold = null;
     }, options.ms || 2600);
   }
 
@@ -121,6 +124,10 @@
         return "Already on this phone.";
       case "salt":
         return "This card is out of re-panics.";
+      case "same":
+        return "Pick a different backup, or leave it blank.";
+      case "minutes":
+        return "Minutes need a whole number from 0 to 240.";
       default: {
         const _never = reason;
         throw new Error("Unknown reason " + _never);
@@ -192,8 +199,16 @@
       els.storageFail.hidden = false;
       return parsed.state;
     }
+    els.storageCorrupt.textContent = corruptNotice(parsed);
     els.storageCorrupt.hidden = false;
     return parsed.state;
+  }
+
+  function corruptNotice(parsed) {
+    const count = parsed && parsed.dropped ? parsed.dropped : 0;
+    if (count === 1) return "1 saved panic could not be read and was set aside.";
+    if (count > 1) return count + " saved panics could not be read and were set aside.";
+    return "Saved panics could not be read. Started fresh, and the old value is backed up on this phone.";
   }
 
   function save() {
@@ -210,17 +225,39 @@
     return state.cards.find(function (card) { return card.id === state.openId; }) || null;
   }
 
-  function showFormError(msg) {
+  function formField(reason) {
+    switch (reason) {
+      case "minutes":
+        return els.fieldMinutes;
+      case "same":
+        return els.fieldBackup;
+      case "blank":
+      case "starter":
+        return els.fieldStarter;
+      default: {
+        const _never = reason;
+        throw new Error("Unknown form field " + _never);
+      }
+    }
+  }
+
+  function showFormError(msg, reason) {
     els.formError.textContent = msg;
     els.formError.hidden = false;
-    els.fieldStarter.setAttribute("aria-invalid", "true");
-    els.fieldStarter.focus();
+    els.fieldStarter.removeAttribute("aria-invalid");
+    els.fieldBackup.removeAttribute("aria-invalid");
+    els.fieldMinutes.removeAttribute("aria-invalid");
+    const field = formField(reason);
+    field.setAttribute("aria-invalid", "true");
+    field.focus();
   }
 
   function hideFormError() {
     els.formError.hidden = true;
     els.formError.textContent = "";
     els.fieldStarter.removeAttribute("aria-invalid");
+    els.fieldBackup.removeAttribute("aria-invalid");
+    els.fieldMinutes.removeAttribute("aria-invalid");
   }
 
   function cleanShareUrl() {
@@ -548,6 +585,10 @@
         state = draft;
         save();
         render();
+        if (!state.cards.length && clearHold) {
+          showClearUndo();
+          return;
+        }
         toast("Panic taken back.");
         return;
       }
@@ -589,6 +630,9 @@
       case "exists":
       case "salt":
         return false;
+      case "same":
+      case "minutes":
+        return true;
       default: {
         const _never = reason;
         throw new Error("Unknown reason " + _never);
@@ -604,7 +648,7 @@
     if (!result.ok) {
       const msg = reasonMessage(result.reason);
       if (formReason(result.reason)) {
-        showFormError(msg);
+        showFormError(msg, result.reason);
         if (!toastBag) toast(msg, { important: true });
         return;
       }
@@ -702,29 +746,38 @@
     });
   }
 
+  function undoClear() {
+    if (!clearHold) return;
+    if (state.cards.length) {
+      toast("A new panic is already on this phone.", { important: true });
+      return;
+    }
+    const held = clearHold;
+    clearHold = null;
+    state = LockPanic.restoreAll(state, held.previous, held.openId).state;
+    save();
+    render();
+    toast("Panics restored.");
+  }
+
+  function showClearUndo() {
+    if (!clearHold) return;
+    toast("Cleared every panic.", {
+      ms: 8000,
+      meta: { kind: "clear" },
+      undo: undoClear,
+    });
+  }
+
   function clearAll() {
     if (!state.cards.length) return;
-    const previous = state.cards.slice();
-    const openId = state.openId;
+    clearHold = { previous: state.cards.slice(), openId: state.openId };
     const cleared = LockPanic.clearCards(state);
     actionUndo = null;
     state = cleared.state;
     save();
     render();
-    toast("Cleared every panic.", {
-      ms: 8000,
-      meta: { kind: "clear" },
-      undo: function () {
-        if (state.cards.length) {
-          toast("A new panic is already on this phone.", { important: true });
-          return;
-        }
-        state = LockPanic.restoreAll(state, previous, openId).state;
-        save();
-        render();
-        toast("Panics restored.");
-      },
-    });
+    showClearUndo();
   }
 
   function openFromShelf(id) {

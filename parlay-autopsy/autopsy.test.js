@@ -90,7 +90,7 @@ async function main() {
   assert(html.indexOf("?a=") !== -1, "query documented");
   assert(html.indexOf('id="storageCorrupt"') !== -1, "corrupt notice");
   assert(html.indexOf("parlay-autopsy-v1") !== -1, "feature map names the store");
-  assert(html.indexOf(">parlay-autopsy-v2<") !== -1, "feature map names the cache");
+  assert(html.indexOf(">parlay-autopsy-v3<") !== -1, "feature map names the cache");
   assert(html.indexOf('href="app.css?v=2"') !== -1, "style version");
   assert(html.indexOf('src="autopsy.js?v=2"') !== -1, "engine version");
   assert(html.indexOf('src="app.js?v=2"') !== -1, "app version");
@@ -107,12 +107,12 @@ async function main() {
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate toast");
   assert(app.indexOf("innerHTML") === -1, "no innerHTML");
   assert(read("autopsy.js").indexOf("innerHTML") === -1, "engine has no innerHTML");
-  assert(sw.indexOf('"parlay-autopsy-v2"') !== -1, "sw cache");
+  assert(sw.indexOf('"parlay-autopsy-v3"') !== -1, "sw cache");
   assert(sw.indexOf("parlay-autopsy-v1") === -1, "storage key is not the cache");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("function staleWhileRevalidate") !== -1, "js and css revalidate");
-  assert(sw.indexOf("url.origin + url.pathname") !== -1, "cache key is the pathname");
-  assert(sw.indexOf("url.search") === -1, "query string is not part of the cache key");
+  assert(sw.indexOf("url.origin + url.pathname + url.search") !== -1, "versioned assets keep the query");
+  assert(sw.indexOf("url.origin + url.pathname);") !== -1, "html cache key stays the pathname");
   assert(app.indexOf("STORAGE_BACKUP_KEY") !== -1, "corrupt value is backed up");
   assert(app.indexOf("function retireStaleUndo") !== -1, "undo leaves when it cannot run");
   assert(app.indexOf("toastExtra") !== -1, "confirmation shows beside a live undo");

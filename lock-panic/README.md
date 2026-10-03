@@ -2,7 +2,7 @@
 
 Fantasy lock-anxiety theater. Lineup locks soon. Name the questionable starter, optional backup, and optional minutes to lock, then tap Panic. The same starter and backup get the same stamp and roast until you hit Re-panic. The shelf stays on this device.
 
-Entertainment only. For the group chat. Not fantasy advice. Not a start/sit ranking. Not betting. No money.
+Entertainment only. Not fantasy advice. No money.
 
 Live: [bryanralston.github.io/lock-panic](https://bryanralston.github.io/lock-panic/)
 
@@ -19,22 +19,22 @@ Live: [bryanralston.github.io/lock-panic](https://bryanralston.github.io/lock-pa
 
 In-product **Feature Map** (collapsed in the footer) lists current capabilities, not a roadmap:
 
-- One questionable starter. Backup, minutes, and note are optional. A plain number like 12 shows as minutes to lock. `soon` stays text. Names are NFC-lowercased. Apostrophes are dropped, so Ja'Marr and Jamarr match. Accents stay. Word order inside a name does not matter. Minutes and a note do not move the stamp.
-- LOCK PANIC card, stamp, one roast, a tag, and an anxiety meter. Stamps: HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, PANIC. With no backup, LEAN SWAP is filed as LEAN HOLD and PANIC is filed as COIN FLIP. The roast still says no backup was named.
+- One questionable starter. Backup, minutes, and note are optional. Minutes are a whole number from 0 to 240. Names fold case, apostrophes, periods, and accents, so Ja'Marr and Jamarr match, A.J. Brown matches AJ Brown, and José Ramírez matches Jose Ramirez. The card shows the name as typed. Word order inside a name does not matter. The same player in both boxes is rejected. Swap the names and the stamp flips. Minutes and a note do not move the stamp.
+- LOCK PANIC card, stamp, one roast, a tag, and an anxiety meter. Stamps: HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, PANIC. With no backup, LEAN SWAP is filed as LEAN HOLD and PANIC is filed as COIN FLIP. Most solo lines do not nag about the missing backup.
 - Re-panic, Star, Undo. A toast Undo leaves when it can no longer work. The room Undo, from a panic that had to make room, leaves once that new card is starred or re-panicked. A confirmation still shows beside it. A form error stays on the form and does not cover Undo.
 - History of 24 panics, all / starred filters, open, remove, clear, toast Undo. Opening a row does not wipe a half-typed starter.
-- At the cap, the oldest unstarred panic makes room. Starred panics are not dropped when another can go. A shelf of only stars refuses a new panic.
+- At the cap, the oldest unstarred panic in shelf order makes room. Re-entering a pair or keeping a shared card counts as a touch. Starred panics are not dropped when another can go. A shelf of only stars refuses a new panic.
 - Snapshot share via `#k=` or `?k=` — Copy link copies in one tap. The link does not carry the star. Keep recomputes the stamp, tag, meter, and roast, so a forged line does not survive. A shelf link keeps what fits and says so before you tap, including how many oldest unstarred panics it drops. If nothing fits, the offer stays up. Not live sync. A duplicate says it is already on this phone. A keep that finds some already here says how many were new and how many were already here. An empty `#k=` is cleared. A bad token toasts. Same-tab hash changes show the offer.
 - Load sample
-- Storage-blocked private-mode alert. A corrupt save, including one stored card that fails validation, is backed up under `lock-panic-v1-corrupt` and a notice shows.
-- Offline via service worker cache **`lock-panic-v2`**. HTML is network-first. Scripts and styles are stale-while-revalidate and tagged with `?v=`. `?v=` and `?k=` are cached by pathname only.
+- Storage-blocked private-mode alert. A card that fails validation is set aside under `lock-panic-v1-corrupt`. The rest of the shelf stays, and the notice says how many. A save that is not a shelf at all is backed up and the page starts fresh.
+- Offline via service worker cache **`lock-panic-v3`**. HTML is network-first. Scripts and styles are stale-while-revalidate and tagged with `?v=`. Versioned JS and CSS are cached by the full URL. `?k=` stays off the HTML cache key.
 
 **Is not:** fantasy advice, a start/sit ranking, betting, real money, live projections, accounts, live sync, ads, or anything that phones home.
 
 ## Persistence
 
 - `localStorage` key **`lock-panic-v1`**
-- Service worker cache **`lock-panic-v2`**
+- Service worker cache **`lock-panic-v3`**
 
 ## Check
 

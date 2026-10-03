@@ -28,14 +28,14 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Snapshot share via `#s=` or `?s=` — Keep or Not now, not live sync. Keep does not copy the sender's star. Same-tab hash changes show the offer. A bad token toasts.
 - Load sample
 - Storage-blocked private-mode alert
-- Offline via service worker cache **`start-sit-v2`**. HTML is network-first, and `?s=` is not cached as its own URL
+- Offline via service worker cache **`start-sit-v3`**. HTML is network-first, and `?s=` is not cached as its own URL. Versioned JS and CSS keep `?v=` in the cache key.
 
 **Is not:** fantasy advice, betting, projections, news, live scores, accounts, live sync, ads, analytics, or anything that phones home.
 
 ## Persistence
 
 - `localStorage` key **`start-sit-v1`**
-- Service worker cache **`start-sit-v2`**
+- Service worker cache **`start-sit-v3`**
 
 ## Check
 

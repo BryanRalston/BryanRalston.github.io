@@ -28,14 +28,14 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Snapshot share via `#n=` or `?n=` — Copy link copies in one tap. The link does not carry the star. Keep recomputes the energy, stamp, meter, and roast, so a forged line does not survive. A shelf link keeps what fits and says so before you tap, including how many oldest unstarred bombs it drops. If nothing fits, the offer stays up. Not live sync. A duplicate says it is already on this phone. A bad token toasts. Same-tab hash changes show the offer.
 - Load sample
 - Storage-blocked private-mode alert. A corrupt save is backed up under `bench-bomb-v1-corrupt` and a notice shows.
-- Offline via service worker cache **`bench-bomb-v2`**. HTML is network-first. Scripts and styles are stale-while-revalidate. `?v=` and `?n=` are cached by pathname only. Old `#n=` and `?n=` links still open and are recomputed.
+- Offline via service worker cache **`bench-bomb-v3`**. HTML is network-first. Scripts and styles are stale-while-revalidate. Versioned JS and CSS are cached by the full URL. `?n=` stays off the HTML cache key. Old `#n=` and `?n=` links still open and are recomputed.
 
 **Is not:** fantasy advice, betting, money, projections, news, live scores, accounts, live sync, ads, or anything that phones home.
 
 ## Persistence
 
 - `localStorage` key **`bench-bomb-v1`**
-- Service worker cache **`bench-bomb-v2`**
+- Service worker cache **`bench-bomb-v3`**
 
 ## Check
 

@@ -365,10 +365,11 @@ async function roundTrip() {
   const capAt = openAddFn.indexOf("LOCK_CAP");
   const viewAt = openAddFn.indexOf('setView("form")');
   assert(capAt !== -1 && viewAt !== -1 && capAt < viewAt, "full shelf blocks the form");
-  assert(sw.indexOf('const CACHE = "queue-lock-v2"') !== -1, "cache name");
+  assert(sw.indexOf('const CACHE = "queue-lock-v3"') !== -1, "cache name");
+  assert(sw.indexOf("url.pathname + url.search") !== -1, "versioned assets keep the query");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");
-  assert(html.indexOf("queue-lock-v2") !== -1, "cache name in the feature map");
+  assert(html.indexOf("queue-lock-v3") !== -1, "cache name in the feature map");
   assert(html.indexOf("The card is the screenshot") === -1, "screenshot line is gone");
   assert(html.indexOf("It is the screenshot") === -1, "feature map screenshot line is gone");
   assert(app.indexOf("This counts as a break.") !== -1, "active remove counts as a break");

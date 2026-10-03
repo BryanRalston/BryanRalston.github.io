@@ -85,14 +85,14 @@ async function main() {
   assert(app.indexOf('const QUERY_KEY = "n"') !== -1, "query key");
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate toast");
   assert(app.indexOf("innerHTML") === -1, "no innerHTML");
-  assert(sw.indexOf('"bench-bomb-v2"') !== -1, "sw cache");
+  assert(sw.indexOf('"bench-bomb-v3"') !== -1, "sw cache");
   assert(sw.indexOf('"bench-bomb-v1"') === -1, "old sw cache is gone");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("function staleWhileRevalidate") !== -1, "js and css revalidate");
-  assert(sw.indexOf("url.origin + url.pathname") !== -1, "cache key is the pathname");
-  assert(sw.indexOf("url.search") === -1, "query string is not part of the cache key");
+  assert(sw.indexOf("url.origin + url.pathname + url.search") !== -1, "versioned assets keep the query");
+  assert(sw.indexOf("url.origin + url.pathname);") !== -1, "html cache key stays the pathname");
   assert(html.indexOf('id="storageCorrupt"') !== -1, "corrupt notice");
-  assert(html.indexOf("bench-bomb-v2") !== -1, "feature map names the cache");
+  assert(html.indexOf("bench-bomb-v3") !== -1, "feature map names the cache");
   assert(html.indexOf("Enter a number") !== -1, "points hint asks for a number");
   assert(html.indexOf("one tap") !== -1, "copy link is one tap");
   assert(app.indexOf("STORAGE_BACKUP_KEY") !== -1, "corrupt value is backed up");
