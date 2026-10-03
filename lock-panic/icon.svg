@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lock Panic">
+  <rect width="64" height="64" rx="14" fill="#070b18"/>
+  <rect x="3.5" y="3.5" width="57" height="57" rx="12" fill="none" stroke="#ffc14a" stroke-width="1.5"/>
+  <path d="M22 30v-6a10 10 0 0 1 20 0v6" fill="none" stroke="#ff2d55" stroke-width="3" stroke-linecap="round"/>
+  <rect x="16" y="28" width="32" height="22" rx="4" fill="#12182a" stroke="#ffc14a" stroke-width="1.6"/>
+  <circle cx="32" cy="37.5" r="2.6" fill="#ff2d55"/>
+  <path d="M32 40.2v4.2" fill="none" stroke="#6ee7ff" stroke-width="2" stroke-linecap="round"/>
+</svg>
