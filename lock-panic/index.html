@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b18" />
+  <meta name="description" content="Lock Panic — lineup locks soon. Name the questionable starter and get a theatrical lock-anxiety card. Entertainment only. Not fantasy advice. Stays on this device." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Lock Panic" />
+  <title>Lock Panic</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css?v=1" />
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the card</a>
+  <div class="yard" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="storageFail" class="storage-fail" hidden role="alert">
+    Lock Panic cannot save on this device. Browser storage is blocked (private mode or a setting). The panics will not persist.
+  </div>
+  <div id="storageCorrupt" class="storage-note" hidden role="status">
+    Saved panics could not be read. Started fresh, and the old value is backed up on this phone.
+  </div>
+  <noscript>
+    <p class="storage-fail">Lock Panic needs JavaScript to run the card. This page does not send data anywhere.</p>
+  </noscript>
+
+  <main class="wrap" id="content">
+    <header class="top">
+      <div class="brand">
+        <img class="mark" src="icon.svg" width="48" height="48" alt="" />
+        <div class="brand-copy">
+          <p class="kicker">Lock-anxiety theater</p>
+          <h1>Lock Panic</h1>
+        </div>
+      </div>
+      <div class="local-chip" title="Nothing leaves this browser">
+        <span class="lamp" aria-hidden="true"></span>
+        On this device
+      </div>
+    </header>
+
+    <p class="honest">
+      Lineup locks soon. Entertainment only. For the group chat. Not fantasy advice. Not a start/sit ranking. Not betting. No money. The same starter and backup get the same stamp until you hit Re-panic.
+    </p>
+
+    <p class="sr-only" id="spoken" aria-live="polite"></p>
+
+    <section id="shareOffer" class="share-offer" hidden aria-labelledby="offerHeading">
+      <p class="kicker">Shared snapshot</p>
+      <h2 id="offerHeading">Same panic, this phone.</h2>
+      <p class="share-offer-lead">Someone sent a copy. It is not live sync. A re-panic on their phone does not change this one.</p>
+      <p class="offer-face" id="offerFace">—</p>
+      <p class="hint" id="offerHint">Keep adds what fits on this phone. Not now drops the copy. Already on this phone means the starter is here. Refresh will not bring a dropped copy back.</p>
+      <div class="offer-actions">
+        <button type="button" class="btn primary" id="btnKeepShare">Keep on this phone</button>
+        <button type="button" class="btn ghost" id="btnDismissShare">Not now</button>
+      </div>
+    </section>
+
+    <div id="shelfBar" class="shelf-bar" hidden>
+      <button type="button" class="text-btn" id="btnLatest">Latest panic</button>
+      <p class="kicker quiet">From the shelf</p>
+    </div>
+
+    <section id="emptyHero" class="empty-hero" aria-labelledby="emptyHeading">
+      <p class="empty-kicker">The lock is quiet</p>
+      <h2 id="emptyHeading">Lineup locks soon.</h2>
+      <p>Name the questionable starter. A backup and the minutes to lock are optional. Tap Panic. The card stamps HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, or PANIC. It is a costume on a last-second freakout, not a ranking.</p>
+    </section>
+
+    <article class="panic-card" id="panicCard" hidden tabindex="-1" aria-labelledby="panicHeading">
+      <div class="card-chrome">
+        <p class="kicker">The card</p>
+        <div class="chrome-side">
+          <span class="star-pill" id="starPill" hidden>Starred</span>
+          <span class="stamp" id="stamp">Lock it</span>
+        </div>
+      </div>
+      <h2 class="sr-only" id="panicHeading">No panic yet</h2>
+      <p class="panic-word" id="panicWord" data-band="panic"><span>LOCK</span><span>PANIC</span></p>
+      <p class="stamp-kicker">Stamp</p>
+      <p class="stamp-mark" id="stampMark" data-band="panic">PANIC</p>
+      <p class="clock-chip" id="clockChip" hidden></p>
+      <p class="roast" id="roastLine"></p>
+      <div class="meter-row">
+        <div class="conf-lockup">
+          <p class="conf-num"><span id="anxietyValue">0</span><span class="conf-unit">%</span></p>
+          <p class="conf-caption">anxiety</p>
+        </div>
+        <div
+          class="meter"
+          id="meter"
+          role="meter"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-valuetext="Anxiety meter 0 percent. Entertainment only. Not a projection. Not fantasy advice."
+          aria-label="Anxiety meter"
+        >
+          <span class="meter-fill" id="meterFill"></span>
+        </div>
+      </div>
+      <p class="meter-note">Anxiety meter. Entertainment only. Not a projection. Not fantasy advice.</p>
+      <div class="exchange" id="exchange">
+        <div class="side starter">
+          <p class="side-kicker">Questionable starter</p>
+          <p class="side-name" id="starterName"></p>
+        </div>
+        <div class="side backup" id="backupSide">
+          <p class="side-kicker">Backup</p>
+          <p class="side-name" id="backupName"></p>
+        </div>
+      </div>
+      <p class="league-note" id="leagueNote" hidden></p>
+    </article>
+
+    <div class="actions" id="actionRow" hidden>
+      <button type="button" class="btn ghost" id="btnRepanic" aria-label="Re-panic, roll a new roast on the same stamp">
+        Re-panic
+        <span class="btn-sub">New roast</span>
+      </button>
+      <button type="button" class="btn ghost" id="btnStar" aria-pressed="false">Star</button>
+      <button type="button" class="btn ghost" id="btnUndo" disabled>Undo</button>
+      <button type="button" class="btn primary" id="btnShare">Copy link</button>
+      <button type="button" class="btn ghost danger" id="btnRemove">Remove</button>
+    </div>
+
+    <section id="sitPanel" aria-labelledby="sitHeading">
+      <form id="panicForm" autocomplete="off" novalidate>
+        <p class="kicker" id="sitKicker">The lock</p>
+        <h2 id="sitHeading">Name the starter</h2>
+        <label for="fieldStarter">Questionable starter
+          <input id="fieldStarter" name="starter" type="text" maxlength="80" required autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Ja'Marr Chase" />
+        </label>
+        <label for="fieldBackup">Backup <span class="opt">optional</span>
+          <input id="fieldBackup" name="backup" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="A committee receiver" />
+        </label>
+        <label for="fieldMinutes">Minutes to lock <span class="opt">optional</span>
+          <input id="fieldMinutes" name="minutes" type="text" maxlength="40" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="12 or soon" />
+        </label>
+        <label for="fieldNote">Note <span class="opt">optional</span>
+          <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Sunday lock · work league" />
+        </label>
+        <p class="hint">The starter is required. The backup, the minutes, and the note are optional. A plain number like 12 shows as minutes to lock. soon stays as you typed it. Word order inside a name does not make a new card. Ja'Marr and Jamarr match. Minutes and a note ride along and do not move the stamp.</p>
+        <p id="formError" class="form-error" hidden role="alert"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary wide" id="btnPanic">Panic</button>
+          <button type="button" class="btn ghost wide" id="btnSample">Load sample</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="historyPanel" aria-labelledby="historyHeading">
+      <div class="panel-head">
+        <div>
+          <p class="kicker quiet">The shelf</p>
+          <h2 id="historyHeading">Past panics</h2>
+        </div>
+        <button type="button" class="btn ghost" id="btnShareShelf" disabled>Copy shelf link</button>
+      </div>
+      <p class="panel-sub" id="historySub">0 of 24 on this phone.</p>
+      <div class="filters" id="filters" role="group" aria-label="Filter panics" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="starred" aria-pressed="false">Starred</button>
+      </div>
+      <div id="historyEmpty" class="empty compact">
+        <p class="empty-kicker">Nothing shelved</p>
+        <strong>The first panic lands here.</strong>
+      </div>
+      <div id="filterEmpty" class="empty compact" hidden>
+        <p class="empty-kicker">No stars</p>
+        <strong>Nothing starred.</strong>
+        <p>Star a panic to find it here. The rest are still on this phone.</p>
+      </div>
+      <ul class="history-list" id="historyList" hidden></ul>
+      <div class="history-foot">
+        <button type="button" class="btn ghost danger" id="btnClear" hidden>Clear all</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><strong>Lock Panic</strong> · On this device. A snapshot link (<code>#k=</code> or <code>?k=</code>) is a copy of a panic, not live sync. Entertainment only. Not fantasy advice. Not betting. No money.</p>
+      <details class="feature-map">
+        <summary>Feature Map — what this page does today</summary>
+        <p class="lead">Current capabilities. Not a roadmap. The panics stay on this device.</p>
+        <ul class="feature-list">
+          <li>
+            <strong>The lock</strong>
+            <span>Name one questionable starter. A backup is optional. Minutes to lock are optional: a plain number like 12 shows as minutes to lock, 0 shows as Locked, and a short note like soon stays as typed. A league note is optional. This is one starter plus an optional other name. It is not a two-name start/sit booth.</span>
+          </li>
+          <li>
+            <strong>Panic</strong>
+            <span>A theatrical LOCK PANIC card. A stamp, one roast line, a tag, an anxiety meter, and the names. The first roast follows the starter and backup, so the same pair keeps its line. The anxiety meter follows the stamp. It is entertainment theater, not a projection and not a model.</span>
+          </li>
+          <li>
+            <strong>The stamp</strong>
+            <span>HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, or PANIC. It is seeded from the normalized starter and backup. With no backup, LEAN SWAP is filed as LEAN HOLD and PANIC is filed as COIN FLIP, because there is nobody to swap to. The roast still says no backup was named. Minutes and the note do not move the stamp, the tag, or the meter.</span>
+          </li>
+          <li>
+            <strong>Same pair</strong>
+            <span>Names are NFC-lowercased. Apostrophes are dropped, so Ja'Marr and Jamarr match. Accents stay. Word order inside a name does not matter, then the words are sorted. The same starter and backup share one card, including a re-panicked roast. A later pass can save new minutes or a new note and leaves the stamp alone. The form keeps what you just typed when the pair is already on the shelf. Markup stays text.</span>
+          </li>
+          <li>
+            <strong>Re-panic</strong>
+            <span>A new roast on that same stamp. It does not always open with the same phrase. The tag stays with the stamp. The anxiety meter stays. The star stays. Undo re-panic restores the previous line.</span>
+          </li>
+          <li>
+            <strong>Star</strong>
+            <span>Mark a panic you want on the starred filter. Undo star takes the mark off.</span>
+          </li>
+          <li>
+            <strong>Undo</strong>
+            <span>The Undo button takes back the last panic, re-panic, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a panic that had to make room. That room Undo leaves once the new card is starred or re-panicked. The toast Undo leaves as soon as it can no longer work. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
+          </li>
+          <li>
+            <strong>History</strong>
+            <span>Up to 24 panics on this phone. Filters are all and starred. Open one, remove one, or clear every panic. Opening a row does not replace what you are typing. Undo puts them back until the toast leaves. A new panic at the cap drops the oldest unstarred panic. Starred panics stay. If every panic is starred, the card refuses another.</span>
+          </li>
+          <li>
+            <strong>Snapshot share</strong>
+            <span>Copy link copies the open panic into <code>#k=</code> in one tap. Copy shelf link packs every panic. <code>?k=</code> works if the token is in the query string. The link does not carry the star. Opening it offers Keep or Not now. Keep recomputes the stamp, tag, meter, and roast from the names, so a forged line does not survive. A shelf link keeps what fits. The offer says what it adds, and how many oldest unstarred panics it drops, before you tap. If nothing fits, the offer stays up. A duplicate says Already on this phone. A keep that finds some already here says how many were new and how many were already here. An empty <code>#k=</code> is cleared. The address bar is cleared on purpose after a real token too. A bad token toasts. A same-tab hash change shows the offer. It is not live sync. Nothing is uploaded.</span>
+          </li>
+          <li>
+            <strong>Load sample</strong>
+            <span>Ja'Marr Chase, backup A committee receiver, 12 minutes, Sunday lock. There is a card to look at without typing.</span>
+          </li>
+          <li>
+            <strong>On this device</strong>
+            <span>Store <code>lock-panic-v1</code>. Offline cache <code>lock-panic-v2</code>. The page is fetched from the network when you are online. Scripts and styles carry <code>?v=</code> and refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, including a card that fails validation, the old value is backed up and a notice shows. No accounts, no projection feed, no analytics.</span>
+          </li>
+        </ul>
+        <p class="not-list">Not in this app: fantasy advice, a start/sit ranking, betting, real money, live projections, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
+      </details>
+    </footer>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <div class="dialog-body">
+      <p class="kicker">Snapshot drop</p>
+      <h2 id="shareTitle">A copy of this panic.</h2>
+      <p class="dialog-lead" id="shareLead">Send this URL. They can keep the same card. Later re-panics here do not update their copy. Not live sync.</p>
+      <label for="shareUrlBox">Share URL
+        <textarea id="shareUrlBox" rows="4" readonly></textarea>
+      </label>
+      <p class="hint">Nothing is uploaded. The panic is packed into the link itself (<code>#k=</code>, or <code>?k=</code> if the token is moved into a query string).</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn primary" id="btnCopyShare">Copy link</button>
+        <button type="button" class="btn ghost" id="btnCloseShare">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <span id="toastExtra" hidden></span>
+    <button type="button" id="toastUndo" hidden>Undo</button>
+  </div>
+
+  <script src="panic.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js?v=1").catch(function () {});
+    }
+  </script>
+</body>
+</html>
