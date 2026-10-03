@@ -1,4 +1,4 @@
-const CACHE = 'potluck-plate-v4';
+const CACHE = 'potluck-plate-v5';
 const ASSETS = ['./', './index.html', './app.css', './app.js', './manifest.webmanifest'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

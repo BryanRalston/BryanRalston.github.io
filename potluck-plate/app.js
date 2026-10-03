@@ -306,32 +306,268 @@
     try { localStorage.removeItem(LEGACY_KEY); } catch (_) {}
   }
 
-  function encodeShare(next) {
-    const json = JSON.stringify(next);
-    const b64 = btoa(unescape(encodeURIComponent(json)));
-    return `${location.origin}${location.pathname}#p=${b64}`;
+  const TAG_FLAGS = ['GF', 'V', 'VE', 'NF', 'DF'];
+
+  function tagsToBits(tags) {
+    let bits = 0;
+    for (const tag of tags || []) {
+      const i = TAG_FLAGS.indexOf(tag);
+      if (i >= 0) bits |= (1 << i);
+    }
+    return bits;
   }
 
-  function tryImportHash() {
-    const h = location.hash || '';
-    const m = h.match(/^#p=(.+)$/);
-    if (!m) return null;
+  function bitsToTags(bits) {
+    const n = Number(bits) || 0;
+    return TAG_FLAGS.filter((_, i) => n & (1 << i));
+  }
+
+  function catsMatchDefaults(categories, templateId) {
+    const def = (TEMPLATES[templateId] && TEMPLATES[templateId].categories) || [];
+    if (!Array.isArray(categories) || categories.length !== def.length) return false;
+    return categories.every((c, i) => (
+      c.id === def[i].id && c.name === def[i].name && Number(c.needed) === def[i].needed
+    ));
+  }
+
+  function compactState(next) {
+    const payload = {
+      t: next.title,
+      k: next.templateId,
+      h: next.theme,
+    };
+    if (next.date) payload.d = next.date;
+    if (next.place) payload.p = next.place;
+    if (next.notes) payload.n = next.notes;
+    if (!catsMatchDefaults(next.categories, next.templateId)) {
+      payload.c = next.categories.map((c) => [c.id, c.name, c.needed]);
+    }
+    payload.m = (next.claims || []).map(compactClaimRow);
+    return payload;
+  }
+
+  function compactClaimRow(c) {
+    const row = [c.id || '', c.person, c.dish, c.category, tagsToBits(c.tags)];
+    if (c.notes) row.push(c.notes);
+    return row;
+  }
+
+  function expandClaimRow(row) {
+    if (!Array.isArray(row)) {
+      if (!row || typeof row !== 'object') return null;
+      return {
+        id: row.id || row.i || '',
+        person: row.person || row.p || '',
+        dish: row.dish || row.d || '',
+        category: row.category || row.c || '',
+        tags: typeof row.g === 'number' ? bitsToTags(row.g) : (Array.isArray(row.tags) ? row.tags : []),
+        notes: row.notes || row.n || '',
+      };
+    }
+    const [id, person, dish, category, tags, notes] = row;
+    return {
+      id,
+      person,
+      dish,
+      category,
+      tags: typeof tags === 'number' ? bitsToTags(tags) : (Array.isArray(tags) ? tags : []),
+      notes: notes || '',
+    };
+  }
+
+  function expandCompact(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    if (typeof raw.title === 'string' && Array.isArray(raw.claims)) return raw;
+    const categories = Array.isArray(raw.c)
+      ? raw.c.map((row) => {
+        if (Array.isArray(row)) {
+          return { id: row[0], name: row[1], needed: row[2] };
+        }
+        return row;
+      })
+      : [];
+    const templateId = TEMPLATE_IDS.includes(raw.k) ? raw.k : inferTemplate({ categories });
+    const claims = Array.isArray(raw.m)
+      ? raw.m.map((row) => expandClaimRow(row)).filter(Boolean)
+      : [];
+    return {
+      title: raw.t,
+      date: raw.d || '',
+      place: raw.p || '',
+      notes: raw.n || '',
+      templateId,
+      theme: raw.h,
+      categories,
+      claims,
+    };
+  }
+
+  function bytesToB64url(bytes) {
+    let bin = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function b64urlToBytes(token) {
+    const clean = String(token || '').replace(/\s+/g, '');
+    const pad = clean.length % 4 === 0 ? '' : '='.repeat(4 - (clean.length % 4));
+    const b64 = clean.replace(/-/g, '+').replace(/_/g, '/') + pad;
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function readStreamBytes(stream) {
+    const reader = stream.getReader();
+    const chunks = [];
+    let total = 0;
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      total += value.length;
+    }
+    const out = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      out.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return out;
+  }
+
+  async function deflateBytes(bytes) {
+    const cs = new CompressionStream('deflate');
+    const writer = cs.writable.getWriter();
+    await writer.write(bytes);
+    await writer.close();
+    return readStreamBytes(cs.readable);
+  }
+
+  async function inflateBytes(bytes) {
+    const ds = new DecompressionStream('deflate');
+    const writer = ds.writable.getWriter();
+    await writer.write(bytes);
+    await writer.close();
+    return readStreamBytes(ds.readable);
+  }
+
+  function shareBase() {
+    return `${location.origin}${location.pathname}`;
+  }
+
+  async function packPayload(value) {
+    const bytes = new TextEncoder().encode(JSON.stringify(value));
+    if (typeof CompressionStream !== 'function') return bytes;
     try {
-      const json = decodeURIComponent(escape(atob(m[1])));
-      const data = normalizeState(JSON.parse(json));
-      if (!data) return null;
-      history.replaceState(null, '', location.pathname + location.search);
-      return data;
+      const packed = await deflateBytes(bytes);
+      return packed.length < bytes.length ? packed : bytes;
     } catch (_) {
-      return null;
+      return bytes;
     }
   }
 
-  const fromShare = tryImportHash();
-  let stored = loadStored();
-  let state = fromShare || stored;
-  let needsSetup = !state;
-  if (state) save(state);
+  async function unpackPayload(token) {
+    const bytes = b64urlToBytes(token);
+    try {
+      return JSON.parse(new TextDecoder().decode(await inflateBytes(bytes)));
+    } catch (_) {
+      return JSON.parse(new TextDecoder().decode(bytes));
+    }
+  }
+
+  async function encodeShare(next) {
+    return `${shareBase()}#s=${bytesToB64url(await packPayload(compactState(next)))}`;
+  }
+
+  async function encodeUpdate(claim) {
+    return `${shareBase()}#u=${bytesToB64url(await packPayload(compactClaimRow(claim)))}`;
+  }
+
+  function decodeLegacyPayload(b64) {
+    const json = decodeURIComponent(escape(atob(b64)));
+    return normalizeState(JSON.parse(json));
+  }
+
+  async function decodeShortPayload(token) {
+    return normalizeState(expandCompact(await unpackPayload(token)));
+  }
+
+  async function decodeUpdatePayload(token) {
+    return expandClaimRow(await unpackPayload(token));
+  }
+
+  function extractUpdateToken(text) {
+    const m = String(text || '').match(/#u=([^&\s#]+)/i);
+    return m ? m[1] : '';
+  }
+
+  function mergeClaimDelta(event, delta) {
+    if (!event || !delta) return event;
+    const fallbackCat = (event.categories[0] && event.categories[0].id) || '';
+    const existing = delta.id ? event.claims.find((c) => c.id === delta.id) : null;
+    const claim = {
+      id: String(delta.id || uid()),
+      person: String(delta.person || '').slice(0, 40),
+      dish: String(delta.dish || '').slice(0, 60),
+      category: String(delta.category || (existing && existing.category) || fallbackCat),
+      tags: Array.isArray(delta.tags) ? delta.tags.map(String) : [],
+      notes: String(delta.notes || '').slice(0, 120),
+    };
+    if (!claim.person || !claim.dish) return event;
+    const claims = event.claims.slice();
+    const idx = claims.findIndex((c) => c.id === claim.id);
+    if (idx >= 0) claims[idx] = claim;
+    else claims.push(claim);
+    return { ...event, claims };
+  }
+
+  function clearShareHash() {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  async function tryImportHash() {
+    const h = location.hash || '';
+    const update = h.match(/^#u=(.+)$/);
+    if (update) {
+      try {
+        const claim = await decodeUpdatePayload(update[1]);
+        if (!claim || !claim.person || !claim.dish) return { kind: 'none' };
+        clearShareHash();
+        return { kind: 'update', claim };
+      } catch (_) {
+        return { kind: 'none' };
+      }
+    }
+    const short = h.match(/^#s=(.+)$/);
+    if (short) {
+      try {
+        const data = await decodeShortPayload(short[1]);
+        if (!data) return { kind: 'none' };
+        clearShareHash();
+        return { kind: 'snapshot', data };
+      } catch (_) {
+        return { kind: 'none' };
+      }
+    }
+    const legacy = h.match(/^#p=(.+)$/);
+    if (!legacy) return { kind: 'none' };
+    try {
+      const data = decodeLegacyPayload(legacy[1]);
+      if (!data) return { kind: 'none' };
+      clearShareHash();
+      return { kind: 'snapshot', data };
+    } catch (_) {
+      return { kind: 'none' };
+    }
+  }
+
+  let state = null;
+  let needsSetup = true;
 
   const els = {
     setup: document.getElementById('setup'),
@@ -479,7 +715,10 @@
           <div class="who">${escapeHtml(c.person)}${c.notes ? ' · ' + escapeHtml(c.notes) : ''}</div>
           <div class="pill-row"><span class="pill cat">${escapeHtml(catName(c.category))}</span>${tags}</div>
         </div>
-        <button type="button" class="btn small ghost edit-claim">Edit</button>
+        <div class="claim-actions">
+          <button type="button" class="btn small ghost copy-update">Copy update</button>
+          <button type="button" class="btn small ghost edit-claim">Edit</button>
+        </div>
       </li>`;
     }).join('');
     justClaimedId = '';
@@ -562,7 +801,7 @@
     );
     showSetup(false);
     render();
-    toast('Event ready — add claims, then share a snapshot link', 3200);
+    toast('Event ready — share a snapshot. Guests send update links back.', 3600);
   }
 
   function openEventDialog() {
@@ -693,14 +932,55 @@
   document.getElementById('btnEmptyClaim').addEventListener('click', () => openClaimDialog(null));
   document.getElementById('btnMobileClaim').addEventListener('click', () => openClaimDialog(null));
   document.getElementById('btnCancelClaim').addEventListener('click', () => els.claimDialog.close());
+  async function copyUpdateLink(claim) {
+    if (!claim) return;
+    const url = await encodeUpdate(claim);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(`Copied update · ~${url.length} chars · send to host`, 3600);
+    } catch (_) {
+      prompt('Copy this update link and send it to the host (not live sync):', url);
+    }
+  }
+
+  async function mergePastedUpdate(text) {
+    const token = extractUpdateToken(text);
+    if (!token) {
+      toast('That is not an update link');
+      return;
+    }
+    if (!state) {
+      toast('Open the host snapshot first, then paste the update');
+      return;
+    }
+    try {
+      const claim = await decodeUpdatePayload(token);
+      if (!claim || !claim.person || !claim.dish) {
+        toast('Could not merge that update');
+        return;
+      }
+      state = mergeClaimDelta(state, claim);
+      render();
+      toast('Merged 1 dish from update link', 3600);
+    } catch (_) {
+      toast('Could not read that update link');
+    }
+  }
+
   els.claimsList.addEventListener('click', (e) => {
-    const btn = e.target.closest('.edit-claim');
-    if (!btn) return;
-    const id = btn.closest('.claim').dataset.id;
-    openClaimDialog(state.claims.find((c) => c.id === id));
+    const row = e.target.closest('.claim');
+    if (!row) return;
+    const id = row.dataset.id;
+    if (e.target.closest('.copy-update')) {
+      copyUpdateLink(state.claims.find((c) => c.id === id));
+      return;
+    }
+    if (e.target.closest('.edit-claim')) {
+      openClaimDialog(state.claims.find((c) => c.id === id));
+    }
   });
 
-  els.claimForm.addEventListener('submit', (e) => {
+  els.claimForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = els.claimForm;
     const tags = [...f.querySelectorAll('input[name="tag"]:checked')].map((x) => x.value);
@@ -720,7 +1000,7 @@
     }
     els.claimDialog.close();
     render();
-    toast(idx >= 0 ? 'Claim updated' : 'Claimed');
+    await copyUpdateLink(payload);
   });
 
   els.btnDeleteClaim.addEventListener('click', () => {
@@ -762,13 +1042,24 @@
 
   document.getElementById('btnShare').addEventListener('click', async () => {
     if (!state) return;
-    const url = encodeShare(state);
+    const url = await encodeShare(state);
     try {
       await navigator.clipboard.writeText(url);
-      toast('Copied — snapshot link, not live sync', 3400);
+      toast(`Copied · ~${url.length} chars · snapshot link`, 3400);
     } catch (_) {
       prompt('Copy this snapshot share link (not live sync):', url);
     }
+  });
+
+  document.getElementById('btnPasteUpdate').addEventListener('click', async () => {
+    let text = '';
+    try {
+      const clip = await navigator.clipboard.readText();
+      if (extractUpdateToken(clip)) text = clip;
+    } catch (_) {}
+    if (!text) text = prompt('Paste a guest update link:') || '';
+    if (!text.trim()) return;
+    await mergePastedUpdate(text);
   });
 
   document.getElementById('btnPrint').addEventListener('click', () => window.print());
@@ -787,14 +1078,50 @@
     toast('Cleared — pick a template to start again');
   });
 
-  if (fromShare) {
-    queueMicrotask(() => toast('Loaded a shared snapshot. Edits stay on this device until you share again.', 3600));
+  async function boot() {
+    const imported = await tryImportHash();
+    const stored = loadStored();
+    let mergedUpdate = false;
+    let missingEventForUpdate = false;
+    switch (imported.kind) {
+      case 'snapshot':
+        state = imported.data;
+        break;
+      case 'update':
+        if (stored) {
+          state = mergeClaimDelta(stored, imported.claim);
+          mergedUpdate = true;
+        } else {
+          state = null;
+          missingEventForUpdate = true;
+        }
+        break;
+      case 'none':
+        state = stored;
+        break;
+      default: {
+        const _exhaustive = imported.kind;
+        void _exhaustive;
+        state = stored;
+        break;
+      }
+    }
+    needsSetup = !state;
+    if (state) save(state);
+    if (mergedUpdate) {
+      toast('Merged 1 dish from update link', 3600);
+    } else if (imported.kind === 'snapshot') {
+      toast('Loaded a shared snapshot. Guests send update links; you merge, then re-share.', 4200);
+    } else if (missingEventForUpdate) {
+      toast('Open the host snapshot first, then this update link.', 4200);
+    }
+    if (needsSetup) {
+      showSetup(true);
+    } else {
+      showSetup(false);
+      render();
+    }
   }
 
-  if (needsSetup) {
-    showSetup(true);
-  } else {
-    showSetup(false);
-    render();
-  }
+  boot();
 })();
