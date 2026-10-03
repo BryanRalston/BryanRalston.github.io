@@ -35,14 +35,14 @@
         "Lock it. {S} over {U}. The costume is a hold.",
       ],
       solo: [
-        "Hold {S}. No backup named, so the spot stays put.",
-        "{S} keeps it. No backup named.",
-        "Stay with {S}. You did not name a backup.",
-        "The lock can breathe. {S} is the only name. No backup named.",
-        "Hold. {S} has the lineup, and nobody else was offered.",
-        "Unclench. {S} stays. No backup named.",
-        "{S} is the start. You did not name a backup.",
-        "Lock it on {S}. No backup named.",
+        "Hold {S}. The spot is not up for a vote.",
+        "{S} keeps it. Everyone can sit down.",
+        "Stay with {S}. The clock is just noise.",
+        "Unclench. {S} is your starter.",
+        "Hold. {S} has the lineup.",
+        "{S} stays. That is the card.",
+        "No backup named. {S} holds anyway.",
+        "Lock it on {S}. You did not name a backup.",
       ],
     },
     "LEAN HOLD": {
@@ -57,14 +57,14 @@
         "{S} over {U}, with the booth holding its breath.",
       ],
       solo: [
-        "Lean hold on {S}. No backup named, and the thumb still hovers.",
-        "Nervous hold. {S} stays, and you did not name a backup.",
-        "{S} survives the stare. No backup named.",
-        "Sweaty start. {S} is still in. You did not name a backup.",
-        "Lean hold. {S} keeps the spot with nobody else on the card.",
-        "{S} is the lean hold, and no backup was named.",
-        "The booth leans hold on {S}. No backup named.",
-        "Barely a hold. {S} stays. You did not name a backup.",
+        "Lean hold on {S}. Your thumb can hover.",
+        "Nervous hold. {S} stays.",
+        "{S} survives the stare-down.",
+        "Sweaty start. {S} is still in.",
+        "Lean hold. {S} keeps the spot.",
+        "Barely. {S} stays.",
+        "No backup named, and {S} still leans hold.",
+        "{S} is the lean hold. You did not name a backup.",
       ],
     },
     "COIN FLIP": {
@@ -79,14 +79,14 @@
         "Split decision. {S} and {U} walked into the same lock.",
       ],
       solo: [
-        "Coin flip on {S}, and no backup was named. The other side of the coin is empty.",
-        "Toss-up. {S} is the only name, and you did not name a backup.",
-        "The booth cannot pick, and no backup was named. {S} is the whole argument.",
-        "Coin flip. {S} versus the clock. No backup named.",
-        "Split decision with one name. {S}. You did not name a backup.",
-        "{S} is a coin flip, and nobody else is on the card.",
-        "Flip energy on {S}. No backup named.",
-        "The stamp is a coin flip. {S} showed up alone. No backup named.",
+        "Coin flip on {S}. The lock will not pick for you.",
+        "Toss-up. {S} versus the clock.",
+        "{S} is the whole argument.",
+        "Split decision, one name. {S}.",
+        "Flip a coin. {S} is all you gave it.",
+        "The stamp is a coin flip and {S} is the name.",
+        "No backup named. {S} is a coin flip anyway.",
+        "You did not name a backup. {S} versus the void.",
       ],
     },
     "LEAN SWAP": {
@@ -101,14 +101,14 @@
         "The card leans {U}. {S} is why you opened the app.",
       ],
       solo: [
-        "Lean swap, and no backup was named. {S} is the doubt with nowhere to go.",
-        "The booth wants a swap off {S}. You did not name a backup.",
-        "Swap itch on {S}. No backup named.",
-        "{S} is the questionable start. No backup named, so the lean has no landing spot.",
-        "Lean swap energy, one name. {S}. You did not name a backup.",
-        "The card leans away from {S}. No backup named.",
-        "Swap itch. {S} feels it. Nobody else is on the card.",
-        "You are leaning off {S}, and you did not name a backup.",
+        "Lean swap. {S} is the doubt.",
+        "The group chat wants off {S}.",
+        "Swap itch on {S}.",
+        "{S} is the questionable start.",
+        "The card leans away from {S}.",
+        "You are leaning off {S}.",
+        "No backup named. The lean off {S} has nowhere to go.",
+        "You did not name a backup, so {S} just sits there.",
       ],
     },
     PANIC: {
@@ -123,14 +123,14 @@
         "The booth lost it. {S} or {U}, and the stamp says panic.",
       ],
       solo: [
-        "Panic on {S}. No backup named, so the freakout has nowhere to land.",
-        "Full panic. {S} is the only name, and you did not name a backup.",
-        "Lock freakout on {S}. No backup named.",
-        "{S} has the booth pacing. You did not name a backup.",
-        "Panic. {S} versus the clock, and nobody else is on the card.",
-        "The stamp says panic. {S} showed up alone. No backup named.",
-        "Full freakout on {S}. No backup named.",
-        "{S} is the panic, and you did not name a backup.",
+        "Panic on {S}. The group chat is pacing.",
+        "Full panic. {S} versus the clock.",
+        "Lock freakout on {S}.",
+        "{S} has everybody screaming.",
+        "The stamp says panic. {S}.",
+        "Full freakout on {S}.",
+        "No backup named. {S} is the whole panic.",
+        "You did not name a backup, and {S} still says panic.",
       ],
     },
   };
@@ -139,7 +139,7 @@
     "The booth goes again. ",
     "Same stamp, new mouth. ",
     "Take two. ",
-    "Another freakout. ",
+    "Run it back. ",
     "",
   ];
 
@@ -183,19 +183,62 @@
   }
 
   function nameKey(text) {
-    const normalized = String(text || "")
-      .normalize("NFC")
+    const stripped = String(text || "")
+      .normalize("NFD")
+      .replace(/\p{M}+/gu, "")
       .toLowerCase()
-      .trim()
-      .replace(/['’`]/g, "");
-    const words = normalized.split(/[^\p{L}\p{N}\p{Extended_Pictographic}]+/u).filter(Boolean);
-    if (!words.length) return normalized;
-    words.sort();
-    return words.join(" ");
+      .replace(/['’`]/g, "")
+      .replace(/\./g, "");
+    const words = stripped.split(/[^\p{L}\p{N}\p{Extended_Pictographic}]+/u).filter(Boolean);
+    const folded = [];
+    let initials = "";
+    for (let i = 0; i < words.length; i += 1) {
+      const word = words[i];
+      if (word.length === 1 && /^\p{L}$/u.test(word)) {
+        initials += word;
+        continue;
+      }
+      if (initials) {
+        folded.push(initials);
+        initials = "";
+      }
+      folded.push(word);
+    }
+    if (initials) folded.push(initials);
+    if (!folded.length) return stripped.trim();
+    folded.sort();
+    return folded.join(" ");
   }
 
   function pairKey(starter, backup) {
     return nameKey(starter) + "\n" + nameKey(backup);
+  }
+
+  function pairSeed(starter, backup) {
+    const left = nameKey(starter);
+    const right = nameKey(backup);
+    if (!right) return { key: left + "\n", flip: false };
+    if (left <= right) return { key: left + "\n" + right, flip: false };
+    return { key: right + "\n" + left, flip: true };
+  }
+
+  function mirrorStamp(stamp) {
+    switch (stamp) {
+      case "HOLD":
+        return "PANIC";
+      case "LEAN HOLD":
+        return "LEAN SWAP";
+      case "COIN FLIP":
+        return "COIN FLIP";
+      case "LEAN SWAP":
+        return "LEAN HOLD";
+      case "PANIC":
+        return "HOLD";
+      default: {
+        const _never = stamp;
+        throw new Error("Unknown stamp " + _never);
+      }
+    }
   }
 
   function clockLabel(minutes) {
@@ -210,10 +253,20 @@
     return text;
   }
 
-  function stampFor(hash, backup) {
+  function stampFor(hash, backup, flip) {
     let index = hash % STAMPS.length;
     if (!backup && index >= 3) index -= 2;
-    return STAMPS[index];
+    const stamp = STAMPS[index];
+    if (flip && backup) return mirrorStamp(stamp);
+    return stamp;
+  }
+
+  function minutesProblem(text) {
+    const value = clampLine(text, MINUTES_MAX);
+    if (!value) return "";
+    if (!/^\d{1,3}$/.test(value)) return "minutes";
+    if (parseInt(value, 10) > 240) return "minutes";
+    return "";
   }
 
   function meterFor(stamp, hash) {
@@ -315,8 +368,9 @@
     return x >>> 0;
   }
 
-  function leadFor(salt) {
+  function leadFor(salt, line) {
     if (salt <= 0) return "";
+    if (/^(?:panic|full panic|full freakout|lock freakout|freakout)\b/i.test(line)) return "";
     return LEADS[Math.abs(salt) % LEADS.length];
   }
 
@@ -324,7 +378,8 @@
     const pool = roastPool(stamp, named);
     if (!pool.length) throw new Error("Empty roast pool for " + stamp);
     const index = (mixHash(hash) + Math.abs(salt)) % pool.length;
-    return leadFor(salt) + pool[index];
+    const line = pool[index];
+    return leadFor(salt, line) + line;
   }
 
   function tagFor(stamp, hash) {
@@ -365,10 +420,12 @@
     const starter = clampLine(starterRaw, STARTER_MAX);
     const backup = clampLine(backupRaw, BACKUP_MAX);
     if (!starter) return null;
+    if (backup && nameKey(starter) === nameKey(backup)) return null;
     const cleanSalt = normalizeSalt(salt);
     const usedSalt = cleanSalt == null ? 0 : cleanSalt;
-    const hash = fnv1a(pairKey(starter, backup));
-    const stamp = stampFor(hash, backup);
+    const seed = pairSeed(starter, backup);
+    const hash = fnv1a(seed.key);
+    const stamp = stampFor(hash, backup, seed.flip);
     const roast = polish(fill(roastLine(stamp, usedSalt, hash, !!backup), starter, backup));
     return {
       stamp: stamp,
@@ -392,6 +449,8 @@
   function rejectSit(sit) {
     if (!sit.starter && !sit.backup && !sit.minutes && !sit.note) return "blank";
     if (!sit.starter) return "starter";
+    if (minutesProblem(sit.minutes)) return "minutes";
+    if (sit.backup && nameKey(sit.starter) === nameKey(sit.backup)) return "same";
     return "";
   }
 
@@ -455,32 +514,35 @@
     return state;
   }
 
-  function storedCardFailed(parsed) {
-    const list = Array.isArray(parsed.cards) ? parsed.cards : [];
-    for (let i = 0; i < list.length; i += 1) {
-      if (!normalizeCard(list[i])) return true;
-    }
-    return false;
-  }
-
   function readStored(raw) {
-    if (raw == null || raw === "") return { corrupt: false, state: null, backup: "" };
+    if (raw == null || raw === "") return { corrupt: false, state: null, backup: "", dropped: 0 };
     let parsed;
     try {
       parsed = JSON.parse(raw);
     } catch (_) {
-      return { corrupt: true, state: emptyState(), backup: String(raw) };
+      return { corrupt: true, state: emptyState(), backup: String(raw), dropped: 0 };
     }
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return { corrupt: true, state: emptyState(), backup: String(raw) };
+      return { corrupt: true, state: emptyState(), backup: String(raw), dropped: 0 };
     }
     if (Object.prototype.hasOwnProperty.call(parsed, "cards") && !Array.isArray(parsed.cards)) {
-      return { corrupt: true, state: emptyState(), backup: String(raw) };
+      return { corrupt: true, state: emptyState(), backup: String(raw), dropped: 0 };
     }
-    if (storedCardFailed(parsed)) {
-      return { corrupt: true, state: emptyState(), backup: String(raw) };
+    const list = Array.isArray(parsed.cards) ? parsed.cards : [];
+    const bad = [];
+    const good = [];
+    for (let i = 0; i < list.length; i += 1) {
+      if (normalizeCard(list[i])) good.push(list[i]);
+      else bad.push(list[i]);
     }
-    return { corrupt: false, state: normalizeState(parsed), backup: "" };
+    const state = normalizeState({
+      v: parsed.v,
+      filter: parsed.filter,
+      cards: good,
+      openId: parsed.openId,
+    });
+    if (!bad.length) return { corrupt: false, state: state, backup: "", dropped: 0 };
+    return { corrupt: true, state: state, backup: JSON.stringify(bad), dropped: bad.length };
   }
 
   function findIndex(cards, id) {
@@ -506,18 +568,10 @@
   }
 
   function pickDropIndex(list, protectId) {
-    let best = -1;
-    for (let i = 0; i < list.length; i += 1) {
-      if (!canDrop(list[i], protectId)) continue;
-      if (best < 0) {
-        best = i;
-        continue;
-      }
-      const created = list[i].created;
-      const bestCreated = list[best].created;
-      if (created < bestCreated || (created === bestCreated && i > best)) best = i;
+    for (let i = list.length - 1; i >= 0; i -= 1) {
+      if (canDrop(list[i], protectId)) return i;
     }
-    return best;
+    return -1;
   }
 
   function makeRoom(cards, incomingCount, protectId) {
@@ -541,24 +595,21 @@
     if (reason) return { ok: false, reason: reason, state: next };
     const existing = findPair(next.cards, sit.starter, sit.backup);
     if (existing) {
-      let card = existing;
-      if (sit.minutes !== existing.minutes || sit.note !== existing.note) {
-        card = {
-          id: existing.id,
-          starter: existing.starter,
-          backup: existing.backup,
-          minutes: sit.minutes,
-          note: sit.note,
-          salt: existing.salt,
-          stamp: existing.stamp,
-          meter: existing.meter,
-          roast: existing.roast,
-          tag: existing.tag,
-          starred: existing.starred,
-          created: existing.created,
-          updated: stampOf(now) || Date.now(),
-        };
-      }
+      const card = {
+        id: existing.id,
+        starter: existing.starter,
+        backup: existing.backup,
+        minutes: sit.minutes,
+        note: sit.note,
+        salt: existing.salt,
+        stamp: existing.stamp,
+        meter: existing.meter,
+        roast: existing.roast,
+        tag: existing.tag,
+        starred: existing.starred,
+        created: existing.created,
+        updated: stampOf(now) || Date.now(),
+      };
       liftCard(next, card);
       return { ok: true, state: next, card: card, already: true, dropped: [] };
     }
@@ -764,13 +815,16 @@
   function loadSample(state) {
     const next = normalizeState(state);
     const sit = sampleInput();
+    const touched = stampOf(Date.now());
     const pair = findPair(next.cards, sit.starter, sit.backup);
     if (pair) {
+      pair.updated = touched;
       liftCard(next, pair);
       return { ok: true, state: next, already: true, card: pair, dropped: [] };
     }
     const byId = next.cards.find(function (card) { return card.id === SAMPLE_ID; });
     if (byId) {
+      byId.updated = touched;
       liftCard(next, byId);
       return { ok: true, state: next, already: true, card: byId, dropped: [] };
     }
@@ -892,6 +946,8 @@
     const plan = planKeep(next.cards, packed.fresh.length);
     if (!plan.adds) return { ok: false, reason: "cap", state: next };
     const batch = packed.fresh.slice(0, plan.adds);
+    const touched = stampOf(Date.now());
+    for (let i = 0; i < batch.length; i += 1) batch[i].updated = touched;
     const room = makeRoom(next.cards, batch.length, "");
     if (!room) return { ok: false, reason: "cap", state: next };
     next.cards = batch.concat(room.cards);

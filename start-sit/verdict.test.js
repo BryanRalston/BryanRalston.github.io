@@ -72,14 +72,15 @@ async function main() {
   assert(html.toLowerCase().indexOf("not betting") !== -1, "not betting");
   assert(app.indexOf("StartSit.STORAGE_KEY") !== -1, "app uses storage key");
   assert(app.indexOf('"#s="') !== -1, "hash prefix");
-  assert(sw.indexOf('"start-sit-v2"') !== -1, "sw cache");
+  assert(sw.indexOf('"start-sit-v3"') !== -1, "sw cache");
+  assert(sw.indexOf("url.pathname + url.search") !== -1, "versioned assets keep the query");
   assert(sw.indexOf("start-sit-v1") === -1, "storage key stays out of the cache name");
   assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(html.indexOf("either slot order") !== -1, "order-independent copy");
   assert(html.indexOf("already shelved") !== -1, "shelf reuse copy");
   assert(html.indexOf("does not copy the sender's star") !== -1, "keep star copy");
-  assert(html.indexOf("start-sit-v2") !== -1, "feature map cache name");
+  assert(html.indexOf("start-sit-v3") !== -1, "feature map cache name");
   assert(html.indexOf(">start-sit-v1<") !== -1, "feature map storage key");
   assert(manifest.indexOf('"Start Sit"') !== -1, "manifest name");
   const boot = app.slice(app.lastIndexOf("function boot"));

@@ -85,10 +85,14 @@ async function main() {
   assert(html.indexOf("#k=") !== -1, "hash documented");
   assert(html.indexOf("?k=") !== -1, "query documented");
   assert(html.indexOf('id="storageCorrupt"') !== -1, "corrupt notice");
-  assert(html.indexOf(">lock-panic-v2<") !== -1, "feature map names the cache");
-  assert(html.indexOf('href="app.css?v=1"') !== -1, "style version");
-  assert(html.indexOf('src="panic.js?v=1"') !== -1, "engine version");
-  assert(html.indexOf('src="app.js?v=1"') !== -1, "app version");
+  assert(html.indexOf(">lock-panic-v3<") !== -1, "feature map names the cache");
+  assert(html.indexOf('href="app.css?v=2"') !== -1, "style version");
+  assert(html.indexOf('src="panic.js?v=2"') !== -1, "engine version");
+  assert(html.indexOf('src="app.js?v=2"') !== -1, "app version");
+  assert(html.indexOf("Starter required. Backup, minutes and note are optional.") !== -1, "plain hint");
+  assert(html.indexOf("Anxiety meter. Entertainment only. Not a projection. Not fantasy advice.") === -1, "meter line is off the card");
+  assert(html.indexOf("Entertainment only. Not a projection. Not fantasy advice.") !== -1, "meter disclaimer stays for assistive tech");
+  assert(html.indexOf('class="honest"') === -1, "stacked top disclaimer is gone");
   assert(html.indexOf("HOLD") !== -1, "hold named");
   assert(html.indexOf("LEAN HOLD") !== -1, "lean hold named");
   assert(html.indexOf("COIN FLIP") !== -1, "coin flip named");
@@ -101,12 +105,15 @@ async function main() {
   assert(app.indexOf("Already on this phone.") !== -1, "duplicate toast");
   assert(app.indexOf("innerHTML") === -1, "no innerHTML");
   assert(read("panic.js").indexOf("innerHTML") === -1, "engine has no innerHTML");
-  assert(sw.indexOf('"lock-panic-v2"') !== -1, "sw cache");
+  assert(sw.indexOf('"lock-panic-v3"') !== -1, "sw cache");
   assert(sw.indexOf("lock-panic-v1") === -1, "storage key is not the cache");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("function staleWhileRevalidate") !== -1, "js and css revalidate");
-  assert(sw.indexOf("url.origin + url.pathname") !== -1, "cache key is the pathname");
-  assert(sw.indexOf("url.search") === -1, "query string is not part of the cache key");
+  assert(sw.indexOf("url.origin + url.pathname + url.search") !== -1, "versioned assets keep the query");
+  assert(sw.indexOf("url.origin + url.pathname);") !== -1, "html cache key stays the pathname");
+  assert(sw.indexOf("ignoreSearch") === -1, "cache match does not ignore search");
+  assert(sw.indexOf("./app.js?v=2") !== -1, "precache uses the versioned script");
+  assert(sw.indexOf("./panic.js?v=2") !== -1, "precache uses the versioned engine");
   assert(app.indexOf("STORAGE_BACKUP_KEY") !== -1, "corrupt value is backed up");
   assert(app.indexOf("function retireStaleUndo") !== -1, "undo leaves when it cannot run");
   assert(app.indexOf("toastExtra") !== -1, "confirmation shows beside a live undo");
@@ -115,6 +122,14 @@ async function main() {
   assert(app.indexOf("if (!card || card.starred || card.salt > 0) return false;") !== -1, "room undo retires after star or re-panic");
   assert(app.indexOf("if (!result.already) writeForm(result.card);") !== -1, "duplicate keeps the typed slip");
   assert(app.indexOf("clearEmptyPanicHash") !== -1, "empty hash is cleared");
+  assert(app.indexOf("Pick a different backup, or leave it blank.") !== -1, "same player error");
+  assert(app.indexOf("Minutes need a whole number from 0 to 240.") !== -1, "minutes error");
+  assert(app.indexOf("1 saved panic could not be read and was set aside.") !== -1, "partial corrupt notice");
+  assert(app.indexOf("clearHold") !== -1, "clear undo can outlive a panic");
+  assert(app.indexOf("function showClearUndo") !== -1, "clear undo can return");
+  const panicUndo = app.slice(app.indexOf("function applyUndo"), app.indexOf("function undoLast"));
+  assert(panicUndo.indexOf("showClearUndo") !== -1, "undoing a panic can restore clear");
+  assert(css.indexOf("min-height: 44px") !== -1, "tap targets");
   assert(app.indexOf("Starred panics fill this phone. Remove one to keep this now.") !== -1, "keep cap copy");
   assert(app.indexOf("This phone holds 24 panics. Starred panics stay. Remove one to panic another.") !== -1, "panic cap copy");
   assert(app.indexOf('els.btnKeepShare.textContent = preview.fresh ? "Keep on this phone" : "Already on this phone"') !== -1, "already button");
@@ -158,7 +173,14 @@ async function main() {
   assert(reordered.roast.indexOf("receiver committee A") !== -1, "reorder keeps the typed backup");
   eq(LockPanic.nameKey("Ja'Marr Chase"), LockPanic.nameKey("Jamarr Chase"), "apostrophe folds");
   eq(LockPanic.nameKey("Ja'Marr Chase"), LockPanic.nameKey("chase jamarr"), "order folds");
-  assert(LockPanic.nameKey("José Ramírez") !== LockPanic.nameKey("Jose Ramirez"), "accents stay");
+  eq(LockPanic.nameKey("José Ramírez"), LockPanic.nameKey("Jose Ramirez"), "accents fold");
+  eq(LockPanic.nameKey("A.J. Brown"), LockPanic.nameKey("AJ Brown"), "periods fold");
+  eq(LockPanic.nameKey("D.K. Metcalf"), LockPanic.nameKey("DK Metcalf"), "initials fold");
+  eq(LockPanic.nameKey("A. J. Brown"), LockPanic.nameKey("AJ Brown"), "spaced initials fold");
+  const typedNames = LockPanic.panic(LockPanic.emptyState(), sit("A.J. Brown", "José Ramírez"), 7);
+  eq(typedNames.card.starter, "A.J. Brown", "display keeps the typed starter");
+  eq(typedNames.card.backup, "José Ramírez", "display keeps the typed backup");
+  eq(typedNames.card.stamp, LockPanic.callPanic("AJ Brown", "Jose Ramirez", 0).stamp, "folded names share a stamp");
 
   const again = LockPanic.callPanic(sample.starter, sample.backup, 3);
   eq(again.stamp, once.stamp, "re-panic keeps the stamp");
@@ -189,8 +211,38 @@ async function main() {
   for (let i = 0; i < 40; i += 1) {
     const call = LockPanic.callPanic("Only " + i, "", 0);
     assert(SOLO_OK[call.stamp], "solo stamp stays hold-side: " + call.stamp);
-    assert(/no backup|did not name a backup|nobody else/i.test(call.roast), call.roast);
     assert(call.stamp !== "LEAN SWAP" && call.stamp !== "PANIC", "solo does not swap");
+  }
+  const soloStarter = Object.create(null);
+  for (let i = 0; i < 80; i += 1) {
+    const call = LockPanic.callPanic("Only " + i, "", 0);
+    if (!soloStarter[call.stamp]) soloStarter[call.stamp] = "Only " + i;
+  }
+  const soloLeads = ["The booth goes again. ", "Same stamp, new mouth. ", "Take two. ", "Run it back. "];
+  LockPanic.STAMPS.forEach(function (stamp) {
+    if (!SOLO_OK[stamp]) return;
+    const starter = soloStarter[stamp];
+    assert(starter, "solo starter for " + stamp);
+    const seen = Object.create(null);
+    let nags = 0;
+    for (let salt = 0; salt < 8; salt += 1) {
+      const call = LockPanic.callPanic(starter, "", salt);
+      eq(call.stamp, stamp, "re-panic keeps a solo stamp");
+      let body = call.roast;
+      soloLeads.forEach(function (lead) {
+        if (body.indexOf(lead) === 0) body = body.slice(lead.length);
+      });
+      seen[body] = true;
+      if (/no backup|did not name a backup/i.test(body)) nags += 1;
+    }
+    eq(Object.keys(seen).length, 8, stamp + " has eight solo lines");
+    assert(nags <= 2, stamp + " mentions the missing backup " + nags + " times");
+  });
+  assert(read("panic.js").indexOf("Another freakout") === -1, "stacked freakout lead is gone");
+  for (let salt = 0; salt < 12; salt += 1) {
+    const roast = LockPanic.callPanic(sample.starter, sample.backup, salt).roast;
+    assert(!/^Another freakout\. /i.test(roast), roast);
+    assert(!/\bfreakout\. (?:lock |full )?freakout\b/i.test(roast), roast);
   }
 
   const longName = "Verylongname ".repeat(8).trim();
@@ -204,6 +256,47 @@ async function main() {
   eq(LockPanic.clockLabel("0"), "Locked");
   eq(LockPanic.clockLabel("soon"), "soon");
   eq(LockPanic.callPanic("", "Backup", 0), null, "starter required");
+  eq(LockPanic.callPanic("Josh Allen", "Josh Allen", 0), null, "same player is not a panic");
+  const samePlayer = LockPanic.panic(LockPanic.emptyState(), sit("Josh Allen", "josh  ALLEN"), 3);
+  eq(samePlayer.ok, false, "same player is rejected");
+  eq(samePlayer.reason, "same");
+  const soloAllen = LockPanic.panic(LockPanic.emptyState(), sit("Josh Allen", ""), 4);
+  assert(soloAllen.ok, "a blank backup is still allowed");
+  ["-5", "99999", "12.5", "1e3", "241", "soon", "9999"].forEach(function (bad) {
+    eq(LockPanic.panic(LockPanic.emptyState(), sit("Ada", "Bee", bad), 5).reason, "minutes", bad);
+  });
+  assert(LockPanic.panic(LockPanic.emptyState(), sit("Ada", "Bee", "0"), 6).ok, "zero minutes");
+  assert(LockPanic.panic(LockPanic.emptyState(), sit("Ada", "Bee", "240"), 6).ok, "240 minutes");
+  assert(LockPanic.panic(LockPanic.emptyState(), sit("Ada", "Bee", ""), 6).ok, "blank minutes");
+  const legacyMinutes = LockPanic.normalizeCard({ id: "legacy-min", s: "Ada", b: "Bee", sa: 0, m: "soon" });
+  assert(legacyMinutes, "old freeform minutes still load");
+  eq(LockPanic.clockLabel(legacyMinutes.minutes), "soon");
+
+  function mirrorOf(stamp) {
+    switch (stamp) {
+      case "HOLD":
+        return "PANIC";
+      case "LEAN HOLD":
+        return "LEAN SWAP";
+      case "COIN FLIP":
+        return "COIN FLIP";
+      case "LEAN SWAP":
+        return "LEAN HOLD";
+      case "PANIC":
+        return "HOLD";
+      default:
+        throw new Error(stamp);
+    }
+  }
+  const olave = LockPanic.callPanic("Chris Olave", "Tank Dell", 0);
+  const dell = LockPanic.callPanic("Tank Dell", "Chris Olave", 0);
+  eq(dell.stamp, mirrorOf(olave.stamp), "swapped names mirror the stamp");
+  assert(!(olave.stamp === "PANIC" && dell.stamp === "PANIC"), "panic is not both directions");
+  for (let i = 0; i < 30; i += 1) {
+    const forward = LockPanic.callPanic("Alpha " + i, "Beta " + i, 0);
+    const backward = LockPanic.callPanic("Beta " + i, "Alpha " + i, 0);
+    eq(backward.stamp, mirrorOf(forward.stamp), "mirror " + i);
+  }
 
   const first = LockPanic.panic(LockPanic.emptyState(), sit("Ja'Marr Chase", "A committee receiver", "12", "Sunday"), 10);
   assert(first.ok && !first.already, "first panic");
@@ -250,6 +343,32 @@ async function main() {
   assert(spared.state.cards.some(function (card) {
     return card.starter === "Starter 0" && card.starred;
   }), "starred stays");
+
+  const lifted = LockPanic.panic(shelf, sit("Starter 0", "Backup 0", "9", "touched"), 8000);
+  assert(lifted.already, "re-enter lifts the oldest pair");
+  eq(lifted.state.cards[0].starter, "Starter 0", "touched card is on top");
+  eq(lifted.card.minutes, "9", "touch can update minutes");
+  const afterLift = LockPanic.panic(lifted.state, sit("Brand New", "Backup New"), 8100);
+  assert(afterLift.ok, "cap after a touch");
+  eq(afterLift.dropped[0].card.starter, "Starter 1", "bottom unstarred leaves");
+  assert(afterLift.state.cards.some(function (card) { return card.starter === "Starter 0"; }), "touched card stays");
+
+  let almost = LockPanic.emptyState();
+  for (let i = 0; i < 23; i += 1) {
+    almost = LockPanic.panic(almost, sit("Own " + i, "Bench " + i), 6000 + i).state;
+  }
+  const ancient = LockPanic.parseShare({
+    v: 1,
+    k: "card",
+    c: [{ id: "ancient-card", sa: 0, cr: 1, up: 1, s: "Ancient Kept", b: "Old Backup", m: "", n: "" }],
+  });
+  const keptAncient = LockPanic.keepShare(almost, ancient);
+  assert(keptAncient.ok, "ancient snapshot is kept");
+  eq(keptAncient.state.cards[0].id, "ancient-card", "a keep counts as a touch");
+  eq(keptAncient.dropped.length, 0, "23 plus one fits");
+  const afterKeep = LockPanic.panic(keptAncient.state, sit("After Keep", "Someone"), 9000);
+  eq(afterKeep.dropped[0].card.starter, "Own 0", "the bottom shelf card leaves");
+  assert(afterKeep.state.cards.some(function (card) { return card.id === "ancient-card"; }), "a just-kept card is not the oldest touch");
 
   let locked = LockPanic.emptyState();
   for (let i = 0; i < 24; i += 1) {
@@ -459,9 +578,12 @@ async function main() {
       { id: "nope" },
     ],
   }));
-  eq(mixedSave.corrupt, true, "a card that fails validation makes the save corrupt");
-  eq(mixedSave.backup.indexOf("ok-card") !== -1, true, "the raw save is kept for backup");
-  eq(mixedSave.state.cards.length, 0, "a failed card is not dropped quietly");
+  eq(mixedSave.corrupt, true, "a card that fails validation is set aside");
+  eq(mixedSave.dropped, 1, "one bad card");
+  eq(mixedSave.state.cards.length, 1, "valid cards stay");
+  eq(mixedSave.state.cards[0].id, "ok-card", "the good card remains");
+  assert(mixedSave.backup.indexOf("ok-card") === -1, "backup skips the good card");
+  assert(mixedSave.backup.indexOf("nope") !== -1, "the bad card is backed up");
   const dupIds = LockPanic.readStored(JSON.stringify({
     v: 1,
     cards: [

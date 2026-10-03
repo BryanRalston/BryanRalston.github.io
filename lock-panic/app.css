@@ -229,11 +229,11 @@ code {
   50% { opacity: 0.35; }
 }
 
-.honest {
-  margin: 0 0 0.95rem;
+.deck {
+  margin: 0.1rem 0 0.65rem;
   color: var(--muted);
   font-size: 0.95rem;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
 .share-offer, .empty-hero, #sitPanel, .empty, .panic-card {
@@ -255,12 +255,12 @@ code {
   line-height: 0.95;
 }
 
-.share-offer-lead, .lead, .panel-sub, .hint, .dialog-lead, .empty-hero p, .meter-note, .league-note {
+.share-offer-lead, .lead, .panel-sub, .hint, .dialog-lead, .empty-hero p, .league-note {
   color: var(--muted);
   line-height: 1.45;
 }
 
-.share-offer-lead, .hint, .dialog-lead, .meter-note { margin: 0.35rem 0 0; }
+.share-offer-lead, .hint, .dialog-lead { margin: 0.35rem 0 0; }
 
 .offer-face {
   margin: 0.7rem 0 0;
@@ -292,6 +292,7 @@ code {
   color: var(--gold);
   font-weight: 700;
   padding: 0.2rem 0;
+  min-height: 44px;
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 0.18em;
@@ -498,8 +499,6 @@ code {
   box-shadow: 0 0 16px rgba(255, 45, 85, 0.35);
 }
 
-.meter-note { margin: 0.45rem 0.95rem 0; font-size: 0.82rem; }
-
 .exchange {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -677,7 +676,7 @@ textarea {
   color: var(--gold);
   border-radius: 999px;
   padding: 0.4rem 0.8rem;
-  min-height: 2.4rem;
+  min-height: 44px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -755,6 +754,7 @@ textarea {
 
 .history-remove {
   min-width: 4.6rem;
+  min-height: 44px;
   border-radius: 14px;
   border: 1px solid rgba(255, 183, 200, 0.4);
   background: transparent;
@@ -780,6 +780,9 @@ textarea {
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 .feature-map summary::-webkit-details-marker { display: none; }
@@ -886,8 +889,26 @@ dialog::backdrop { background: rgba(4, 6, 15, 0.78); }
   background: var(--gold);
   color: var(--gold-ink);
   font-weight: 800;
-  padding: 0.35rem 0.7rem;
+  min-height: 44px;
+  padding: 0.35rem 0.85rem;
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  body { padding: 0.45rem 0.7rem calc(1rem + env(safe-area-inset-bottom)); }
+  .top { margin-bottom: 0.25rem; gap: 0.35rem; align-items: center; }
+  h1 { font-size: 1.55rem; }
+  .mark { width: 36px; height: 36px; border-radius: 10px; }
+  .kicker { font-size: 0.62rem; }
+  .deck { margin: 0 0 0.4rem; font-size: 0.86rem; }
+  .local-chip { padding: 0.22rem 0.45rem; font-size: 0.68rem; }
+  #sitPanel { padding: 0.6rem 0.7rem 0.65rem; margin-bottom: 0.45rem; }
+  #sitPanel h2 { font-size: 1.15rem; }
+  label { margin-top: 0.32rem; font-size: 0.92rem; }
+  input { padding: 0.42rem 0.6rem; margin-top: 0.14rem; }
+  .hint { font-size: 0.8rem; line-height: 1.3; }
+  .form-actions { margin-top: 0.4rem; }
+  #btnPanic { min-height: 44px; font-size: 1.2rem; }
 }
 
 @media (min-width: 720px) {

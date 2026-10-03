@@ -296,7 +296,7 @@ async function roundTrip() {
   assert(html.indexOf("the result stays out of the form") !== -1, "sealed edit in the feature map");
   assert(html.indexOf("follows the unlock time") !== -1, "share follows unlock in the feature map");
   assert(html.indexOf(">spoiler-seal-v1<") !== -1, "storage key in the feature map");
-  assert(html.indexOf(">spoiler-seal-v2<") !== -1, "cache name in the feature map");
+  assert(html.indexOf(">spoiler-seal-v3<") !== -1, "cache name in the feature map");
   assert(html.indexOf('class="feature-map" open') === -1, "feature map stays collapsed");
   const openAddFn = app.slice(app.indexOf("function openAdd"), app.indexOf("function openEdit"));
   const capAt = openAddFn.indexOf("SEAL_CAP");
@@ -313,7 +313,8 @@ async function roundTrip() {
   const renderFn = app.slice(app.indexOf("function render()"), app.indexOf("function applyCrack"));
   assert(renderFn.indexOf("paintList(now)") !== -1, "shelf is repainted");
   assert(renderFn.indexOf('if (view === "shelf")') === -1, "hidden shelf is not left stale");
-  assert(sw.indexOf('const CACHE = "spoiler-seal-v2"') !== -1, "cache name");
+  assert(sw.indexOf('const CACHE = "spoiler-seal-v3"') !== -1, "cache name");
+  assert(sw.indexOf("url.pathname + url.search") !== -1, "versioned assets keep the query");
   assert(sw.indexOf("spoiler-seal-v1") === -1, "storage key stays out of the worker");
   assert(sw.indexOf("function networkFirst") !== -1, "html is network-first");
   assert(sw.indexOf("pathname") !== -1, "cache key is the pathname");

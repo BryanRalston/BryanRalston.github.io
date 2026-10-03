@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="app.css?v=1" />
+  <link rel="stylesheet" href="app.css?v=2" />
 </head>
 <body>
   <a class="skip" href="#content">Skip to the card</a>
@@ -47,9 +47,7 @@
       </div>
     </header>
 
-    <p class="honest">
-      Lineup locks soon. Entertainment only. For the group chat. Not fantasy advice. Not a start/sit ranking. Not betting. No money. The same starter and backup get the same stamp until you hit Re-panic.
-    </p>
+    <p class="deck" id="emptyHero">Name the questionable starter. Backup and minutes are optional.</p>
 
     <p class="sr-only" id="spoken" aria-live="polite"></p>
 
@@ -69,12 +67,6 @@
       <button type="button" class="text-btn" id="btnLatest">Latest panic</button>
       <p class="kicker quiet">From the shelf</p>
     </div>
-
-    <section id="emptyHero" class="empty-hero" aria-labelledby="emptyHeading">
-      <p class="empty-kicker">The lock is quiet</p>
-      <h2 id="emptyHeading">Lineup locks soon.</h2>
-      <p>Name the questionable starter. A backup and the minutes to lock are optional. Tap Panic. The card stamps HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, or PANIC. It is a costume on a last-second freakout, not a ranking.</p>
-    </section>
 
     <article class="panic-card" id="panicCard" hidden tabindex="-1" aria-labelledby="panicHeading">
       <div class="card-chrome">
@@ -108,7 +100,6 @@
           <span class="meter-fill" id="meterFill"></span>
         </div>
       </div>
-      <p class="meter-note">Anxiety meter. Entertainment only. Not a projection. Not fantasy advice.</p>
       <div class="exchange" id="exchange">
         <div class="side starter">
           <p class="side-kicker">Questionable starter</p>
@@ -144,12 +135,12 @@
           <input id="fieldBackup" name="backup" type="text" maxlength="80" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="A committee receiver" />
         </label>
         <label for="fieldMinutes">Minutes to lock <span class="opt">optional</span>
-          <input id="fieldMinutes" name="minutes" type="text" maxlength="40" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="12 or soon" />
+          <input id="fieldMinutes" name="minutes" type="text" maxlength="40" inputmode="numeric" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="12" />
         </label>
         <label for="fieldNote">Note <span class="opt">optional</span>
           <input id="fieldNote" name="note" type="text" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Sunday lock · work league" />
         </label>
-        <p class="hint">The starter is required. The backup, the minutes, and the note are optional. A plain number like 12 shows as minutes to lock. soon stays as you typed it. Word order inside a name does not make a new card. Ja'Marr and Jamarr match. Minutes and a note ride along and do not move the stamp.</p>
+        <p class="hint">Starter required. Backup, minutes and note are optional.</p>
         <p id="formError" class="form-error" hidden role="alert"></p>
         <div class="form-actions">
           <button type="submit" class="btn primary wide" id="btnPanic">Panic</button>
@@ -187,14 +178,14 @@
     </section>
 
     <footer class="foot">
-      <p><strong>Lock Panic</strong> · On this device. A snapshot link (<code>#k=</code> or <code>?k=</code>) is a copy of a panic, not live sync. Entertainment only. Not fantasy advice. Not betting. No money.</p>
+      <p>Entertainment only. Not fantasy advice. No money.</p>
       <details class="feature-map">
         <summary>Feature Map — what this page does today</summary>
         <p class="lead">Current capabilities. Not a roadmap. The panics stay on this device.</p>
         <ul class="feature-list">
           <li>
             <strong>The lock</strong>
-            <span>Name one questionable starter. A backup is optional. Minutes to lock are optional: a plain number like 12 shows as minutes to lock, 0 shows as Locked, and a short note like soon stays as typed. A league note is optional. This is one starter plus an optional other name. It is not a two-name start/sit booth.</span>
+            <span>Name one questionable starter. A backup is optional. Minutes to lock are optional, and they have to be a whole number from 0 to 240. 0 shows as Locked. Anything else stays on the form with an error. The same player in both boxes is rejected. A league note is optional. This is one starter plus an optional other name. It is not a two-name start/sit booth.</span>
           </li>
           <li>
             <strong>Panic</strong>
@@ -202,11 +193,11 @@
           </li>
           <li>
             <strong>The stamp</strong>
-            <span>HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, or PANIC. It is seeded from the normalized starter and backup. With no backup, LEAN SWAP is filed as LEAN HOLD and PANIC is filed as COIN FLIP, because there is nobody to swap to. The roast still says no backup was named. Minutes and the note do not move the stamp, the tag, or the meter.</span>
+            <span>HOLD, LEAN HOLD, COIN FLIP, LEAN SWAP, or PANIC. It is seeded from the normalized starter and backup. Swap the names and the stamp flips: HOLD mirrors PANIC, and LEAN HOLD mirrors LEAN SWAP. A coin flip stays a coin flip. With no backup, LEAN SWAP is filed as LEAN HOLD and PANIC is filed as COIN FLIP, because there is nobody to swap to. Most solo lines do not nag about the missing backup. Minutes and the note do not move the stamp, the tag, or the meter.</span>
           </li>
           <li>
             <strong>Same pair</strong>
-            <span>Names are NFC-lowercased. Apostrophes are dropped, so Ja'Marr and Jamarr match. Accents stay. Word order inside a name does not matter, then the words are sorted. The same starter and backup share one card, including a re-panicked roast. A later pass can save new minutes or a new note and leaves the stamp alone. The form keeps what you just typed when the pair is already on the shelf. Markup stays text.</span>
+            <span>Names are lowercased. Apostrophes, periods, and accents are folded, so Ja'Marr and Jamarr match, A.J. Brown matches AJ Brown, and José Ramírez matches Jose Ramirez. The card still shows the name as typed. Word order inside a name does not matter, then the words are sorted. Runs of single letters join, so A. J. Brown matches AJ Brown. The same starter and backup share one card, including a re-panicked roast. A later pass can save new minutes or a new note and leaves the stamp alone. Re-entering the pair counts as a touch and lifts the card. The form keeps what you just typed when the pair is already on the shelf. Markup stays text.</span>
           </li>
           <li>
             <strong>Re-panic</strong>
@@ -218,11 +209,11 @@
           </li>
           <li>
             <strong>Undo</strong>
-            <span>The Undo button takes back the last panic, re-panic, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a panic that had to make room. That room Undo leaves once the new card is starred or re-panicked. The toast Undo leaves as soon as it can no longer work. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
+            <span>The Undo button takes back the last panic, re-panic, or star on the open card. Remove and Clear all use the toast Undo until it leaves. So does a panic that had to make room. That room Undo leaves once the new card is starred or re-panicked. If you panic after Clear all and then undo that panic, the shelf is empty again and Undo clear comes back. The toast Undo leaves as soon as it can no longer work. A confirmation such as Link copied still shows. A form error stays on the form and does not cover a live Undo.</span>
           </li>
           <li>
             <strong>History</strong>
-            <span>Up to 24 panics on this phone. Filters are all and starred. Open one, remove one, or clear every panic. Opening a row does not replace what you are typing. Undo puts them back until the toast leaves. A new panic at the cap drops the oldest unstarred panic. Starred panics stay. If every panic is starred, the card refuses another.</span>
+            <span>Up to 24 panics on this phone. Filters are all and starred. Open one, remove one, or clear every panic. Opening a row does not replace what you are typing. Undo puts them back until the toast leaves. A new panic at the cap drops the oldest unstarred panic in shelf order, the one touched least recently. Re-entering a pair or keeping a shared card counts as a touch. Starred panics stay. If every panic is starred, the card refuses another.</span>
           </li>
           <li>
             <strong>Snapshot share</strong>
@@ -234,7 +225,7 @@
           </li>
           <li>
             <strong>On this device</strong>
-            <span>Store <code>lock-panic-v1</code>. Offline cache <code>lock-panic-v2</code>. The page is fetched from the network when you are online. Scripts and styles carry <code>?v=</code> and refresh in the background. A <code>?v=</code> query is cached by pathname only. If storage is blocked, a banner says so. If a save cannot be read, including a card that fails validation, the old value is backed up and a notice shows. No accounts, no projection feed, no analytics.</span>
+            <span>Store <code>lock-panic-v1</code>. Offline cache <code>lock-panic-v3</code>. The page is fetched from the network when you are online. Scripts and styles carry <code>?v=</code> and are cached by the full URL, so a new version does not match an old one. HTML still ignores <code>?k=</code> in the cache key. If storage is blocked, a banner says so. If one saved panic cannot be read, that card is set aside, the rest stay, and the notice says how many. A save that is not a shelf at all is backed up and the page starts fresh. No accounts, no projection feed, no analytics.</span>
           </li>
         </ul>
         <p class="not-list">Not in this app: fantasy advice, a start/sit ranking, betting, real money, live projections, accounts, live sync, ads, or anything that phones home. Entertainment only. For the group chat.</p>
@@ -264,11 +255,11 @@
     <button type="button" id="toastUndo" hidden>Undo</button>
   </div>
 
-  <script src="panic.js?v=1"></script>
-  <script src="app.js?v=1"></script>
+  <script src="panic.js?v=2"></script>
+  <script src="app.js?v=2"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js?v=1").catch(function () {});
+      navigator.serviceWorker.register("./sw.js?v=2").catch(function () {});
     }
   </script>
 </body>

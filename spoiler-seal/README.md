@@ -31,7 +31,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Remove and clear all, with Undo
 - Snapshot share via `#v=` or `?v=` — the recipient follows the unlock time, even if the sender already broke the seal. Keep or Not now, not live sync
 - Storage-blocked private-mode alert
-- Offline via service worker cache **`spoiler-seal-v2`**
+- Offline via service worker cache **`spoiler-seal-v3`**
 
 **Is not:** a score feed, a league or network app, accounts, ads, analytics, or live multi-device sync.
 
@@ -51,7 +51,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 
 ## Offline / PWA
 
-Service worker cache: **`spoiler-seal-v2`**. HTML is network-first. `?v=` links cache on the pathname. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/spoiler-seal/`. Storage key stays **`spoiler-seal-v1`**.
+Service worker cache: **`spoiler-seal-v3`**. HTML is network-first, so a `?v=` share link still caches on the pathname. A script or style request keeps its query string. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/spoiler-seal/`. Storage key stays **`spoiler-seal-v1`**.
 
 ## Tests
 

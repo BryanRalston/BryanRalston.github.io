@@ -31,7 +31,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 - Snapshot share via `#q=` or `?q=` — Keep or Not now, not live sync. The recipient follows the unlock time. Keep at the cap drops the oldest finished, unstarred lock, with Undo. Active and starred locks stay
 - Load a sample. Each sample gets its own id
 - Storage-blocked private-mode alert, only when storage itself throws
-- Offline via service worker cache **`queue-lock-v2`**
+- Offline via service worker cache **`queue-lock-v3`**
 
 **Is not:** a game launcher, matchmaking, accounts, ads, analytics, or live multi-device sync.
 
@@ -53,7 +53,7 @@ In-product **Feature Map** (collapsed in the footer) lists current capabilities,
 
 ## Offline / PWA
 
-Service worker cache: **`queue-lock-v2`**. HTML is network-first. `?q=` and `?v=` links cache on the pathname. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/queue-lock/`. Storage key stays **`queue-lock-v1`**. Bump the cache name in `sw.js` when the cached files change. Leave the storage key alone.
+Service worker cache: **`queue-lock-v3`**. HTML is network-first, so a `?q=` share link still caches on the pathname. A script or style request keeps its query string. Installable via `manifest.webmanifest`. Relative `./` paths so GitHub Pages can serve `/queue-lock/`. Storage key stays **`queue-lock-v1`**. Bump the cache name in `sw.js` when the cached files change. Leave the storage key alone.
 
 ## Tests
 

@@ -1,4 +1,4 @@
-const CACHE = "bench-bomb-v2";
+const CACHE = "bench-bomb-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +9,10 @@ const ASSETS = [
   "./icon.svg",
 ];
 
-function pathKey(url) {
+function cacheKeyFor(url) {
+  if (/\.(?:js|css)$/i.test(url.pathname)) {
+    return new Request(url.origin + url.pathname + url.search);
+  }
   return new Request(url.origin + url.pathname);
 }
 
@@ -96,7 +99,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(cacheFirst(req, req));
     return;
   }
-  const cacheKey = pathKey(url);
+  const cacheKey = cacheKeyFor(url);
   if (isHtml(req)) {
     event.respondWith(networkFirst(req, cacheKey));
     return;
